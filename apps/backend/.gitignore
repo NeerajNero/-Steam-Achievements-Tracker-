@@ -1,0 +1,12 @@
+.env
+
+/node_modules
+/dist
+/coverage
+/logs
+/tmp
+/cache
+/temp
+/backup
+/backup
+

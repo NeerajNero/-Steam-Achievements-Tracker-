@@ -1,0 +1,73 @@
+services:
+  postgres:
+    image: postgres:16.6-alpine
+    container_name: steam-tracker-postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-steam_tracker}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  redis:
+    image: redis:7.4-alpine
+    container_name: steam-tracker-redis
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 5s
+
+  backend:
+    build:
+      context: .
+      dockerfile: apps/backend/Dockerfile
+      target: development
+    container_name: steam-tracker-backend
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      OPENAPI_ENABLED: ${OPENAPI_ENABLED:-true}
+      DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/steam_tracker}
+      STEAM_API_KEY: ${STEAM_API_KEY:-}
+      STEAM_API_BASE_URL: ${STEAM_API_BASE_URL:-https://api.steampowered.com}
+      REDIS_HOST: ${REDIS_HOST:-redis}
+      REDIS_PORT: ${REDIS_PORT:-6379}
+      REDIS_PASSWORD: ${REDIS_PASSWORD:-}
+      SYNC_QUEUE_NAME: ${SYNC_QUEUE_NAME:-steam-sync}
+      STEAM_API_CACHE_ENABLED: ${STEAM_API_CACHE_ENABLED:-true}
+      STEAM_API_CACHE_NAMESPACE: ${STEAM_API_CACHE_NAMESPACE:-steam:v1}
+      STEAM_API_CACHE_PROFILE_TTL_SECONDS: ${STEAM_API_CACHE_PROFILE_TTL_SECONDS:-600}
+      STEAM_API_CACHE_OWNED_GAMES_TTL_SECONDS: ${STEAM_API_CACHE_OWNED_GAMES_TTL_SECONDS:-1800}
+      STEAM_API_CACHE_SCHEMA_TTL_SECONDS: ${STEAM_API_CACHE_SCHEMA_TTL_SECONDS:-1209600}
+      STEAM_API_CACHE_GLOBAL_PERCENTAGES_TTL_SECONDS: ${STEAM_API_CACHE_GLOBAL_PERCENTAGES_TTL_SECONDS:-43200}
+      STEAM_API_CACHE_PLAYER_ACHIEVEMENTS_TTL_SECONDS: ${STEAM_API_CACHE_PLAYER_ACHIEVEMENTS_TTL_SECONDS:-120}
+      CHOKIDAR_USEPOLLING: "true"
+    ports:
+      - "${BACKEND_PORT:-3000}:3000"
+    volumes:
+      - .:/workspace
+      - root-node-modules:/workspace/node_modules
+      - backend-node-modules:/workspace/apps/backend/node_modules
+    command: pnpm dev
+
+volumes:
+  postgres-data:
+  root-node-modules:
+  backend-node-modules:

@@ -1,0 +1,26 @@
+{
+  "name": "steam-achievement-tracker",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "backend:dev": "pnpm --filter @steam-achievement/backend dev",
+    "backend:build": "pnpm --filter @steam-achievement/backend build",
+    "backend:start": "pnpm --filter @steam-achievement/backend start",
+    "backend:type-check": "pnpm --filter @steam-achievement/backend type-check",
+    "seed:dev": "pnpm --filter @steam-achievement/backend seed:dev",
+    "seed:reset-dev": "pnpm --filter @steam-achievement/backend seed:reset-dev",
+    "api:smoke": "pnpm --filter @steam-achievement/backend api:smoke",
+    "real-sync:smoke": "pnpm --filter @steam-achievement/backend real-sync:smoke",
+    "openapi:generate": "pnpm --filter @steam-achievement/backend openapi:generate",
+    "sdk:generate": "openapi-generator-cli generate -i docs/openapi/openapi.json -g typescript-fetch -o libs/client-sdk/src/generated -c openapi-generator.config.json",
+    "sdk:clean": "node -e \"const fs=require('node:fs'); fs.rmSync('libs/client-sdk/src/generated', { recursive: true, force: true }); fs.rmSync('libs/client-sdk/dist', { recursive: true, force: true });\"",
+    "sdk:build": "pnpm --filter @steam-achievement/client-sdk build",
+    "migration:run": "pnpm --filter @steam-achievement/backend migration:run",
+    "migration:status": "pnpm --filter @steam-achievement/backend migration:status",
+    "migration:pending": "pnpm --filter @steam-achievement/backend migration:pending",
+    "migration:create": "pnpm --filter @steam-achievement/backend migration:create"
+  },
+  "devDependencies": {
+    "@openapitools/openapi-generator-cli": "^2.32.0"
+  }
+}

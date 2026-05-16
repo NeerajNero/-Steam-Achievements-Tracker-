@@ -1,0 +1,2 @@
+# Hand-written SDK barrel lives one directory up.
+../index.ts

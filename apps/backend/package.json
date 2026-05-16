@@ -1,0 +1,46 @@
+{
+  "name": "@steam-achievement/backend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "nest start --watch",
+    "build": "nest build",
+    "start": "node dist/main.js",
+    "type-check": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run --config vitest.config.ts",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "seed:dev": "tsx src/db/seed-dev.ts",
+    "seed:reset-dev": "tsx src/db/seed-dev.ts reset",
+    "api:smoke": "tsx src/scripts/api-smoke.ts",
+    "real-sync:smoke": "tsx src/scripts/real-steam-sync-smoke.ts",
+    "openapi:generate": "tsx src/scripts/generate-openapi.ts",
+    "migration:run": "tsx src/db/migrate.ts run",
+    "migration:status": "tsx src/db/migrate.ts status",
+    "migration:pending": "tsx src/db/migrate.ts pending",
+    "migration:create": "tsx src/db/migrate.ts create"
+  },
+  "dependencies": {
+    "@nestjs/bullmq": "^11.0.0",
+    "@nestjs/common": "^11.0.0",
+    "@nestjs/core": "^11.0.0",
+    "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/swagger": "^11.4.3",
+    "bullmq": "^5.0.0",
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.14.1",
+    "drizzle-orm": "^0.44.7",
+    "ioredis": "^5.10.1",
+    "pg": "^8.13.1",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@nestjs/cli": "^11.0.0",
+    "@types/node": "^24.0.0",
+    "@types/pg": "^8.11.10",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.0",
+    "vitest": "^4.0.13"
+  }
+}

@@ -1,0 +1,1 @@
+export const REDIS_CACHE_CONFIG = Symbol('REDIS_CACHE_CONFIG');

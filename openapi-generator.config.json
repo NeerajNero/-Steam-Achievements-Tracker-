@@ -1,0 +1,9 @@
+{
+  "npmName": "@steam-achievement/client-sdk",
+  "npmVersion": "0.1.0",
+  "modelPropertyNaming": "original",
+  "supportsES6": true,
+  "withSeparateModelsAndApi": true,
+  "apiPackage": "apis",
+  "modelPackage": "models"
+}
