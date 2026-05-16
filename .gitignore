@@ -26,4 +26,5 @@ START_PROMPT.md
 /apps/backend/.env
 .env
 
-.pnpm-store/
+.pnpm-store
+.pnpm-store/*
