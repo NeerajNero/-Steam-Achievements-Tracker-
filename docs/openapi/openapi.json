@@ -1,0 +1,1281 @@
+{
+  "openapi": "3.0.0",
+  "paths": {
+    "/health": {
+      "get": {
+        "description": "Returns a minimal liveness response for local smoke checks.",
+        "operationId": "healthCheck",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "Check backend health",
+        "tags": [
+          "health"
+        ]
+      }
+    },
+    "/profiles/{steamId}": {
+      "get": {
+        "description": "Reads profile metadata from PostgreSQL only.",
+        "operationId": "getProfile",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "Get stored Steam profile metadata",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/profiles/{steamId}/summary": {
+      "get": {
+        "description": "Returns aggregate completion data from stored profile game progress.",
+        "operationId": "getProfileSummary",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "Get profile dashboard summary",
+        "tags": [
+          "profiles"
+        ]
+      }
+    },
+    "/profiles/{steamId}/games": {
+      "get": {
+        "description": "Returns a paginated profile game library from PostgreSQL. Default sort is completion desc.",
+        "operationId": "listProfileGames",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "description": "Non-negative integer. Default 0.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Integer from 1 to 100. Default 50.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "name",
+                "completion",
+                "playtime",
+                "recently_played",
+                "remaining"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "all",
+                "completed",
+                "incomplete",
+                "no_achievements"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "description": "Case-insensitive game name search.",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameLibraryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "List stored games for a profile",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/profiles/{steamId}/games/nearest-completions": {
+      "get": {
+        "description": "Excludes completed games and zero-achievement games while preserving zero-unlocked games with achievements.",
+        "operationId": "listNearestCompletions",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Integer from 1 to 100. Default 10.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NearestCompletionsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "List nearest 100% completion candidates",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/profiles/{steamId}/games/{steamAppId}": {
+      "get": {
+        "description": "Returns game metadata, profile progress, and summary counts.",
+        "operationId": "getProfileGame",
+        "parameters": [
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "description": "Steam app ID.",
+            "schema": {
+              "example": 910002,
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GameDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile or profile game row has not been synced."
+          }
+        },
+        "summary": "Get one stored profile game detail",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/profiles/{steamId}/games/{steamAppId}/achievements": {
+      "get": {
+        "description": "Returns achievement metadata with profile unlock state from PostgreSQL only.",
+        "operationId": "listGameAchievements",
+        "parameters": [
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "rarity",
+                "unlocked_at",
+                "name"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "all",
+                "unlocked",
+                "locked"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "description": "Steam app ID.",
+            "schema": {
+              "example": 910002,
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AchievementsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile or profile game row has not been synced."
+          }
+        },
+        "summary": "List stored achievements for a profile game",
+        "tags": [
+          "achievements"
+        ]
+      }
+    },
+    "/profiles/{steamId}/achievements/rarest": {
+      "get": {
+        "description": "Returns unlocked achievements ordered by global rarity ascending and excludes null rarity values.",
+        "operationId": "listRarestAchievements",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Integer from 1 to 100. Default 10.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RarestAchievementsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "List rarest unlocked achievements",
+        "tags": [
+          "achievements"
+        ]
+      }
+    },
+    "/profiles/{steamId}/sync": {
+      "post": {
+        "description": "Creates a queued sync_runs row and enqueues BullMQ work. Achievement sync can target all stored profile games or selected app IDs.",
+        "operationId": "enqueueProfileSync",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SyncRequestDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QueuedSyncResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid Steam ID or sync scope."
+          }
+        },
+        "summary": "Queue a profile, owned-games, or achievement sync job",
+        "tags": [
+          "sync"
+        ]
+      }
+    },
+    "/profiles/{steamId}/sync-runs": {
+      "get": {
+        "description": "Returns newest-first sync status history from PostgreSQL. Use this endpoint to poll queued sync progress.",
+        "operationId": "listSyncRuns",
+        "parameters": [
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "description": "Integer from 1 to 100. Default 10.",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile ID.",
+            "schema": {
+              "example": "76561198000000000",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SyncHistoryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile has not been synced."
+          }
+        },
+        "summary": "List recent sync runs for a profile",
+        "tags": [
+          "sync"
+        ]
+      }
+    }
+  },
+  "info": {
+    "title": "Steam Achievement Tracker API",
+    "description": "API for syncing and reading Steam achievement intelligence data",
+    "version": "0.1.0",
+    "contact": {}
+  },
+  "tags": [
+    {
+      "name": "health",
+      "description": ""
+    },
+    {
+      "name": "profiles",
+      "description": ""
+    },
+    {
+      "name": "games",
+      "description": ""
+    },
+    {
+      "name": "achievements",
+      "description": ""
+    },
+    {
+      "name": "sync",
+      "description": ""
+    }
+  ],
+  "servers": [
+    {
+      "url": "http://localhost:3000",
+      "description": "Local Docker backend"
+    }
+  ],
+  "components": {
+    "schemas": {
+      "HealthResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "example": "ok",
+            "enum": [
+              "ok"
+            ],
+            "description": "Backend health status."
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "ProfileDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "4b8413ad-bc3c-4215-9ded-e6ba9fd9f2dd",
+            "description": "Internal profile UUID."
+          },
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000",
+            "description": "Steam 64-bit profile ID."
+          },
+          "personaName": {
+            "type": "string",
+            "example": "Demo Achievement Hunter",
+            "nullable": true,
+            "description": "Current Steam persona name, when visible."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true,
+            "description": "Steam avatar URL, when available."
+          },
+          "profileUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true,
+            "description": "Steam community profile URL, when available."
+          },
+          "visibilityState": {
+            "type": "number",
+            "example": 3,
+            "nullable": true,
+            "description": "Steam visibility state returned by the Steam Web API."
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether the profile is private or unavailable for sync."
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true,
+            "description": "Last time this profile was synced from Steam."
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "description": "Profile row creation timestamp."
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "description": "Profile row update timestamp."
+          }
+        },
+        "required": [
+          "id",
+          "steamId",
+          "isPrivate",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ProfileSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000",
+            "description": "Steam 64-bit profile ID."
+          },
+          "personaName": {
+            "type": "string",
+            "example": "Demo Achievement Hunter",
+            "nullable": true,
+            "description": "Current Steam persona name, when visible."
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true,
+            "description": "Steam avatar URL, when available."
+          },
+          "visibilityState": {
+            "type": "number",
+            "example": 3,
+            "nullable": true,
+            "description": "Steam visibility state returned by the Steam Web API."
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "example": false,
+            "description": "Whether the profile is private or unavailable for sync."
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true,
+            "description": "Last time this profile was synced from Steam."
+          },
+          "totalGames": {
+            "type": "number",
+            "example": 6
+          },
+          "completedGames": {
+            "type": "number",
+            "example": 1
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 41
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 24
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 17
+          },
+          "averageCompletionPercentage": {
+            "type": "number",
+            "example": 58.54,
+            "description": "Average completion percentage across profile games."
+          }
+        },
+        "required": [
+          "steamId",
+          "isPrivate",
+          "totalGames",
+          "completedGames",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "averageCompletionPercentage"
+        ]
+      },
+      "GameLibraryItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamAppId": {
+            "type": "number",
+            "example": 910002
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo Last Mile"
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "hasAchievements": {
+            "type": "boolean",
+            "example": true
+          },
+          "playtimeMinutes": {
+            "type": "number",
+            "example": 1240
+          },
+          "playtimeTwoWeeksMinutes": {
+            "type": "number",
+            "example": 45
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 8
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 7
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 1
+          },
+          "completionPercentage": {
+            "type": "number",
+            "example": 87.5
+          },
+          "lastPlayedAt": {
+            "type": "string",
+            "example": "2026-05-15T12:00:00.000Z",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true
+          }
+        },
+        "required": [
+          "steamAppId",
+          "name",
+          "hasAchievements",
+          "playtimeMinutes",
+          "playtimeTwoWeeksMinutes",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "completionPercentage"
+        ]
+      },
+      "GameLibraryResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "total": {
+            "type": "number",
+            "example": 6
+          },
+          "limit": {
+            "type": "number",
+            "example": 50
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameLibraryItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "total",
+          "limit",
+          "offset",
+          "items"
+        ]
+      },
+      "NearestCompletionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameLibraryItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
+        ]
+      },
+      "GameAchievementsSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "total": {
+            "type": "number",
+            "example": 8
+          },
+          "unlocked": {
+            "type": "number",
+            "example": 7
+          },
+          "locked": {
+            "type": "number",
+            "example": 1
+          }
+        },
+        "required": [
+          "total",
+          "unlocked",
+          "locked"
+        ]
+      },
+      "GameDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910002
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo Last Mile"
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "hasAchievements": {
+            "type": "boolean",
+            "example": true
+          },
+          "playtimeMinutes": {
+            "type": "number",
+            "example": 1240
+          },
+          "playtimeTwoWeeksMinutes": {
+            "type": "number",
+            "example": 45
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 8
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 7
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 1
+          },
+          "completionPercentage": {
+            "type": "number",
+            "example": 87.5
+          },
+          "lastPlayedAt": {
+            "type": "string",
+            "example": "2026-05-15T12:00:00.000Z",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true
+          },
+          "achievementsSummary": {
+            "$ref": "#/components/schemas/GameAchievementsSummaryResponseDto"
+          }
+        },
+        "required": [
+          "steamId",
+          "steamAppId",
+          "name",
+          "hasAchievements",
+          "playtimeMinutes",
+          "playtimeTwoWeeksMinutes",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "completionPercentage",
+          "achievementsSummary"
+        ]
+      },
+      "AchievementWithUnlockStateResponseDto": {
+        "type": "object",
+        "properties": {
+          "apiName": {
+            "type": "string",
+            "example": "ACH_WIN_ONE_GAME"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "First Win",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "example": "Win one match.",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "iconGrayUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "globalPercentage": {
+            "type": "number",
+            "example": 4.321,
+            "nullable": true
+          },
+          "hidden": {
+            "type": "boolean",
+            "example": false
+          },
+          "achieved": {
+            "type": "boolean",
+            "example": true
+          },
+          "unlockState": {
+            "type": "string",
+            "enum": [
+              "unlocked",
+              "locked",
+              "unknown"
+            ],
+            "example": "unlocked",
+            "description": "unknown means achievement metadata exists but player unlock state has not been synced or is unavailable."
+          },
+          "unlockedAt": {
+            "type": "string",
+            "example": "2026-05-15T12:00:00.000Z",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true
+          }
+        },
+        "required": [
+          "apiName",
+          "hidden",
+          "achieved",
+          "unlockState"
+        ]
+      },
+      "AchievementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910002
+          },
+          "total": {
+            "type": "number",
+            "example": 8
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AchievementWithUnlockStateResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "steamAppId",
+          "total",
+          "items"
+        ]
+      },
+      "RarestAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamAppId": {
+            "type": "number",
+            "example": 910002
+          },
+          "apiName": {
+            "type": "string",
+            "example": "ACH_RARE_FIND"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Rare Find",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "example": "Unlock a rare achievement.",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "iconGrayUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "globalPercentage": {
+            "type": "number",
+            "example": 1.234
+          },
+          "hidden": {
+            "type": "boolean",
+            "example": true
+          },
+          "unlockedAt": {
+            "type": "string",
+            "example": "2026-05-15T12:00:00.000Z",
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true
+          }
+        },
+        "required": [
+          "steamAppId",
+          "apiName",
+          "globalPercentage",
+          "hidden"
+        ]
+      },
+      "RarestAchievementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RarestAchievementResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
+        ]
+      },
+      "SyncRequestDto": {
+        "type": "object",
+        "properties": {
+          "scope": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "games",
+              "achievements"
+            ],
+            "example": "profile",
+            "description": "Sync scope to enqueue."
+          },
+          "appIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "example": [
+              910001,
+              910002
+            ],
+            "description": "Optional Steam app IDs for achievements sync. Omit to sync achievements for all stored profile games.",
+            "minItems": 1,
+            "maxItems": 100
+          }
+        },
+        "required": [
+          "scope"
+        ]
+      },
+      "QueuedSyncResponseDto": {
+        "type": "object",
+        "properties": {
+          "syncRunId": {
+            "type": "string",
+            "example": "e0cfb455-5fac-4cdf-9634-25a3404585a8",
+            "description": "PostgreSQL sync_runs ID used for polling status."
+          },
+          "jobId": {
+            "type": "string",
+            "example": "steam-sync-76561198000000000-achievements-e0cfb455-5fac-4cdf-9634-25a3404585a8",
+            "description": "BullMQ job ID for operational debugging."
+          },
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "scope": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "games",
+              "achievements"
+            ],
+            "example": "achievements"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued"
+            ],
+            "example": "queued"
+          },
+          "queuedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z"
+          }
+        },
+        "required": [
+          "syncRunId",
+          "jobId",
+          "steamId",
+          "scope",
+          "status",
+          "queuedAt"
+        ]
+      },
+      "SyncHistoryItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "e0cfb455-5fac-4cdf-9634-25a3404585a8"
+          },
+          "syncType": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "games",
+              "achievements",
+              "full"
+            ],
+            "example": "profile"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "success",
+              "partial_success",
+              "failed"
+            ],
+            "example": "success"
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z"
+          },
+          "finishedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:33.883Z",
+            "nullable": true
+          },
+          "errorMessage": {
+            "type": "string",
+            "example": "Steam API is not configured for this sync operation.",
+            "nullable": true
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "scope": "profile",
+              "steamId": "76561198000000000"
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z"
+          }
+        },
+        "required": [
+          "id",
+          "syncType",
+          "status",
+          "startedAt",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "SyncHistoryResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/SyncHistoryItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
+        ]
+      }
+    }
+  }
+}

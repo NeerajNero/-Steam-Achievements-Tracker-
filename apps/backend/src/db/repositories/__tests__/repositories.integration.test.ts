@@ -339,6 +339,77 @@ describe('Drizzle repositories integration', () => {
   });
 
   describe('AchievementSyncRepository', () => {
+    it('upserts achievement metadata without refreshing profile progress', async () => {
+      const identity = createIdentity();
+      const profile = await createProfile(identity, 'Metadata Only Profile');
+      const game = await gamesRepository.upsertGame({
+        steamAppId: identity.appId,
+        name: 'Metadata Only Game',
+        hasAchievements: false,
+      });
+      const existingAchievement = await createAchievement(
+        identity.appId,
+        'ACH_EXISTING',
+        50,
+      );
+
+      await profileGamesRepository.upsertProfileGame({
+        profileId: profile.id,
+        gameId: game.id,
+        totalAchievements: 5,
+        unlockedAchievements: 2,
+        completionPercentage: 40,
+      });
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: existingAchievement.id,
+        achieved: true,
+        unlockedAt: new Date('2026-01-01T00:00:00.000Z'),
+      });
+
+      const result = await achievementSyncRepository.applyGameAchievementMetadata({
+        steamAppId: identity.appId,
+        achievements: [
+          createSyncedAchievement('ACH_EXISTING'),
+          {
+            ...createSyncedAchievement('ACH_NEW'),
+            globalPercentage: 12.3,
+          },
+        ],
+      });
+
+      expect(result).toEqual({ achievementsSynced: 2 });
+      await expect(gamesRepository.findById(game.id)).resolves.toMatchObject({
+        hasAchievements: true,
+      });
+      await expect(
+        achievementsRepository.findBySteamAppIdAndApiName(
+          identity.appId,
+          'ACH_NEW',
+        ),
+      ).resolves.toMatchObject({
+        globalPercentage: 12.3,
+      });
+      await expect(
+        profileAchievementsRepository.findByProfileAndAchievement(
+          profile.id,
+          existingAchievement.id,
+        ),
+      ).resolves.toMatchObject({ achieved: true });
+      await expect(
+        profileGamesRepository.findProfileGameBySteamAppId(
+          profile.id,
+          identity.appId,
+        ),
+      ).resolves.toMatchObject({
+        profileGame: {
+          totalAchievements: 5,
+          unlockedAchievements: 2,
+          completionPercentage: 40,
+        },
+      });
+    });
+
     it('uses the PostgreSQL function to refresh partial and full progress', async () => {
       const identity = createIdentity();
       const profile = await createProfile(identity, 'Achievement Sync Profile');

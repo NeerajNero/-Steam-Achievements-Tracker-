@@ -20,6 +20,9 @@
     "migration:create": "tsx src/db/migrate.ts create"
   },
   "dependencies": {
+    "@bull-board/api": "6.9.6",
+    "@bull-board/express": "6.9.6",
+    "@bull-board/nestjs": "6.9.6",
     "@nestjs/bullmq": "^11.0.0",
     "@nestjs/common": "^11.0.0",
     "@nestjs/core": "^11.0.0",

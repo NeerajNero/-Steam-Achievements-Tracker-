@@ -11,9 +11,6 @@ coverage/
 *.log
 
 /agents
-/skills
-
-/docs
 
 AGENTS.md
 START_PROMPT.md

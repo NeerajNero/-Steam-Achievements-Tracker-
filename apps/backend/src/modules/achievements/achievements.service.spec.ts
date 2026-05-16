@@ -5,9 +5,61 @@ import type { ProfileGamesDataService } from '../../db/services/profile-games-da
 import type { SteamProfile } from '../../db/services/steam-profiles-data.service';
 import type { ProfilesService } from '../profiles/profiles.service';
 import { LimitQueryDto } from '../games/dto/limit-query.dto';
+import { AchievementListQueryDto } from './dto/achievement-list-query.dto';
 import { AchievementsService } from './achievements.service';
 
 describe('AchievementsService', () => {
+  it('returns unknown unlock state when metadata exists without a profile achievement row', async () => {
+    const profile = createProfile();
+    const service = new AchievementsService(
+      {
+        resolveProfile: vi.fn(async () => profile),
+      } as unknown as ProfilesService,
+      {
+        findProfileGameBySteamAppId: vi.fn(async () => ({
+          profileGame: {},
+          game: {},
+        })),
+      } as unknown as ProfileGamesDataService,
+      {
+        findAchievementsWithUnlockState: vi.fn(async () => [
+          {
+            achievement: {
+              id: 'achievement-id',
+              steamAppId: 550,
+              apiName: 'ACH_UNKNOWN',
+              displayName: 'Unknown',
+              description: null,
+              iconUrl: null,
+              iconGrayUrl: null,
+              globalPercentage: 12.3,
+              hidden: false,
+              createdAt: new Date('2026-01-01T00:00:00.000Z'),
+              updatedAt: new Date('2026-01-01T00:00:00.000Z'),
+            },
+            profileAchievement: null,
+          },
+        ]),
+      } as unknown as ProfileAchievementsDataService,
+    );
+
+    await expect(
+      service.getGameAchievements(profile.steamId, 550, new AchievementListQueryDto()),
+    ).resolves.toMatchObject({
+      steamId: profile.steamId,
+      steamAppId: 550,
+      items: [
+        {
+          apiName: 'ACH_UNKNOWN',
+          achieved: false,
+          unlockState: 'unknown',
+          unlockedAt: null,
+          lastSyncedAt: null,
+        },
+      ],
+    });
+  });
+
   it('returns rarest achievements in repository order', async () => {
     const profile = createProfile();
     const service = new AchievementsService(

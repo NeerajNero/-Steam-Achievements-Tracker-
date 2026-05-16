@@ -1,5 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+export type AchievementUnlockState = 'unlocked' | 'locked' | 'unknown';
+
 export class AchievementWithUnlockStateResponseDto {
   @ApiProperty({ type: String, example: 'ACH_WIN_ONE_GAME' })
   apiName!: string;
@@ -28,6 +30,14 @@ export class AchievementWithUnlockStateResponseDto {
 
   @ApiProperty({ type: Boolean, example: true })
   achieved!: boolean;
+
+  @ApiProperty({
+    enum: ['unlocked', 'locked', 'unknown'],
+    example: 'unlocked',
+    description:
+      'unknown means achievement metadata exists but player unlock state has not been synced or is unavailable.',
+  })
+  unlockState!: AchievementUnlockState;
 
   @ApiPropertyOptional({
     type: String,

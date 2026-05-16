@@ -6,6 +6,9 @@ import { setupOpenApi, shouldEnableOpenApi } from './openapi';
 
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: getCorsOrigins(),
+  });
   app.useGlobalPipes(
     new ValidationPipe({
       forbidNonWhitelisted: true,
@@ -22,3 +25,15 @@ async function bootstrap(): Promise<void> {
 }
 
 void bootstrap();
+
+function getCorsOrigins(): string[] {
+  const configuredOrigins = process.env.CORS_ORIGIN?.split(',')
+    .map((origin) => origin.trim())
+    .filter((origin) => origin.length > 0);
+
+  if (configuredOrigins !== undefined && configuredOrigins.length > 0) {
+    return configuredOrigins;
+  }
+
+  return ['http://localhost:3001'];
+}

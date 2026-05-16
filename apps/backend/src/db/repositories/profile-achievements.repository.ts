@@ -5,8 +5,6 @@ import {
   desc,
   eq,
   isNotNull,
-  isNull,
-  or,
   sql,
 } from 'drizzle-orm';
 import type { InferInsertModel, InferSelectModel, SQL } from 'drizzle-orm';
@@ -182,12 +180,7 @@ export class ProfileAchievementsRepository {
         conditions.push(eq(profileAchievements.achieved, true));
         break;
       case 'locked':
-        conditions.push(
-          or(
-            isNull(profileAchievements.id),
-            eq(profileAchievements.achieved, false),
-          ) as SQL,
-        );
+        conditions.push(eq(profileAchievements.achieved, false));
         break;
       case 'all':
       case undefined:

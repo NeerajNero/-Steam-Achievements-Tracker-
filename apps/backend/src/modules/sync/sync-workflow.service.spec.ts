@@ -213,6 +213,8 @@ describe('SyncWorkflowService', () => {
         gamesRequested: 1,
         gamesProcessed: 1,
         gamesSucceeded: 1,
+        gamesMetadataOnly: 0,
+        gamesNoAchievements: 0,
         gamesFailed: 0,
         achievementsSynced: 2,
         profileAchievementsSynced: 2,
@@ -243,6 +245,15 @@ describe('SyncWorkflowService', () => {
       }),
     );
     expect(
+      mocks.achievementSyncRepository.applyGameAchievementMetadata,
+    ).toHaveBeenCalledWith({
+      steamAppId: 910001,
+      achievements: [
+        expect.objectContaining({ apiName: 'ACH_RARE' }),
+        expect.objectContaining({ apiName: 'ACH_WIN' }),
+      ],
+    });
+    expect(
       mocks.achievementSyncRepository.applyGameAchievementSync,
     ).toHaveBeenCalledWith(
       expect.not.objectContaining({
@@ -252,6 +263,64 @@ describe('SyncWorkflowService', () => {
         progress: expect.any(Object),
       }),
     );
+  });
+
+  it('achievement workflow persists metadata when player achievements are unavailable', async () => {
+    mocks.steamProfilesRepository.findBySteamId.mockResolvedValue(createProfile());
+    mocks.profileGamesRepository.findProfileGamesForAchievementSync.mockResolvedValue([
+      createProfileGameWithGame(550),
+    ]);
+    mocks.steamApiClient.getSchemaForGame.mockResolvedValue({
+      appId: 550,
+      gameName: 'Left 4 Dead 2',
+      achievements: [createSchemaAchievement('ACH_SURVIVE', 'Survive', false)],
+    });
+    mocks.steamApiClient.getGlobalAchievementPercentages.mockResolvedValue([
+      { apiName: 'ACH_SURVIVE', globalPercentage: 12.3 },
+    ]);
+    mocks.steamApiClient.getPlayerAchievements.mockRejectedValue(
+      new SteamApiRequestError('player achievements denied', 403),
+    );
+
+    await expect(
+      service.syncAchievementsBySteamId('sync-run-id', '76561198000000000', [
+        550,
+      ]),
+    ).resolves.toMatchObject({
+      status: 'partial_success',
+      errorMessage: 'Achievement sync completed with partial failures.',
+      metadata: expect.objectContaining({
+        gamesRequested: 1,
+        gamesProcessed: 1,
+        gamesSucceeded: 0,
+        gamesMetadataOnly: 1,
+        gamesNoAchievements: 0,
+        gamesFailed: 0,
+        achievementsSynced: 1,
+        profileAchievementsSynced: 0,
+        unlockStateUnavailableApps: [
+          {
+            appId: 550,
+            reason: 'Player achievements unavailable',
+          },
+        ],
+        failedApps: [],
+      }),
+    });
+    expect(
+      mocks.achievementSyncRepository.applyGameAchievementMetadata,
+    ).toHaveBeenCalledWith({
+      steamAppId: 550,
+      achievements: [
+        expect.objectContaining({
+          apiName: 'ACH_SURVIVE',
+          globalPercentage: 12.3,
+        }),
+      ],
+    });
+    expect(
+      mocks.achievementSyncRepository.applyGameAchievementSync,
+    ).not.toHaveBeenCalled();
   });
 
   it('achievement workflow handles zero-achievement game as success', async () => {
@@ -279,7 +348,10 @@ describe('SyncWorkflowService', () => {
     ).resolves.toMatchObject({
       status: 'success',
       metadata: expect.objectContaining({
-        gamesSucceeded: 1,
+        gamesSucceeded: 0,
+        gamesMetadataOnly: 0,
+        gamesNoAchievements: 1,
+        gamesFailed: 0,
         achievementsSynced: 0,
         profileAchievementsSynced: 0,
       }),
@@ -292,6 +364,9 @@ describe('SyncWorkflowService', () => {
         profileAchievements: [],
       }),
     );
+    expect(
+      mocks.achievementSyncRepository.applyGameAchievementMetadata,
+    ).not.toHaveBeenCalled();
   });
 
   it('achievement workflow handles one success and one failure as partial_success', async () => {
@@ -330,6 +405,8 @@ describe('SyncWorkflowService', () => {
         gamesRequested: 2,
         gamesProcessed: 2,
         gamesSucceeded: 1,
+        gamesMetadataOnly: 0,
+        gamesNoAchievements: 0,
         gamesFailed: 1,
       }),
     });
@@ -338,6 +415,8 @@ describe('SyncWorkflowService', () => {
       'Achievement sync completed with partial failures.',
       expect.objectContaining({
         gamesSucceeded: 1,
+        gamesMetadataOnly: 0,
+        gamesNoAchievements: 0,
         gamesFailed: 1,
         failedApps: [
           {
@@ -366,6 +445,8 @@ describe('SyncWorkflowService', () => {
       errorMessage: 'Achievement sync failed for all requested games.',
       metadata: expect.objectContaining({
         gamesSucceeded: 0,
+        gamesMetadataOnly: 0,
+        gamesNoAchievements: 0,
         gamesFailed: 1,
       }),
     });
@@ -425,6 +506,7 @@ interface SyncWorkflowMocks {
     findProfileGamesForAchievementSync: ReturnType<typeof vi.fn>;
   };
   achievementSyncRepository: {
+    applyGameAchievementMetadata: ReturnType<typeof vi.fn>;
     applyGameAchievementSync: ReturnType<typeof vi.fn>;
     delete?: ReturnType<typeof vi.fn>;
   };
@@ -478,6 +560,9 @@ function createMocks(): SyncWorkflowMocks {
       findProfileGamesForAchievementSync: vi.fn(async () => []),
     },
     achievementSyncRepository: {
+      applyGameAchievementMetadata: vi.fn(async (input) => ({
+        achievementsSynced: input.achievements.length,
+      })),
       applyGameAchievementSync: vi.fn(async (input) => ({
         achievementsSynced: input.achievements.length,
         profileAchievementsSynced: input.profileAchievements?.length ?? 0,

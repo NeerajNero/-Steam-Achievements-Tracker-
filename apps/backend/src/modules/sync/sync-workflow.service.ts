@@ -30,6 +30,7 @@ import type {
   SteamGlobalAchievementPercentage,
   SteamOwnedGame,
   SteamPlayerAchievement,
+  SteamPlayerAchievementResult,
   SteamPlayerSummary,
 } from '../steam/steam-api.types';
 import type { SyncScope } from './dto/sync-request.dto';
@@ -103,9 +104,12 @@ export class SyncWorkflowService {
           gamesRequested: appIds?.length ?? 0,
           gamesProcessed: 0,
           gamesSucceeded: 0,
+          gamesMetadataOnly: 0,
+          gamesNoAchievements: 0,
           gamesFailed: appIds?.length ?? 0,
           achievementsSynced: 0,
           profileAchievementsSynced: 0,
+          unlockStateUnavailableApps: [],
           failedApps:
             appIds?.map((appId) => ({
               appId,
@@ -137,9 +141,12 @@ export class SyncWorkflowService {
             gamesRequested: 0,
             gamesProcessed: 0,
             gamesSucceeded: 0,
+            gamesMetadataOnly: 0,
+            gamesNoAchievements: 0,
             gamesFailed: 0,
             achievementsSynced: 0,
             profileAchievementsSynced: 0,
+            unlockStateUnavailableApps: [],
             failedApps: [],
           }),
         ),
@@ -155,30 +162,44 @@ export class SyncWorkflowService {
     const failedApps = [
       ...missingAppFailures,
       ...gameResults
-        .filter((result): result is FailedGameAchievementSync => !result.succeeded)
+        .filter(isFailedGameAchievementSync)
         .map((result) => ({
           appId: result.appId,
           reason: result.reason,
         })),
     ];
-    const succeededResults = gameResults.filter(
-      (result): result is SuccessfulGameAchievementSync => result.succeeded,
+    const fullSuccessResults = gameResults.filter(isFullSuccessGameAchievementSync);
+    const metadataOnlyResults = gameResults.filter(
+      isMetadataOnlyGameAchievementSync,
     );
+    const noAchievementResults = gameResults.filter(
+      isNoAchievementsGameAchievementSync,
+    );
+    const usefulResultsCount =
+      fullSuccessResults.length +
+      metadataOnlyResults.length +
+      noAchievementResults.length;
     const metadata = createAchievementMetadata({
       appIds: requestedAppIds,
       gamesRequested: requestedAppIds?.length ?? profileGames.length,
       gamesProcessed: gameResults.length,
-      gamesSucceeded: succeededResults.length,
+      gamesSucceeded: fullSuccessResults.length,
+      gamesMetadataOnly: metadataOnlyResults.length,
+      gamesNoAchievements: noAchievementResults.length,
       gamesFailed: failedApps.length,
       achievementsSynced: sumBy(gameResults, (result) => result.achievementsSynced),
       profileAchievementsSynced: sumBy(
         gameResults,
         (result) => result.profileAchievementsSynced,
       ),
+      unlockStateUnavailableApps: metadataOnlyResults.map((result) => ({
+        appId: result.appId,
+        reason: result.reason,
+      })),
       failedApps,
     });
 
-    if (succeededResults.length > 0 && failedApps.length > 0) {
+    if (usefulResultsCount > 0 && (metadataOnlyResults.length > 0 || failedApps.length > 0)) {
       return requireSyncRun(
         await this.syncRunsDataService.markPartialSuccess(
           syncRunId,
@@ -188,7 +209,7 @@ export class SyncWorkflowService {
       );
     }
 
-    if (succeededResults.length > 0 || failedApps.length === 0) {
+    if (usefulResultsCount > 0 || failedApps.length === 0) {
       return requireSyncRun(
         await this.syncRunsDataService.markSuccess(syncRunId, metadata),
       );
@@ -311,40 +332,58 @@ export class SyncWorkflowService {
         appId,
         language: 'english',
       });
-      const playerAchievements = await this.steamApiClient.getPlayerAchievements({
-        steamId,
-        appId,
-        language: 'english',
-      });
       const globalPercentages =
         await this.steamApiClient.getGlobalAchievementPercentages(appId);
       const syncedAt = new Date();
-      const mergedAchievements = mergeAchievementData(
+      const metadataAchievements = mergeAchievementData(
         schema.achievements,
         globalPercentages,
-        playerAchievements.achievements,
+        [],
       );
-      const hasAchievements = mergedAchievements.length > 0;
 
-      if (playerAchievements.isPrivateOrUnavailable && hasAchievements) {
-        const metadataResult =
-          await this.achievementSyncDataService.applyGameAchievementSync({
-            profileId,
-            steamAppId: appId,
-            achievements: mergedAchievements,
-            lastSyncedAt: syncedAt,
-          });
+      if (metadataAchievements.length === 0) {
+        const result = await this.achievementSyncDataService.applyGameAchievementSync({
+          profileId,
+          steamAppId: appId,
+          achievements: [],
+          profileAchievements: [],
+          lastSyncedAt: syncedAt,
+        });
 
         return {
-          succeeded: false,
+          category: 'no_achievements',
           appId,
-          reason:
-            'Player achievement unlock state is private or unavailable for this game.',
+          achievementsSynced: result.achievementsSynced,
+          profileAchievementsSynced: result.profileAchievementsSynced,
+        };
+      }
+
+      const metadataResult =
+        await this.achievementSyncDataService.applyGameAchievementMetadata({
+          steamAppId: appId,
+          achievements: metadataAchievements,
+        });
+
+      const playerAchievements = await this.fetchPlayerAchievementsOrNull(
+        steamId,
+        appId,
+      );
+
+      if (playerAchievements === null || playerAchievements.isPrivateOrUnavailable) {
+        return {
+          category: 'metadata_only',
+          appId,
+          reason: 'Player achievements unavailable',
           achievementsSynced: metadataResult.achievementsSynced,
           profileAchievementsSynced: 0,
         };
       }
 
+      const mergedAchievements = mergeAchievementData(
+        schema.achievements,
+        globalPercentages,
+        playerAchievements.achievements,
+      );
       const profileAchievementStates = playerAchievements.achievements.map(
         (achievement): SyncedProfileAchievementInput => ({
           apiName: achievement.apiName,
@@ -357,23 +396,38 @@ export class SyncWorkflowService {
         steamAppId: appId,
         achievements: mergedAchievements,
         profileAchievements: profileAchievementStates,
-        lastSyncedAt: syncedAt,
+        lastSyncedAt: new Date(),
       });
 
       return {
-        succeeded: true,
+        category: 'full_success',
         appId,
         achievementsSynced: result.achievementsSynced,
         profileAchievementsSynced: result.profileAchievementsSynced,
       };
     } catch (error: unknown) {
       return {
-        succeeded: false,
+        category: 'failed',
         appId,
         reason: toSafeGameSyncErrorMessage(error),
         achievementsSynced: 0,
         profileAchievementsSynced: 0,
       };
+    }
+  }
+
+  private async fetchPlayerAchievementsOrNull(
+    steamId: string,
+    appId: number,
+  ): Promise<SteamPlayerAchievementResult | null> {
+    try {
+      return await this.steamApiClient.getPlayerAchievements({
+        steamId,
+        appId,
+        language: 'english',
+      });
+    } catch {
+      return null;
     }
   }
 
@@ -401,21 +455,39 @@ interface AchievementMetadataInput {
   gamesRequested: number;
   gamesProcessed: number;
   gamesSucceeded: number;
+  gamesMetadataOnly: number;
+  gamesNoAchievements: number;
   gamesFailed: number;
   achievementsSynced: number;
   profileAchievementsSynced: number;
+  unlockStateUnavailableApps: FailedAppMetadata[];
   failedApps: FailedAppMetadata[];
 }
 
 interface SuccessfulGameAchievementSync {
-  succeeded: true;
+  category: 'full_success';
+  appId: number;
+  achievementsSynced: number;
+  profileAchievementsSynced: number;
+}
+
+interface MetadataOnlyGameAchievementSync {
+  category: 'metadata_only';
+  appId: number;
+  reason: string;
+  achievementsSynced: number;
+  profileAchievementsSynced: number;
+}
+
+interface NoAchievementsGameAchievementSync {
+  category: 'no_achievements';
   appId: number;
   achievementsSynced: number;
   profileAchievementsSynced: number;
 }
 
 interface FailedGameAchievementSync {
-  succeeded: false;
+  category: 'failed';
   appId: number;
   reason: string;
   achievementsSynced: number;
@@ -424,6 +496,8 @@ interface FailedGameAchievementSync {
 
 type GameAchievementSyncResult =
   | SuccessfulGameAchievementSync
+  | MetadataOnlyGameAchievementSync
+  | NoAchievementsGameAchievementSync
   | FailedGameAchievementSync;
 
 export function toSafeSyncErrorMessage(error: unknown): string {
@@ -465,9 +539,12 @@ function createAchievementMetadata(
     gamesRequested: input.gamesRequested,
     gamesProcessed: input.gamesProcessed,
     gamesSucceeded: input.gamesSucceeded,
+    gamesMetadataOnly: input.gamesMetadataOnly,
+    gamesNoAchievements: input.gamesNoAchievements,
     gamesFailed: input.gamesFailed,
     achievementsSynced: input.achievementsSynced,
     profileAchievementsSynced: input.profileAchievementsSynced,
+    unlockStateUnavailableApps: input.unlockStateUnavailableApps,
     failedApps: input.failedApps,
   };
 
@@ -564,6 +641,30 @@ async function mapWithConcurrency<T, R>(
 
 function sumBy<T>(items: T[], selector: (item: T) => number): number {
   return items.reduce((total, item) => total + selector(item), 0);
+}
+
+function isFullSuccessGameAchievementSync(
+  result: GameAchievementSyncResult,
+): result is SuccessfulGameAchievementSync {
+  return result.category === 'full_success';
+}
+
+function isMetadataOnlyGameAchievementSync(
+  result: GameAchievementSyncResult,
+): result is MetadataOnlyGameAchievementSync {
+  return result.category === 'metadata_only';
+}
+
+function isNoAchievementsGameAchievementSync(
+  result: GameAchievementSyncResult,
+): result is NoAchievementsGameAchievementSync {
+  return result.category === 'no_achievements';
+}
+
+function isFailedGameAchievementSync(
+  result: GameAchievementSyncResult,
+): result is FailedGameAchievementSync {
+  return result.category === 'failed';
 }
 
 function toSafeGameSyncErrorMessage(error: unknown): string {
