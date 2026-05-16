@@ -31,8 +31,12 @@ export default function HomePage() {
         <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
           Open a stored Steam profile dashboard, review seeded progress, and
           enqueue backend sync jobs through the generated API SDK. Real Steam
-          profiles need public profile and game details for live sync.
+          profiles need public profile and game details for full sync.
         </p>
+        <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-600">
+          <li>Achievement unlock state may be unknown if Steam denies player achievement access.</li>
+          <li>Sync jobs are queued, and status appears in the profile sync runs.</li>
+        </ul>
 
         <form className="mt-8 grid gap-3 md:grid-cols-[1fr_auto]" onSubmit={handleSubmit}>
           <label className="grid gap-2">

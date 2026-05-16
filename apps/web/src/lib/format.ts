@@ -32,3 +32,19 @@ export function getErrorMessage(error: unknown): string {
 
   return 'Request failed.';
 }
+
+export function getHttpStatus(error: unknown): number | undefined {
+  if (
+    typeof error === 'object' &&
+    error !== null &&
+    'response' in error &&
+    typeof error.response === 'object' &&
+    error.response !== null &&
+    'status' in error.response &&
+    typeof error.response.status === 'number'
+  ) {
+    return error.response.status;
+  }
+
+  return undefined;
+}
