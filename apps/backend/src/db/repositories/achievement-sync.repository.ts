@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { sql } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 
 import { DatabaseService } from '../database.service';
-import { achievements, profileAchievements } from '../schema';
+import { achievements, games, profileAchievements } from '../schema';
 
 export interface SyncedAchievementInput {
   apiName: string;
@@ -34,6 +34,15 @@ export interface ApplyGameAchievementSyncResult {
   progress: AchievementProgressResult;
 }
 
+export interface ApplyGameAchievementMetadataInput {
+  steamAppId: number;
+  achievements: SyncedAchievementInput[];
+}
+
+export interface ApplyGameAchievementMetadataResult {
+  achievementsSynced: number;
+}
+
 export interface AchievementProgressResult extends Record<string, unknown> {
   totalAchievements: number;
   unlockedAchievements: number;
@@ -43,6 +52,51 @@ export interface AchievementProgressResult extends Record<string, unknown> {
 @Injectable()
 export class AchievementSyncRepository {
   constructor(private readonly databaseService: DatabaseService) {}
+
+  async applyGameAchievementMetadata(
+    input: ApplyGameAchievementMetadataInput,
+  ): Promise<ApplyGameAchievementMetadataResult> {
+    return this.databaseService.db.transaction(async (tx) => {
+      for (const achievement of input.achievements) {
+        await tx
+          .insert(achievements)
+          .values({
+            steamAppId: input.steamAppId,
+            apiName: achievement.apiName,
+            displayName: achievement.displayName,
+            description: achievement.description,
+            iconUrl: achievement.iconUrl,
+            iconGrayUrl: achievement.iconGrayUrl,
+            globalPercentage: achievement.globalPercentage,
+            hidden: achievement.hidden,
+          })
+          .onConflictDoUpdate({
+            target: [achievements.steamAppId, achievements.apiName],
+            set: {
+              displayName: achievement.displayName,
+              description: achievement.description,
+              iconUrl: achievement.iconUrl,
+              iconGrayUrl: achievement.iconGrayUrl,
+              globalPercentage: achievement.globalPercentage,
+              hidden: achievement.hidden,
+              updatedAt: sql`now()`,
+            },
+          });
+      }
+
+      await tx
+        .update(games)
+        .set({
+          hasAchievements: input.achievements.length > 0,
+          updatedAt: sql`now()`,
+        })
+        .where(eq(games.steamAppId, input.steamAppId));
+
+      return {
+        achievementsSynced: input.achievements.length,
+      };
+    });
+  }
 
   async applyGameAchievementSync(
     input: ApplyGameAchievementSyncInput,

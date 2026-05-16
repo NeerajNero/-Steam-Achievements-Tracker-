@@ -44,6 +44,7 @@ services:
       NODE_ENV: development
       PORT: 3000
       OPENAPI_ENABLED: ${OPENAPI_ENABLED:-true}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/steam_tracker}
       STEAM_API_KEY: ${STEAM_API_KEY:-}
       STEAM_API_BASE_URL: ${STEAM_API_BASE_URL:-https://api.steampowered.com}
@@ -67,7 +68,32 @@ services:
       - backend-node-modules:/workspace/apps/backend/node_modules
     command: pnpm dev
 
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile
+      target: development
+    container_name: steam-tracker-web
+    depends_on:
+      backend:
+        condition: service_started
+    environment:
+      NODE_ENV: development
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3000}
+      WATCHPACK_POLLING: "true"
+    ports:
+      - "${WEB_PORT:-3001}:3001"
+    volumes:
+      - .:/workspace
+      - root-node-modules:/workspace/node_modules
+      - web-node-modules:/workspace/apps/web/node_modules
+      - client-sdk-node-modules:/workspace/libs/client-sdk/node_modules
+    command: pnpm dev
+
 volumes:
   postgres-data:
   root-node-modules:
   backend-node-modules:
+  web-node-modules:
+  client-sdk-node-modules:

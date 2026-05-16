@@ -10,6 +10,7 @@ import { ProfilesService } from '../profiles/profiles.service';
 import type { AchievementListQueryDto } from './dto/achievement-list-query.dto';
 import type {
   AchievementsResponseDto,
+  AchievementUnlockState,
   AchievementWithUnlockStateResponseDto,
 } from './dto/achievements-response.dto';
 import type {
@@ -93,9 +94,20 @@ function mapAchievementWithUnlockState(
     globalPercentage: row.achievement.globalPercentage,
     hidden: row.achievement.hidden,
     achieved: row.profileAchievement?.achieved ?? false,
+    unlockState: getUnlockState(row),
     unlockedAt: toIsoOrNull(row.profileAchievement?.unlockedAt ?? null),
     lastSyncedAt: toIsoOrNull(row.profileAchievement?.lastSyncedAt ?? null),
   };
+}
+
+function getUnlockState(
+  row: AchievementWithUnlockState,
+): AchievementUnlockState {
+  if (row.profileAchievement === null) {
+    return 'unknown';
+  }
+
+  return row.profileAchievement.achieved ? 'unlocked' : 'locked';
 }
 
 function mapRarestAchievement(

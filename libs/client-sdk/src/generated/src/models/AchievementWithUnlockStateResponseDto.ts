@@ -68,6 +68,12 @@ export interface AchievementWithUnlockStateResponseDto {
      */
     achieved: boolean;
     /**
+     * unknown means achievement metadata exists but player unlock state has not been synced or is unavailable.
+     * @type {string}
+     * @memberof AchievementWithUnlockStateResponseDto
+     */
+    unlockState: AchievementWithUnlockStateResponseDtoUnlockStateEnum;
+    /**
      * 
      * @type {string}
      * @memberof AchievementWithUnlockStateResponseDto
@@ -81,6 +87,18 @@ export interface AchievementWithUnlockStateResponseDto {
     lastSyncedAt?: string | null;
 }
 
+
+/**
+ * @export
+ */
+export const AchievementWithUnlockStateResponseDtoUnlockStateEnum = {
+    Unlocked: 'unlocked',
+    Locked: 'locked',
+    Unknown: 'unknown'
+} as const;
+export type AchievementWithUnlockStateResponseDtoUnlockStateEnum = typeof AchievementWithUnlockStateResponseDtoUnlockStateEnum[keyof typeof AchievementWithUnlockStateResponseDtoUnlockStateEnum];
+
+
 /**
  * Check if a given object implements the AchievementWithUnlockStateResponseDto interface.
  */
@@ -88,6 +106,7 @@ export function instanceOfAchievementWithUnlockStateResponseDto(value: object): 
     if (!('apiName' in value) || value['apiName'] === undefined) return false;
     if (!('hidden' in value) || value['hidden'] === undefined) return false;
     if (!('achieved' in value) || value['achieved'] === undefined) return false;
+    if (!('unlockState' in value) || value['unlockState'] === undefined) return false;
     return true;
 }
 
@@ -109,6 +128,7 @@ export function AchievementWithUnlockStateResponseDtoFromJSONTyped(json: any, ig
         'globalPercentage': json['globalPercentage'] == null ? undefined : json['globalPercentage'],
         'hidden': json['hidden'],
         'achieved': json['achieved'],
+        'unlockState': json['unlockState'],
         'unlockedAt': json['unlockedAt'] == null ? undefined : json['unlockedAt'],
         'lastSyncedAt': json['lastSyncedAt'] == null ? undefined : json['lastSyncedAt'],
     };
@@ -128,6 +148,7 @@ export function AchievementWithUnlockStateResponseDtoToJSON(value?: AchievementW
         'globalPercentage': value['globalPercentage'],
         'hidden': value['hidden'],
         'achieved': value['achieved'],
+        'unlockState': value['unlockState'],
         'unlockedAt': value['unlockedAt'],
         'lastSyncedAt': value['lastSyncedAt'],
     };
