@@ -96,6 +96,19 @@ Account and public profile SDK calls use the same shared configuration. The
 frontend should use the generated `AccountApi` for authenticated settings and
 `PublicProfilesApi` for `/public-profiles/:slug`.
 
+Global game browsing uses the generated `GamesApi` methods for `/games`,
+`/games/:steamAppId`, `/games/:steamAppId/achievements`, and
+`/games/:steamAppId/players`. These are DB-only read endpoints and should still
+be consumed through SDK-backed React Query hooks, not raw fetch wrappers.
+
+Leaderboard browsing uses generated `LeaderboardsApi` methods, and profile
+snapshot reads use generated `SnapshotsApi` methods. These are also DB-only read
+models backed by stored profile snapshots.
+
+Guides and roadmaps use generated `GuidesApi` methods. Public methods read
+published public game guides, while write/account methods require the auth
+session cookie and are limited to guide authors or admin/moderator users.
+
 Generated DTOs and enums should be reused directly in frontend hooks and
 components. Frontend-local types should describe only UI state, component props,
 or derived view models.
@@ -151,3 +164,11 @@ pnpm --filter @steam-achievement/web build
 - `AccountApi` is generated for authenticated account, preferences, and public
   profile settings endpoints.
 - `PublicProfilesApi` is generated for public slug lookups.
+- `GamesApi` includes both profile-scoped game endpoints and public global game
+  browsing endpoints.
+- `LeaderboardsApi` is generated for `GET /leaderboards` and
+  `GET /leaderboards/:type`.
+- `SnapshotsApi` is generated for profile snapshot reads and local/manual
+  snapshot creation.
+- `GuidesApi` is generated for public game guide reads and authenticated guide
+  creation/editing.

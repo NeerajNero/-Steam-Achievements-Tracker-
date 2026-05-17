@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { AccountSettingsPanel } from '@/features/account/components/account-settings-panel';
@@ -17,6 +18,12 @@ export default function SettingsPage(): ReactNode {
         <p className="mt-2 text-sm text-slate-600">
           Manage your Steam-only account, linked profile, preferences, and public profile.
         </p>
+        <Link
+          className="mt-3 inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          href="/account/guides"
+        >
+          Manage guides
+        </Link>
       </header>
       <AccountSettingsPanel />
     </main>

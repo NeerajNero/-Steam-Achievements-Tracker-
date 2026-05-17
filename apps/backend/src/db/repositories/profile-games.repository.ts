@@ -15,7 +15,7 @@ import {
 import type { InferInsertModel, InferSelectModel, SQL } from 'drizzle-orm';
 
 import { DatabaseService } from '../database.service';
-import { games, profileGames } from '../schema';
+import { games, profileGames, publicProfiles, steamProfiles } from '../schema';
 import type { Game } from './games.repository';
 
 export type ProfileGame = InferSelectModel<typeof profileGames>;
@@ -80,6 +80,30 @@ export type UpsertOwnedGameProgressInput = Pick<
   'profileId' | 'gameId' | 'playtimeMinutes' | 'playtimeTwoWeeksMinutes'
 > &
   Partial<Pick<NewProfileGame, 'lastPlayedAt' | 'lastSyncedAt'>>;
+
+export type GlobalGamePlayerStatus = 'all' | 'completed' | 'incomplete';
+export type GlobalGamePlayerSort = 'completion' | 'playtime' | 'recently_played';
+
+export interface GlobalGamePlayerFilters {
+  status?: GlobalGamePlayerStatus;
+  sort?: GlobalGamePlayerSort;
+  order?: SortOrder;
+  limit: number;
+  offset: number;
+}
+
+export interface PublicTrackedPlayerForGame {
+  steamId: string;
+  personaName: string | null;
+  avatarUrl: string | null;
+  profileUrl: string | null;
+  playtimeMinutes: number;
+  totalAchievements: number;
+  unlockedAchievements: number;
+  completionPercentage: number;
+  lastPlayedAt: Date | null;
+  publicSlug: string | null;
+}
 
 @Injectable()
 export class ProfileGamesRepository {
@@ -318,6 +342,52 @@ export class ProfileGamesRepository {
     return rows[0]?.averageCompletionPercentage ?? 0;
   }
 
+  async findPublicTrackedPlayersForGame(
+    steamAppId: number,
+    filters: GlobalGamePlayerFilters,
+  ): Promise<PublicTrackedPlayerForGame[]> {
+    return this.databaseService.db
+      .select({
+        steamId: steamProfiles.steamId,
+        personaName: steamProfiles.personaName,
+        avatarUrl: steamProfiles.avatarUrl,
+        profileUrl: steamProfiles.profileUrl,
+        playtimeMinutes: profileGames.playtimeMinutes,
+        totalAchievements: profileGames.totalAchievements,
+        unlockedAchievements: profileGames.unlockedAchievements,
+        completionPercentage: profileGames.completionPercentage,
+        lastPlayedAt: profileGames.lastPlayedAt,
+        publicSlug: publicProfiles.slug,
+      })
+      .from(profileGames)
+      .innerJoin(games, eq(profileGames.gameId, games.id))
+      .innerJoin(steamProfiles, eq(profileGames.profileId, steamProfiles.id))
+      .leftJoin(
+        publicProfiles,
+        and(
+          eq(publicProfiles.steamProfileId, steamProfiles.id),
+          eq(publicProfiles.isPublic, true),
+        ),
+      )
+      .where(and(...this.buildGlobalPlayerConditions(steamAppId, filters)))
+      .orderBy(...this.buildGlobalPlayerOrder(filters))
+      .limit(filters.limit)
+      .offset(filters.offset);
+  }
+
+  async countPublicTrackedPlayersForGame(
+    steamAppId: number,
+    filters: Pick<GlobalGamePlayerFilters, 'status'>,
+  ): Promise<number> {
+    const rows = await this.databaseService.db
+      .select({ total: sql<number>`cast(count(*) as int)` })
+      .from(profileGames)
+      .innerJoin(games, eq(profileGames.gameId, games.id))
+      .where(and(...this.buildGlobalPlayerConditions(steamAppId, filters)));
+
+    return rows[0]?.total ?? 0;
+  }
+
   private buildLibraryConditions(
     profileId: string,
     filters: Pick<GameLibraryFilters, 'search' | 'status'>,
@@ -373,6 +443,56 @@ export class ProfileGamesRepository {
       case 'completion':
       default:
         return [direction(profileGames.completionPercentage), asc(games.name)];
+    }
+  }
+
+  private buildGlobalPlayerConditions(
+    steamAppId: number,
+    filters: Pick<GlobalGamePlayerFilters, 'status'>,
+  ): SQL[] {
+    const conditions: SQL[] = [eq(games.steamAppId, steamAppId)];
+
+    switch (filters.status) {
+      case 'completed':
+        conditions.push(eq(profileGames.completionPercentage, 100));
+        break;
+      case 'incomplete':
+        conditions.push(lt(profileGames.completionPercentage, 100));
+        break;
+      case 'all':
+      case undefined:
+        break;
+    }
+
+    return conditions;
+  }
+
+  private buildGlobalPlayerOrder(filters: GlobalGamePlayerFilters): SQL[] {
+    const sort = filters.sort ?? 'completion';
+    const order = filters.order ?? 'desc';
+    const direction = order === 'asc' ? asc : desc;
+
+    switch (sort) {
+      case 'playtime':
+        return [
+          direction(profileGames.playtimeMinutes),
+          asc(steamProfiles.personaName),
+          asc(steamProfiles.steamId),
+        ];
+      case 'recently_played':
+        return [
+          direction(profileGames.lastPlayedAt),
+          asc(steamProfiles.personaName),
+          asc(steamProfiles.steamId),
+        ];
+      case 'completion':
+      default:
+        return [
+          direction(profileGames.completionPercentage),
+          desc(profileGames.unlockedAchievements),
+          asc(steamProfiles.personaName),
+          asc(steamProfiles.steamId),
+        ];
     }
   }
 }

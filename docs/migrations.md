@@ -34,7 +34,7 @@ schema_migrations (
 
 Status and pending commands do not create the tracking table. If the table does not exist yet, every SQL file is treated as pending.
 
-## Current Initial Migration
+## Current Migrations
 
 The current local/dev baseline is:
 
@@ -52,12 +52,26 @@ that local database before applying the squashed baseline. Do not attempt to run
 the squashed `0001` on top of a database that already has the old tables.
 
 After this reset point, treat applied migrations as immutable again. Future
-schema changes must be new numbered forward migrations such as:
+schema changes must be new numbered forward migrations.
+
+The current forward migration after the baseline is:
 
 ```txt
-0002-add-example-feature.sql
-0003-add-profile-snapshots.sql
+0002-add-profile-snapshots-and-leaderboards.sql
 ```
+
+It adds `profile_snapshots` and `create_profile_snapshot(...)` for snapshot and
+leaderboard v1 reads.
+
+The next forward migration is:
+
+```txt
+0003-add-guides-foundation.sql
+```
+
+It adds Steam game guides, ordered guide sections, and guide-to-achievement
+mappings. The migration uses status/archive lifecycle fields instead of cascade
+deletes or hard-deleting guide documents.
 
 ## Create A Migration
 
@@ -173,7 +187,7 @@ Use clear numbered filenames:
 
 ```txt
 0001-initial-platform-schema.sql
-0002-add-profile-snapshots.sql
+0002-add-profile-snapshots-and-leaderboards.sql
 0003-add-achievement-goals.sql
 ```
 

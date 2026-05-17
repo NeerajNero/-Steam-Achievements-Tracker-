@@ -24,6 +24,10 @@ The product can take inspiration from public profile/stat tracking, completion d
 ### V1
 
 - Better filtering and sorting for games and achievements.
+- Global Steam game browsing pages.
+- Snapshot-backed public leaderboards for completion percentage, completed
+  games, unlocked achievements, and rarest unlocks.
+- Basic Steam game guides and achievement roadmaps.
 - Completion bands such as complete, close, started, untouched, and low-progress.
 - Recently completed games and recently unlocked achievements.
 - Data freshness indicators per profile and per game.
@@ -33,15 +37,13 @@ The product can take inspiration from public profile/stat tracking, completion d
 
 - Public profile pages.
 - Shareable completion summaries.
-- Profile snapshots over time.
 - Historical progress charts.
 - Goal tracking for selected games or achievements.
+- Richer guide editing and achievement planning workflows.
 
 ### Later
 
-- Multi-platform identity support.
 - Import/export options.
-- Guide integration if licensing and source quality are acceptable.
 - External profile embeds or widgets.
 
 ## Quality-Of-Life Features
@@ -93,6 +95,7 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Completion distribution across the owned library.
 - Games grouped by practical completion effort.
 - Stale progress detection for games with old playtime but unfinished achievements.
+- Latest profile snapshots for leaderboard and progress foundations.
 
 ### V2
 
@@ -111,11 +114,12 @@ The product can take inspiration from public profile/stat tracking, completion d
 
 ### MVP
 
-- No friends, social comparison, leaderboards, or public profile publishing.
+- No friends or social comparison.
 
 ### V1
 
 - Optional share links for static profile summaries if public profile support is ready.
+- Public leaderboard v1 from latest profile snapshots.
 
 ### V2
 
@@ -126,7 +130,7 @@ The product can take inspiration from public profile/stat tracking, completion d
 ### Later
 
 - Friend comparison.
-- Completion leaderboards.
+- Materialized, moderated, or group-specific leaderboards.
 - Similar-player comparisons.
 - Community showcases.
 
@@ -142,11 +146,13 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Backlog optimization using remaining achievements, rarity, and playtime.
 - Suggested next games to complete.
 - Suggested achievements to target in games already close to 100%.
+- Basic authored roadmaps for game completion.
 
 ### V2
 
 - Achievement goals.
 - Completion plans by game.
+- Guide comments, voting, or moderation after dedicated models exist.
 - Ignore or defer games from recommendation calculations.
 - Weekly or monthly completion targets.
 

@@ -97,7 +97,12 @@ export function PublicProfileView({
                 key={game.steamAppId}
               >
                 <div>
-                  <p className="font-medium text-slate-950">{game.name}</p>
+                  <Link
+                    className="font-medium text-blue-700 hover:text-blue-900"
+                    href={`/games/${game.steamAppId}`}
+                  >
+                    {game.name}
+                  </Link>
                   <p className="text-sm text-slate-600">
                     {game.remainingAchievements} remaining
                   </p>

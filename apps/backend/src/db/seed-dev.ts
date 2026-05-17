@@ -7,6 +7,7 @@ import {
   games,
   profileAchievements,
   profileGames,
+  profileSnapshots,
   steamProfiles,
   syncRuns,
 } from './schema';
@@ -317,6 +318,7 @@ async function seedDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Prom
     }
 
     await seedSyncRuns(tx, profile.id);
+    await seedSnapshotIfMissing(tx, profile.id);
   });
 }
 
@@ -341,6 +343,10 @@ async function resetDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Pro
     const gameIds = gameRows.map((row) => row.id);
 
     if (profileId !== undefined) {
+      await tx
+        .delete(profileSnapshots)
+        .where(eq(profileSnapshots.steamProfileId, profileId));
+
       await tx
         .delete(syncRuns)
         .where(
@@ -400,6 +406,22 @@ async function resetDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Pro
         ),
       );
   });
+}
+
+async function seedSnapshotIfMissing(
+  tx: Parameters<Parameters<ReturnType<typeof drizzle<typeof schema>>['transaction']>[0]>[0],
+  profileId: string,
+): Promise<void> {
+  const rows = await tx
+    .select({ total: sql<number>`cast(count(*) as int)` })
+    .from(profileSnapshots)
+    .where(eq(profileSnapshots.steamProfileId, profileId));
+
+  if ((rows[0]?.total ?? 0) > 0) {
+    return;
+  }
+
+  await tx.execute(sql`select create_profile_snapshot(${profileId}, 'manual')`);
 }
 
 async function seedSyncRuns(

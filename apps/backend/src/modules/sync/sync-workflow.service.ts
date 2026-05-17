@@ -1,4 +1,8 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 
 import {
   AchievementSyncDataService,
@@ -10,6 +14,7 @@ import {
   ProfileGamesDataService,
   type ProfileGameWithGame,
 } from '../../db/services/profile-games-data.service';
+import { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
 import {
   SteamProfilesDataService,
   type SteamProfile,
@@ -37,14 +42,18 @@ import type { SyncScope } from './dto/sync-request.dto';
 import type { SyncJobData } from './sync-job.types';
 
 const ACHIEVEMENT_SYNC_GAME_CONCURRENCY = 3;
+const SYNC_SNAPSHOT_DEDUP_WINDOW_MS = 5 * 60 * 1000;
 
 @Injectable()
 export class SyncWorkflowService {
+  private readonly logger = new Logger(SyncWorkflowService.name);
+
   constructor(
     private readonly steamApiClient: CachedSteamApiClient,
     private readonly steamProfilesDataService: SteamProfilesDataService,
     private readonly gamesDataService: GamesDataService,
     private readonly profileGamesDataService: ProfileGamesDataService,
+    private readonly profileSnapshotsDataService: ProfileSnapshotsDataService,
     private readonly achievementSyncDataService: AchievementSyncDataService,
     private readonly syncRunsDataService: SyncRunsDataService,
   ) {}
@@ -80,6 +89,7 @@ export class SyncWorkflowService {
 
     const profile = await this.upsertSteamProfileFromSummary(playerSummary);
     await this.syncRunsDataService.assignProfile(syncRunId, profile.id);
+    await this.createSyncCompletedSnapshotIfProfileHasGames(profile.id);
 
     return requireSyncRun(
       await this.syncRunsDataService.markSuccess(syncRunId, {
@@ -133,6 +143,8 @@ export class SyncWorkflowService {
     );
 
     if (profileGames.length === 0 && missingAppFailures.length === 0) {
+      await this.createSyncCompletedSnapshotIfProfileHasGames(profile.id);
+
       return requireSyncRun(
         await this.syncRunsDataService.markSuccess(
           syncRunId,
@@ -200,6 +212,8 @@ export class SyncWorkflowService {
     });
 
     if (usefulResultsCount > 0 && (metadataOnlyResults.length > 0 || failedApps.length > 0)) {
+      await this.createSyncCompletedSnapshotIfProfileHasGames(profile.id);
+
       return requireSyncRun(
         await this.syncRunsDataService.markPartialSuccess(
           syncRunId,
@@ -210,6 +224,8 @@ export class SyncWorkflowService {
     }
 
     if (usefulResultsCount > 0 || failedApps.length === 0) {
+      await this.createSyncCompletedSnapshotIfProfileHasGames(profile.id);
+
       return requireSyncRun(
         await this.syncRunsDataService.markSuccess(syncRunId, metadata),
       );
@@ -246,6 +262,7 @@ export class SyncWorkflowService {
     await this.steamProfilesDataService.updateSyncState(profile.id, {
       lastSyncedAt: syncedAt,
     });
+    await this.createSyncCompletedSnapshotIfProfileHasGames(profile.id);
 
     return requireSyncRun(
       await this.syncRunsDataService.markSuccess(syncRunId, {
@@ -442,6 +459,42 @@ export class SyncWorkflowService {
         input.metadata,
       ),
     );
+  }
+
+  private async createSyncCompletedSnapshotIfProfileHasGames(
+    profileId: string,
+  ): Promise<void> {
+    const summary = await this.profileGamesDataService.getProfileGameSummary(
+      profileId,
+    );
+
+    if (summary.totalGames === 0) {
+      return;
+    }
+
+    try {
+      const latestSnapshot =
+        await this.profileSnapshotsDataService.findLatestBySteamProfileId(
+          profileId,
+        );
+
+      if (
+        latestSnapshot !== null &&
+        Date.now() - latestSnapshot.createdAt.getTime() <
+          SYNC_SNAPSHOT_DEDUP_WINDOW_MS
+      ) {
+        return;
+      }
+
+      await this.profileSnapshotsDataService.createForProfileId(
+        profileId,
+        'sync_completed',
+      );
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Profile snapshot creation failed after sync profileId=${profileId} reason="${toSafeSnapshotErrorMessage(error)}"`,
+      );
+    }
   }
 }
 
@@ -685,4 +738,12 @@ function toSafeGameSyncErrorMessage(error: unknown): string {
   }
 
   return 'Achievement sync failed for this game.';
+}
+
+function toSafeSnapshotErrorMessage(error: unknown): string {
+  if (error instanceof Error && error.message.length > 0) {
+    return 'Snapshot creation failed.';
+  }
+
+  return 'Snapshot creation failed.';
 }

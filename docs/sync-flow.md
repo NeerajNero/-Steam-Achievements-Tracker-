@@ -47,9 +47,11 @@ The endpoint returns `202 Accepted` with queued sync information:
 4. If enqueue fails, the `sync_runs` row is marked `failed`.
 5. `SyncProcessor` consumes the job and marks the run `running`.
 6. `SyncWorkflowService` executes the profile, games, or achievements workflow.
-7. The workflow marks the run `success`, `partial_success`, or `failed` with
+7. After a successful or partial successful workflow, the backend creates a
+   profile snapshot when the profile has stored games.
+8. The workflow marks the run `success`, `partial_success`, or `failed` with
    safe metadata.
-8. Read endpoints and dashboards continue to read status from PostgreSQL.
+9. Read endpoints and dashboards continue to read status from PostgreSQL.
 
 Redis job state is operational only. Product-facing status is stored in
 `sync_runs`.
@@ -219,6 +221,26 @@ Achievement sync metadata includes:
   ]
 }
 ```
+
+## Snapshot Creation
+
+`SyncWorkflowService` creates a `profile_snapshots` row after `success` or
+`partial_success` sync completion when the profile has stored games. The
+snapshot is created by the PostgreSQL function
+`create_profile_snapshot(profile_id, 'sync_completed')`.
+
+Snapshot creation is best-effort: a snapshot failure is logged with a safe
+message and does not turn an otherwise successful sync into a failed sync. This
+keeps the sync result focused on Steam data persistence while still feeding
+leaderboard and historical-progress reads from stored aggregate data.
+
+For v1, one snapshot per completed sync is acceptable. A later scheduled sync
+or retention policy can reduce duplicate snapshots if they become noisy.
+
+The sync workflow applies a short dedupe guard: if the latest snapshot for the
+profile was created within the last five minutes, the workflow skips creating
+another sync-created snapshot. Manual owner-created snapshots are handled by the
+HTTP snapshots endpoint and are not blocked by this sync dedupe guard.
 
 ## Boundaries
 

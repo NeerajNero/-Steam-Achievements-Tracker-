@@ -178,6 +178,127 @@ Response shape:
 
 ## Games
 
+Global game endpoints are public, database-backed, and read only. They do not
+call Steam at request time.
+
+### `GET /games`
+
+Lists games tracked in the platform database.
+
+Query parameters:
+- `search`: optional case-insensitive game name search.
+- `hasAchievements`: optional boolean.
+- `sort`: `name`, `tracked_players`, `completion_rate`, `achievements`, or
+  `playtime`.
+- `order`: `asc` or `desc`.
+- `limit`: integer from `1` to `100`; default `25`.
+- `offset`: non-negative integer; default `0`.
+
+Response shape:
+- `items`: game metadata plus tracked player count, achievement count, average
+  completion, completed players, and total playtime.
+- `total`
+- `limit`
+- `offset`
+
+### `GET /games/:steamAppId`
+
+Returns canonical game metadata and aggregate tracked-player stats.
+
+Response shape:
+- `game`: stored Steam app metadata.
+- `stats`: tracked players, completed players, total achievements, average
+  completion percentage, total playtime, and average playtime.
+
+Returns `404` when the Steam app is not tracked in the database.
+
+### `GET /games/:steamAppId/achievements`
+
+Returns public achievement metadata for a tracked game.
+
+Query parameters:
+- `search`: optional case-insensitive achievement API/display name search.
+- `hidden`: `all`, `visible`, or `hidden`.
+- `sort`: `rarity` or `name`.
+- `order`: `asc` or `desc`.
+- `limit`: integer from `1` to `500`; default `100`.
+- `offset`: non-negative integer; default `0`.
+
+Returns `404` when the Steam app is not tracked in the database.
+
+### `GET /games/:steamAppId/players`
+
+Returns public tracked player progress for a game.
+
+Query parameters:
+- `status`: `all`, `completed`, or `incomplete`.
+- `sort`: `completion`, `playtime`, or `recently_played`.
+- `order`: `asc` or `desc`.
+- `limit`: integer from `1` to `100`; default `25`.
+- `offset`: non-negative integer; default `0`.
+
+Player rows include public Steam profile metadata and `publicSlug` when the
+linked public profile is published. They do not expose app user private fields,
+preferences, sessions, or token data.
+
+## Guides
+
+Guide endpoints are Steam-only and database-backed. The frontend must consume
+them through generated `GuidesApi` SDK methods.
+
+### `GET /games/:steamAppId/guides`
+
+Lists published public guides for a tracked Steam game.
+
+Query parameters:
+- `search`: optional guide title/summary search.
+- `limit`: integer from `1` to `100`; default `20`.
+- `offset`: non-negative integer; default `0`.
+
+Draft, archived, private, and unlisted guides are not returned from this public
+endpoint.
+
+### `GET /games/:steamAppId/guides/:slug`
+
+Returns one published public guide with ordered sections and attached
+achievement metadata. Returns `404` when the guide is missing or not public.
+
+### `POST /games/:steamAppId/guides`
+
+Requires an active Sign in with Steam session. Creates a draft guide for a
+tracked Steam game and generates a game-scoped slug from the title. Slug
+conflicts append a suffix.
+
+### `PATCH /guides/:guideId`
+
+Requires auth. Only the guide author, admin, or moderator can update a guide.
+Allowed fields are title, summary, visibility, estimated difficulty/hours,
+spoiler flag, and status. Publishing sets `publishedAt` the first time a guide
+enters `published`.
+
+### `GET /account/guides`
+
+Requires auth. Returns the signed-in user's guides, including draft, unlisted,
+private, and archived guides.
+
+### `POST /guides/:guideId/sections`
+
+Requires author/admin/moderator access. Adds a plain-text section to a guide.
+
+### `PATCH /guides/:guideId/sections/:sectionId`
+
+Requires author/admin/moderator access. Updates a guide section.
+
+### `POST /guides/:guideId/achievements`
+
+Requires author/admin/moderator access. Attaches one or more achievement IDs to
+a guide. Every achievement must belong to the same Steam app as the guide.
+
+### `DELETE /guides/:guideId/achievements/:achievementId`
+
+Requires author/admin/moderator access. Removes a guide-achievement mapping.
+The mapping row is not historical progress data, so hard-deleting it is allowed.
+
 ### `GET /profiles/:steamId/games`
 
 Returns the stored game library for one Steam profile.
@@ -264,6 +385,77 @@ Query parameters:
 
 Achievements without `globalPercentage` are excluded and results are ordered by
 global percentage ascending.
+
+## Snapshots
+
+Profile snapshots are stored aggregate stats for one Steam profile. They are
+used as the v1 foundation for fast leaderboard reads and historical progress
+views.
+
+### `GET /profiles/:steamId/snapshots`
+
+Returns stored snapshots for a Steam profile, newest first.
+
+Query parameters:
+- `limit`: integer from `1` to `100`; default `20`.
+- `offset`: non-negative integer; default `0`.
+
+Response shape:
+- `steamId`
+- `items`: snapshot id, total/completed games, total/unlocked/remaining
+  achievements, average completion, total playtime, rarest unlocked global
+  percentage, reason, and creation timestamp.
+- `total`
+- `limit`
+- `offset`
+
+### `POST /profiles/:steamId/snapshots`
+
+Creates a manual snapshot from the current stored database state.
+
+Auth behavior:
+- returns `401` without an active Sign in with Steam session;
+- returns `403` when the authenticated user has not claimed the Steam profile;
+- allows `admin` and `moderator` users to create snapshots for any profile.
+
+Automatic snapshots are also created after successful or partial successful
+syncs and do not require an HTTP user session. Sync-created snapshots are
+deduped when the latest snapshot for the same profile was created within the
+last five minutes.
+
+Returns `404` when the Steam profile is not stored.
+
+## Leaderboards
+
+Leaderboard endpoints are public, database-backed, and read from the latest
+snapshot per Steam profile. They do not call Steam at request time and do not
+expose auth/session fields.
+
+### `GET /leaderboards`
+
+Returns available leaderboard types:
+- `completion_percentage`
+- `completed_games`
+- `unlocked_achievements`
+- `rarest_unlocks`
+
+### `GET /leaderboards/:type`
+
+Returns ranked profiles for one leaderboard type.
+
+Query parameters:
+- `limit`: integer from `1` to `100`; default `50`.
+- `offset`: non-negative integer; default `0`.
+
+Ranking rules:
+- `completion_percentage`: average completion percentage descending.
+- `completed_games`: completed games descending.
+- `unlocked_achievements`: unlocked achievements descending.
+- `rarest_unlocks`: rarest unlocked global percentage ascending, nulls last.
+
+Rows include public Steam metadata and `publicSlug` when a linked public profile
+is published. Frontend links should prefer `/u/:slug` and otherwise fall back to
+`/profiles/:steamId`.
 
 ## Sync Runs
 

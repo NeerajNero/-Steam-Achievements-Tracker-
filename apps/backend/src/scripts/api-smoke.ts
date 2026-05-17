@@ -1,6 +1,7 @@
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
 const DEMO_STEAM_ID = '76561198000000000';
 const DETAIL_APP_ID = 910002;
+const GLOBAL_DETAIL_APP_ID = 910001;
 
 interface SmokeCheck {
   label: string;
@@ -53,6 +54,11 @@ const checks: SmokeCheck[] = [
     validate: (body) => expectItems(body),
   },
   {
+    label: 'profile snapshots',
+    path: `/profiles/${DEMO_STEAM_ID}/snapshots?limit=5`,
+    validate: (body) => expectItems(body),
+  },
+  {
     label: 'game detail',
     path: `/profiles/${DEMO_STEAM_ID}/games/${DETAIL_APP_ID}`,
     validate: (body) =>
@@ -63,6 +69,46 @@ const checks: SmokeCheck[] = [
   {
     label: 'game achievements',
     path: `/profiles/${DEMO_STEAM_ID}/games/${DETAIL_APP_ID}/achievements`,
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'global games',
+    path: '/games?limit=5',
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'global game detail',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}`,
+    validate: (body) =>
+      isRecord(body) &&
+      isRecord(body.game) &&
+      body.game.steamAppId === GLOBAL_DETAIL_APP_ID
+        ? String(body.game.name)
+        : fail(),
+  },
+  {
+    label: 'global game achievements',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}/achievements?limit=5`,
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'global game players',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}/players?limit=5`,
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'game guides',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}/guides?limit=5`,
+    validate: (body) => expectCollection(body),
+  },
+  {
+    label: 'leaderboard types',
+    path: '/leaderboards',
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'completion leaderboard',
+    path: '/leaderboards/completion_percentage?limit=5',
     validate: (body) => expectItems(body),
   },
 ];
@@ -97,6 +143,14 @@ function expectField(body: unknown, field: string, expected: string): string {
 
 function expectItems(body: unknown): string {
   if (!isRecord(body) || !Array.isArray(body.items) || body.items.length === 0) {
+    return fail();
+  }
+
+  return `${body.items.length} items`;
+}
+
+function expectCollection(body: unknown): string {
+  if (!isRecord(body) || !Array.isArray(body.items)) {
     return fail();
   }
 

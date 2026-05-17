@@ -81,6 +81,20 @@ export default function HomePage() {
           >
             Open seeded dashboard
           </button>
+          <button
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            onClick={() => router.push('/games')}
+            type="button"
+          >
+            Browse tracked games
+          </button>
+          <button
+            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            onClick={() => router.push('/leaderboards')}
+            type="button"
+          >
+            View leaderboards
+          </button>
         </div>
       </section>
     </main>

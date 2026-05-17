@@ -99,6 +99,12 @@ export function GameLibrary({
                       <div className="text-xs text-slate-500">
                         App {game.steamAppId}
                       </div>
+                      <Link
+                        className="mt-1 inline-flex text-xs font-medium text-slate-600 hover:text-blue-700"
+                        href={`/games/${game.steamAppId}`}
+                      >
+                        Global game page
+                      </Link>
                     </td>
                     <td className="px-4 py-3">
                       <span

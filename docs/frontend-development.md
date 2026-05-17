@@ -109,6 +109,8 @@ Current SDK clients used by the frontend:
 - `PublicProfilesApi`
 - `ProfilesApi`
 - `GamesApi`
+- `LeaderboardsApi`
+- `SnapshotsApi`
 - `AchievementsApi`
 - `SyncApi`
 - `HealthApi`
@@ -211,6 +213,135 @@ The profile page is organized as:
 - nearest completions;
 - rarest achievements;
 - sync history.
+
+## Global Game Browsing
+
+Public game browsing lives at:
+
+```txt
+apps/web/src/app/games/page.tsx
+apps/web/src/app/games/[steamAppId]/page.tsx
+apps/web/src/features/games
+```
+
+The pages use `GamesApi` through feature-scoped hooks only:
+
+- `GET /games`
+- `GET /games/:steamAppId`
+- `GET /games/:steamAppId/achievements`
+- `GET /games/:steamAppId/players`
+
+These endpoints are database-backed read models. The frontend must not call the
+Steam Web API directly.
+
+The `/games` page stores filter state in URL params:
+
+- `search`
+- `hasAchievements=true|false`
+- `sort=name|tracked_players|completion_rate|achievements|playtime`
+- `order=asc|desc`
+- `limit`
+- `offset`
+
+The game detail page keeps achievement and player filters in URL params:
+
+- `achievementSearch`
+- `hidden=all|visible|hidden`
+- `achievementSort=rarity|name`
+- `achievementOrder=asc|desc`
+- `achievementLimit`
+- `achievementOffset`
+- `playerStatus=all|completed|incomplete`
+- `playerSort=completion|playtime|recently_played`
+- `playerOrder=asc|desc`
+- `playerLimit`
+- `playerOffset`
+
+Invalid URL params are normalized to defaults before SDK hooks are called.
+Tracked player links prefer `/u/:slug` when a published public profile slug is
+available and otherwise fall back to `/profiles/:steamId`.
+
+## Leaderboards And Snapshots
+
+Leaderboard browsing lives at:
+
+```txt
+apps/web/src/app/leaderboards/page.tsx
+apps/web/src/app/leaderboards/[type]/page.tsx
+apps/web/src/features/leaderboards
+```
+
+The pages use `LeaderboardsApi` through feature-scoped hooks only:
+
+- `GET /leaderboards`
+- `GET /leaderboards/:type`
+
+Supported leaderboard types are:
+
+- `completion_percentage`
+- `completed_games`
+- `unlocked_achievements`
+- `rarest_unlocks`
+
+Leaderboard rows are based on the latest stored snapshot per Steam profile.
+The frontend renders ranks and summary stats from the API response and does not
+recompute leaderboard scores from profile progress rows.
+
+Profile snapshots are displayed on profile dashboards from:
+
+```txt
+apps/web/src/features/snapshots
+```
+
+The snapshot hook uses `SnapshotsApi` for `GET /profiles/:steamId/snapshots`.
+Snapshots are created by completed syncs and can also be created manually
+through the backend snapshot endpoint by the authenticated owner of the claimed
+Steam profile. There is no manual snapshot button in the frontend yet; profile
+pages currently show the public snapshot history only.
+
+## Guides And Roadmaps
+
+Guide pages live at:
+
+```txt
+apps/web/src/app/games/[steamAppId]/guides/page.tsx
+apps/web/src/app/games/[steamAppId]/guides/[slug]/page.tsx
+apps/web/src/app/games/[steamAppId]/guides/new/page.tsx
+apps/web/src/app/account/guides/page.tsx
+apps/web/src/app/guides/[guideId]/edit/page.tsx
+apps/web/src/features/guides
+```
+
+The pages use generated `GuidesApi` methods through feature-scoped hooks only:
+
+- `GET /games/:steamAppId/guides`
+- `GET /games/:steamAppId/guides/:slug`
+- `POST /games/:steamAppId/guides`
+- `PATCH /guides/:guideId`
+- `GET /account/guides`
+- `POST/PATCH /guides/:guideId/sections`
+- `POST/DELETE /guides/:guideId/achievements`
+
+The current editor is intentionally basic: metadata fields, plain textarea
+sections, and achievement UUID attachment. Do not add rich text, uploads,
+comments, votes, or moderation UI until the backend models for those features
+exist.
+
+## Image Rendering
+
+Steam-provided avatars, game icons/logos, and achievement icons are stored as
+external URL fields from Steam sync data and rendered directly from those URLs.
+The frontend currently uses normal `<img>` elements for these small remote
+images.
+
+This is acceptable for the MVP. If these image surfaces are later migrated to
+`next/image`, configure `images.remotePatterns` in `apps/web/next.config.ts` for
+only the trusted Steam image hosts present in synced data. Do not add broad
+wildcard remote image hosts.
+
+Do not upload Steam-provided images to Cloudinary. Cloudinary is deferred for
+user-uploaded or generated media such as profile banners, guide images, share
+cards, and generated gamercards. See `docs/media-assets.md`.
 
 ## Account Settings
 
@@ -409,6 +540,10 @@ Manual browser smoke:
 - open `http://localhost:3001`;
 - open the demo profile `76561198000000000`;
 - open a seeded game such as `910001`;
+- open `http://localhost:3001/games`;
+- open `http://localhost:3001/games/910001`;
+- verify global game filters update URL params;
+- verify game achievement and tracked-player sections render;
 - verify Sync Profile, Sync Games, and Sync Achievements enqueue through the
   SDK;
 - verify sync runs update and stop polling when terminal;

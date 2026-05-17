@@ -5,8 +5,13 @@ import { AchievementSyncRepository } from './repositories/achievement-sync.repos
 import { AppUsersRepository } from './repositories/app-users.repository';
 import { AuthCallbackRepository } from './repositories/auth-callback.repository';
 import { GamesRepository } from './repositories/games.repository';
+import { GuideAchievementsRepository } from './repositories/guide-achievements.repository';
+import { GuideSectionsRepository } from './repositories/guide-sections.repository';
+import { GuidesRepository } from './repositories/guides.repository';
+import { LeaderboardsRepository } from './repositories/leaderboards.repository';
 import { ProfileAchievementsRepository } from './repositories/profile-achievements.repository';
 import { ProfileGamesRepository } from './repositories/profile-games.repository';
+import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.repository';
 import { PublicProfilesRepository } from './repositories/public-profiles.repository';
 import { SteamProfilesRepository } from './repositories/steam-profiles.repository';
 import { AuthSessionsRepository } from './repositories/auth-sessions.repository';
@@ -18,8 +23,13 @@ import { AchievementSyncDataService } from './services/achievement-sync-data.ser
 import { AppUsersDataService } from './services/app-users-data.service';
 import { AuthCallbackDataService } from './services/auth-callback-data.service';
 import { GamesDataService } from './services/games-data.service';
+import { GuideAchievementsDataService } from './services/guide-achievements-data.service';
+import { GuideSectionsDataService } from './services/guide-sections-data.service';
+import { GuidesDataService } from './services/guides-data.service';
+import { LeaderboardsDataService } from './services/leaderboards-data.service';
 import { ProfileAchievementsDataService } from './services/profile-achievements-data.service';
 import { ProfileGamesDataService } from './services/profile-games-data.service';
+import { ProfileSnapshotsDataService } from './services/profile-snapshots-data.service';
 import { PublicProfilesDataService } from './services/public-profiles-data.service';
 import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
@@ -41,7 +51,12 @@ import { DatabaseService } from './database.service';
     UserPreferencesRepository,
     PublicProfilesRepository,
     GamesRepository,
+    GuidesRepository,
+    GuideSectionsRepository,
+    GuideAchievementsRepository,
+    LeaderboardsRepository,
     ProfileGamesRepository,
+    ProfileSnapshotsRepository,
     AchievementsRepository,
     ProfileAchievementsRepository,
     SyncRunsRepository,
@@ -54,7 +69,12 @@ import { DatabaseService } from './database.service';
     PublicProfilesDataService,
     AuthSessionsDataService,
     GamesDataService,
+    GuidesDataService,
+    GuideSectionsDataService,
+    GuideAchievementsDataService,
+    LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileSnapshotsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,
@@ -66,7 +86,12 @@ import { DatabaseService } from './database.service';
     AppUsersDataService,
     SteamProfilesDataService,
     GamesDataService,
+    GuidesDataService,
+    GuideSectionsDataService,
+    GuideAchievementsDataService,
+    LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileSnapshotsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,

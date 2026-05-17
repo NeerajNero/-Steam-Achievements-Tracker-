@@ -20,6 +20,41 @@ const checks = [
     label: 'demo game detail page',
   },
   {
+    path: '/games',
+    marker: 'Steam Games',
+    label: 'global games page',
+  },
+  {
+    path: `/games/${DEMO_GAME_ID}`,
+    marker: 'Global Steam Game',
+    label: 'global game detail page',
+  },
+  {
+    path: `/games/${DEMO_GAME_ID}/guides`,
+    marker: 'Steam game guides',
+    label: 'game guides page',
+  },
+  {
+    path: `/games/${DEMO_GAME_ID}/guides/new`,
+    marker: 'Create guide',
+    label: 'new guide page',
+  },
+  {
+    path: '/account/guides',
+    marker: 'Your guides',
+    label: 'account guides page',
+  },
+  {
+    path: '/leaderboards',
+    marker: 'Steam Leaderboards',
+    label: 'leaderboards page',
+  },
+  {
+    path: '/leaderboards/completion_percentage',
+    marker: 'Completion Percentage',
+    label: 'completion leaderboard page',
+  },
+  {
     path: '/settings',
     marker: 'Manage your Steam-only account',
     label: 'settings page',
@@ -30,6 +65,16 @@ const checks = [
     label: 'public profile slug page',
   },
 ];
+
+const publicProfileSlug = process.env.WEB_PUBLIC_PROFILE_SLUG;
+
+if (publicProfileSlug !== undefined && publicProfileSlug.length > 0) {
+  checks.push({
+    path: `/u/${encodeURIComponent(publicProfileSlug)}`,
+    marker: 'Public profile:',
+    label: 'configured public profile page',
+  });
+}
 
 async function checkPage(path, marker, label) {
   const url = `${WEB_BASE_URL}${path}`;

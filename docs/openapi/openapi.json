@@ -98,6 +98,738 @@
         ]
       }
     },
+    "/games": {
+      "get": {
+        "description": "Returns global game rows and aggregate tracked-player stats from PostgreSQL only.",
+        "operationId": "listGlobalGames",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "name",
+                "tracked_players",
+                "completion_rate",
+                "achievements",
+                "playtime"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "hasAchievements",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalGamesResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List tracked Steam games",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{steamAppId}": {
+      "get": {
+        "description": "Returns canonical game metadata and aggregate tracked-player stats from PostgreSQL only.",
+        "operationId": "getGlobalGame",
+        "parameters": [
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalGameDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "Get global Steam game detail",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{steamAppId}/achievements": {
+      "get": {
+        "description": "Returns canonical achievement metadata for one tracked game from PostgreSQL only.",
+        "operationId": "listGlobalGameAchievements",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "rarity",
+                "name"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "hidden",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "all",
+                "visible",
+                "hidden"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalGameAchievementsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "List global game achievement metadata",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{steamAppId}/players": {
+      "get": {
+        "description": "Returns public Steam profile metadata and progress for tracked players from PostgreSQL only.",
+        "operationId": "listGlobalGamePlayers",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "order",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "sort",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "completion",
+                "playtime",
+                "recently_played"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "all",
+                "completed",
+                "incomplete"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GlobalGamePlayersResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "List tracked players for a game",
+        "tags": [
+          "games"
+        ]
+      }
+    },
+    "/games/{steamAppId}/guides": {
+      "get": {
+        "description": "Returns published public guides for a tracked Steam game from PostgreSQL only.",
+        "operationId": "listGameGuides",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "search",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "description": "Public guide lists return published guides only.",
+            "schema": {
+              "enum": [
+                "published"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideListResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "List public guides for a Steam game",
+        "tags": [
+          "guides"
+        ]
+      },
+      "post": {
+        "operationId": "createGameGuide",
+        "parameters": [
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuideDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "Create a draft guide for a Steam game",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/games/{steamAppId}/guides/{slug}": {
+      "get": {
+        "description": "Returns one published public guide with sections and attached achievements.",
+        "operationId": "getGameGuide",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "100-roadmap",
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game or guide was not found."
+          }
+        },
+        "summary": "Get a public Steam game guide",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/guides/{guideId}": {
+      "patch": {
+        "description": "Only the author, admin, or moderator can edit a guide.",
+        "operationId": "updateGuide",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGuideDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot edit this guide."
+          },
+          "404": {
+            "description": "Guide was not found."
+          }
+        },
+        "summary": "Update a guide",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/account/guides": {
+      "get": {
+        "operationId": "listAccountGuides",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountGuidesResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "List current user guides",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/guides/{guideId}/sections": {
+      "post": {
+        "operationId": "createGuideSection",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGuideSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideSectionResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot edit this guide."
+          }
+        },
+        "summary": "Create a guide section",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/guides/{guideId}/sections/{sectionId}": {
+      "patch": {
+        "operationId": "updateGuideSection",
+        "parameters": [
+          {
+            "name": "sectionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGuideSectionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideSectionResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot edit this guide."
+          }
+        },
+        "summary": "Update a guide section",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/guides/{guideId}/achievements": {
+      "post": {
+        "operationId": "addGuideAchievements",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddGuideAchievementsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddGuideAchievementsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot edit this guide."
+          }
+        },
+        "summary": "Attach achievements to a guide",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
+    "/guides/{guideId}/achievements/{achievementId}": {
+      "delete": {
+        "operationId": "removeGuideAchievement",
+        "parameters": [
+          {
+            "name": "achievementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Achievement mapping removed."
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot edit this guide."
+          }
+        },
+        "summary": "Detach an achievement from a guide",
+        "tags": [
+          "guides"
+        ]
+      }
+    },
     "/profiles/{steamId}/games": {
       "get": {
         "description": "Returns a paginated profile game library from PostgreSQL. Default sort is completion desc.",
@@ -424,6 +1156,172 @@
         "summary": "List rarest unlocked achievements",
         "tags": [
           "achievements"
+        ]
+      }
+    },
+    "/profiles/{steamId}/snapshots": {
+      "get": {
+        "description": "Returns stored aggregate snapshots for a Steam profile.",
+        "operationId": "listProfileSnapshots",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileSnapshotsResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile was not found"
+          }
+        },
+        "summary": "List profile snapshots",
+        "tags": [
+          "snapshots"
+        ]
+      },
+      "post": {
+        "description": "Creates a snapshot from current stored profile progress. Requires an authenticated owner of the claimed Steam profile, or an admin/moderator account.",
+        "operationId": "createProfileSnapshot",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileSnapshotResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "Authenticated user does not own this Steam profile."
+          },
+          "404": {
+            "description": "Profile was not found"
+          }
+        },
+        "summary": "Create a manual profile snapshot",
+        "tags": [
+          "snapshots"
+        ]
+      }
+    },
+    "/leaderboards": {
+      "get": {
+        "operationId": "listLeaderboards",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardsResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List available leaderboards",
+        "tags": [
+          "leaderboards"
+        ]
+      }
+    },
+    "/leaderboards/{type}": {
+      "get": {
+        "operationId": "getLeaderboard",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "enum": [
+                "completion_percentage",
+                "completed_games",
+                "unlocked_achievements",
+                "rarest_unlocks"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaderboardResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Leaderboard type was not found"
+          }
+        },
+        "summary": "Get a leaderboard from latest profile snapshots",
+        "tags": [
+          "leaderboards"
         ]
       }
     },
@@ -1025,6 +1923,873 @@
           "averageCompletionPercentage"
         ]
       },
+      "GlobalGameItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo First Steps"
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "hasAchievements": {
+            "type": "boolean",
+            "example": true
+          },
+          "trackedPlayers": {
+            "type": "number",
+            "example": 12
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 50
+          },
+          "averageCompletionPercentage": {
+            "type": "number",
+            "example": 42.34
+          },
+          "completedPlayers": {
+            "type": "number",
+            "example": 3
+          },
+          "totalPlaytimeMinutes": {
+            "type": "number",
+            "example": 12345
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "name",
+          "hasAchievements",
+          "trackedPlayers",
+          "totalAchievements",
+          "averageCompletionPercentage",
+          "completedPlayers",
+          "totalPlaytimeMinutes"
+        ]
+      },
+      "GlobalGamesResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GlobalGameItemResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 100
+          },
+          "limit": {
+            "type": "number",
+            "example": 25
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "GlobalGameMetadataResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo First Steps"
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "logoUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "hasAchievements": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "name",
+          "hasAchievements"
+        ]
+      },
+      "GlobalGameStatsResponseDto": {
+        "type": "object",
+        "properties": {
+          "trackedPlayers": {
+            "type": "number",
+            "example": 12
+          },
+          "completedPlayers": {
+            "type": "number",
+            "example": 3
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 50
+          },
+          "averageCompletionPercentage": {
+            "type": "number",
+            "example": 42.34
+          },
+          "totalPlaytimeMinutes": {
+            "type": "number",
+            "example": 12345
+          },
+          "averagePlaytimeMinutes": {
+            "type": "number",
+            "example": 234
+          }
+        },
+        "required": [
+          "trackedPlayers",
+          "completedPlayers",
+          "totalAchievements",
+          "averageCompletionPercentage",
+          "totalPlaytimeMinutes",
+          "averagePlaytimeMinutes"
+        ]
+      },
+      "GlobalGameDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "game": {
+            "$ref": "#/components/schemas/GlobalGameMetadataResponseDto"
+          },
+          "stats": {
+            "$ref": "#/components/schemas/GlobalGameStatsResponseDto"
+          }
+        },
+        "required": [
+          "game",
+          "stats"
+        ]
+      },
+      "GlobalGameAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "apiName": {
+            "type": "string",
+            "example": "ACH_WIN_ONE_GAME"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "First Win",
+            "nullable": true
+          },
+          "description": {
+            "type": "string",
+            "example": "Win one match.",
+            "nullable": true
+          },
+          "iconUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "iconGrayUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "hidden": {
+            "type": "boolean",
+            "example": false
+          },
+          "globalPercentage": {
+            "type": "number",
+            "example": 12.3,
+            "nullable": true
+          }
+        },
+        "required": [
+          "apiName",
+          "hidden"
+        ]
+      },
+      "GlobalGameAchievementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GlobalGameAchievementResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 50
+          },
+          "limit": {
+            "type": "number",
+            "example": 100
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "GlobalGamePlayerResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "personaName": {
+            "type": "string",
+            "example": "Player",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "profileUrl": {
+            "type": "string",
+            "example": null,
+            "nullable": true
+          },
+          "playtimeMinutes": {
+            "type": "number",
+            "example": 1234
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 50
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 42
+          },
+          "completionPercentage": {
+            "type": "number",
+            "example": 84
+          },
+          "lastPlayedAt": {
+            "type": "string",
+            "example": "2026-05-15T12:00:00.000Z",
+            "nullable": true
+          },
+          "publicSlug": {
+            "type": "string",
+            "example": "nero",
+            "nullable": true
+          }
+        },
+        "required": [
+          "steamId",
+          "playtimeMinutes",
+          "totalAchievements",
+          "unlockedAchievements",
+          "completionPercentage"
+        ]
+      },
+      "GlobalGamePlayersResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GlobalGamePlayerResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 12
+          },
+          "limit": {
+            "type": "number",
+            "example": 25
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "GuideAuthorResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Steam Hunter"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "GuideGameResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo Complete Quest"
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "steamAppId",
+          "name"
+        ]
+      },
+      "GuideSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "title": {
+            "type": "string",
+            "example": "100% Roadmap"
+          },
+          "slug": {
+            "type": "string",
+            "example": "100-roadmap"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "example": "Complete route."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "example": "published"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ],
+            "example": "public"
+          },
+          "estimatedDifficulty": {
+            "type": "number",
+            "nullable": true,
+            "example": 6
+          },
+          "estimatedHours": {
+            "type": "number",
+            "nullable": true,
+            "example": 20
+          },
+          "isSpoilerHeavy": {
+            "type": "boolean",
+            "example": false
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "author": {
+            "$ref": "#/components/schemas/GuideAuthorResponseDto"
+          },
+          "game": {
+            "$ref": "#/components/schemas/GuideGameResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "title",
+          "slug",
+          "status",
+          "visibility",
+          "isSpoilerHeavy",
+          "createdAt",
+          "updatedAt",
+          "author",
+          "game"
+        ]
+      },
+      "GuideListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuideSummaryResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 20
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "GuideSectionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "title": {
+            "type": "string",
+            "example": "Route Overview"
+          },
+          "content": {
+            "type": "string",
+            "example": "Start with missable achievements first."
+          },
+          "position": {
+            "type": "number",
+            "example": 0
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "content",
+          "position",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "GuideAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "apiName": {
+            "type": "string",
+            "example": "ACH_WIN_ONE_GAME"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "First Win"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Win once."
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "iconGrayUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "hidden": {
+            "type": "boolean",
+            "example": false
+          },
+          "globalPercentage": {
+            "type": "number",
+            "nullable": true,
+            "example": 12.3
+          }
+        },
+        "required": [
+          "id",
+          "apiName",
+          "hidden"
+        ]
+      },
+      "GuideDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "title": {
+            "type": "string",
+            "example": "100% Roadmap"
+          },
+          "slug": {
+            "type": "string",
+            "example": "100-roadmap"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "example": "Complete route."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ],
+            "example": "published"
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ],
+            "example": "public"
+          },
+          "estimatedDifficulty": {
+            "type": "number",
+            "nullable": true,
+            "example": 6
+          },
+          "estimatedHours": {
+            "type": "number",
+            "nullable": true,
+            "example": 20
+          },
+          "isSpoilerHeavy": {
+            "type": "boolean",
+            "example": false
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "author": {
+            "$ref": "#/components/schemas/GuideAuthorResponseDto"
+          },
+          "game": {
+            "$ref": "#/components/schemas/GuideGameResponseDto"
+          },
+          "sections": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuideSectionResponseDto"
+            }
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuideAchievementResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "title",
+          "slug",
+          "status",
+          "visibility",
+          "isSpoilerHeavy",
+          "createdAt",
+          "updatedAt",
+          "author",
+          "game",
+          "sections",
+          "achievements"
+        ]
+      },
+      "CreateGuideDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120,
+            "example": "100% Roadmap"
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 500,
+            "example": "A clean route for completing every achievement."
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ],
+            "default": "public"
+          },
+          "estimatedDifficulty": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10,
+            "nullable": true
+          },
+          "estimatedHours": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "isSpoilerHeavy": {
+            "type": "boolean",
+            "default": false
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "UpdateGuideDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "summary": {
+            "type": "string",
+            "maxLength": 500,
+            "nullable": true
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ]
+          },
+          "estimatedDifficulty": {
+            "type": "number",
+            "minimum": 1,
+            "maximum": 10,
+            "nullable": true
+          },
+          "estimatedHours": {
+            "type": "number",
+            "minimum": 0,
+            "nullable": true
+          },
+          "isSpoilerHeavy": {
+            "type": "boolean"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "draft",
+              "published",
+              "archived"
+            ]
+          }
+        }
+      },
+      "AccountGuidesResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GuideSummaryResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateGuideSectionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "position": {
+            "type": "number",
+            "minimum": 0,
+            "default": 0
+          }
+        },
+        "required": [
+          "title",
+          "content"
+        ]
+      },
+      "UpdateGuideSectionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120
+          },
+          "content": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 20000
+          },
+          "position": {
+            "type": "number",
+            "minimum": 0
+          }
+        }
+      },
+      "AddGuideAchievementsDto": {
+        "type": "object",
+        "properties": {
+          "achievementIds": {
+            "example": [
+              "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+            ],
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "achievementIds"
+        ]
+      },
+      "AddGuideAchievementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number",
+            "example": 2
+          }
+        },
+        "required": [
+          "added"
+        ]
+      },
       "GameLibraryItemResponseDto": {
         "type": "object",
         "properties": {
@@ -1424,6 +3189,242 @@
         "required": [
           "steamId",
           "items"
+        ]
+      },
+      "ProfileSnapshotResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "totalGames": {
+            "type": "number"
+          },
+          "completedGames": {
+            "type": "number"
+          },
+          "totalAchievements": {
+            "type": "number"
+          },
+          "unlockedAchievements": {
+            "type": "number"
+          },
+          "remainingAchievements": {
+            "type": "number"
+          },
+          "averageCompletionPercentage": {
+            "type": "number"
+          },
+          "totalPlaytimeMinutes": {
+            "type": "number"
+          },
+          "rarestUnlockedGlobalPercentage": {
+            "type": "number",
+            "nullable": true
+          },
+          "snapshotReason": {
+            "type": "string",
+            "enum": [
+              "manual",
+              "sync_completed",
+              "scheduled"
+            ]
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "totalGames",
+          "completedGames",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "averageCompletionPercentage",
+          "totalPlaytimeMinutes",
+          "rarestUnlockedGlobalPercentage",
+          "snapshotReason",
+          "createdAt"
+        ]
+      },
+      "ProfileSnapshotsResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileSnapshotResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "steamId",
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "LeaderboardTypeResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "completion_percentage",
+              "completed_games",
+              "unlocked_achievements",
+              "rarest_unlocks"
+            ]
+          },
+          "label": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "label",
+          "description"
+        ]
+      },
+      "LeaderboardsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardTypeResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "LeaderboardSnapshotResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalGames": {
+            "type": "number"
+          },
+          "completedGames": {
+            "type": "number"
+          },
+          "totalAchievements": {
+            "type": "number"
+          },
+          "unlockedAchievements": {
+            "type": "number"
+          },
+          "remainingAchievements": {
+            "type": "number"
+          },
+          "averageCompletionPercentage": {
+            "type": "number"
+          },
+          "rarestUnlockedGlobalPercentage": {
+            "type": "number",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "totalGames",
+          "completedGames",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "averageCompletionPercentage",
+          "rarestUnlockedGlobalPercentage",
+          "createdAt"
+        ]
+      },
+      "LeaderboardItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "rank": {
+            "type": "number"
+          },
+          "steamId": {
+            "type": "string"
+          },
+          "personaName": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicSlug": {
+            "type": "string",
+            "nullable": true
+          },
+          "score": {
+            "type": "number"
+          },
+          "snapshot": {
+            "$ref": "#/components/schemas/LeaderboardSnapshotResponseDto"
+          }
+        },
+        "required": [
+          "rank",
+          "steamId",
+          "personaName",
+          "avatarUrl",
+          "publicSlug",
+          "score",
+          "snapshot"
+        ]
+      },
+      "LeaderboardResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "completion_percentage",
+              "completed_games",
+              "unlocked_achievements",
+              "rarest_unlocks"
+            ]
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/LeaderboardItemResponseDto"
+            }
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "type",
+          "items",
+          "limit",
+          "offset"
         ]
       },
       "SyncRequestDto": {

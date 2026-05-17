@@ -37,6 +37,8 @@ import { GameLibrary } from '@/features/profile/components/game-library';
 import { GameLibraryFilters } from '@/features/profile/components/game-library-filters';
 import { NearestCompletions } from '@/features/profile/components/nearest-completions';
 import { RarestAchievements } from '@/features/profile/components/rarest-achievements';
+import { useProfileSnapshots } from '@/features/snapshots/api/use-profile-snapshots';
+import { ProfileSnapshotsList } from '@/features/snapshots/components/profile-snapshots-list';
 import { getErrorMessage, getHttpStatus } from '@/lib/format';
 
 const SYNC_RUNS_LIMIT = 8;
@@ -92,6 +94,7 @@ export default function ProfilePage() {
   const nearestCompletions = useNearestCompletions(steamId, 5);
   const rarestAchievements = useRarestAchievements(steamId, 5);
   const syncRuns = useSyncRuns(steamId, SYNC_RUNS_LIMIT);
+  const snapshots = useProfileSnapshots(steamId, { limit: 5, offset: 0 });
   const enqueueSync = useEnqueueSync(steamId);
   const refetchSyncRuns = syncRuns.refetch;
 
@@ -276,6 +279,12 @@ export default function ProfilePage() {
             isLoading={syncRuns.isLoading}
             isPolling={isPollingSyncRuns}
             runs={syncRuns.data?.items}
+          />
+          <ProfileSnapshotsList
+            error={snapshots.error}
+            isError={snapshots.isError}
+            isLoading={snapshots.isLoading}
+            snapshots={snapshots.data?.items}
           />
         </aside>
       </section>

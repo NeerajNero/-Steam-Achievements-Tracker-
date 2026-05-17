@@ -66,15 +66,18 @@
 - Stores public profile publishing preferences and future custom slug support.
 - Keeps public profile behavior separate from raw Steam profile sync.
 
+### `profile_snapshots`
+
+- Stores periodic aggregate profile stats.
+- Created explicitly after successful or partial successful syncs, and by a
+  manual local/dev endpoint.
+- Supports leaderboard v1 and future progress history without recalculating
+  every ranking from raw progress rows on each request.
+
 ### Future: `achievement_goals`
 
 - Stores user-selected achievement or game completion goals.
 - Supports planner workflows.
-
-### Future: `profile_snapshots`
-
-- Stores periodic aggregate profile stats.
-- Supports progress history and analytics over time.
 
 ### Future: `profile_friends`
 
@@ -115,6 +118,17 @@ Why:
 - Dashboard views should be fast and stable.
 - Live Steam API calls during dashboard reads would create rate-limit, timeout, and consistency problems.
 - Sync freshness can be shown separately through `sync_runs`.
+
+### Decision: Leaderboards use latest stored profile snapshots.
+
+Why:
+
+- Ranking pages should be stable, fast, and explainable.
+- Snapshot rows preserve the aggregate values used for leaderboard reads.
+- PostgreSQL remains the source of truth through
+  `create_profile_snapshot(...)`.
+- Future moderation or fairness systems can build on snapshots without changing
+  raw Steam sync tables.
 
 ### Decision: Achievement metadata is separate from profile achievement unlock state.
 
@@ -171,3 +185,5 @@ Why:
 - Decide whether future public profile URLs use Steam IDs, internal slugs, or both.
 - Decide auth session lifetime and rotation policy.
 - Decide retention policy for long-term `sync_runs` and `profile_snapshots`.
+- Decide whether later leaderboards need materialized `leaderboard_entries`
+  batches.

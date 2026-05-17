@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AchievementSyncDataService } from '../../db/services/achievement-sync-data.service';
 import type { GamesDataService } from '../../db/services/games-data.service';
 import type { ProfileGamesDataService } from '../../db/services/profile-games-data.service';
+import type { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
 import type {
   SteamProfile,
   SteamProfilesDataService,
@@ -114,6 +115,55 @@ describe('SyncWorkflowService', () => {
         completionPercentage: expect.any(Number),
       }),
     );
+  });
+
+  it('creates a profile snapshot after games sync when profile games exist', async () => {
+    mocks.steamProfilesRepository.findBySteamId.mockResolvedValue(createProfile());
+    mocks.steamApiClient.getOwnedGames.mockResolvedValue([createOwnedGame()]);
+    mocks.profileGamesRepository.getProfileGameSummary.mockResolvedValue({
+      totalGames: 1,
+      completedGames: 0,
+      totalAchievements: 0,
+      unlockedAchievements: 0,
+    });
+
+    await service.syncOwnedGamesBySteamId('sync-run-id', '76561198000000000');
+
+    expect(mocks.profileSnapshotsRepository.createForProfileId).toHaveBeenCalledWith(
+      'profile-id',
+      'sync_completed',
+    );
+  });
+
+  it('does not create duplicate sync snapshots inside the dedupe window', async () => {
+    mocks.steamProfilesRepository.findBySteamId.mockResolvedValue(createProfile());
+    mocks.steamApiClient.getOwnedGames.mockResolvedValue([createOwnedGame()]);
+    mocks.profileGamesRepository.getProfileGameSummary.mockResolvedValue({
+      totalGames: 1,
+      completedGames: 0,
+      totalAchievements: 0,
+      unlockedAchievements: 0,
+    });
+    mocks.profileSnapshotsRepository.findLatestBySteamProfileId.mockResolvedValue({
+      id: 'snapshot-id',
+      steamProfileId: 'profile-id',
+      totalGames: 1,
+      completedGames: 0,
+      totalAchievements: 0,
+      unlockedAchievements: 0,
+      remainingAchievements: 0,
+      averageCompletionPercentage: 0,
+      totalPlaytimeMinutes: 0,
+      rarestUnlockedGlobalPercentage: null,
+      snapshotReason: 'sync_completed',
+      createdAt: new Date(),
+    });
+
+    await service.syncOwnedGamesBySteamId('sync-run-id', '76561198000000000');
+
+    expect(
+      mocks.profileSnapshotsRepository.createForProfileId,
+    ).not.toHaveBeenCalled();
   });
 
   it('Steam API failure is thrown for the processor to handle retry/final failure', async () => {
@@ -504,6 +554,11 @@ interface SyncWorkflowMocks {
   profileGamesRepository: {
     upsertOwnedGameProgressPreservingAchievementStats: ReturnType<typeof vi.fn>;
     findProfileGamesForAchievementSync: ReturnType<typeof vi.fn>;
+    getProfileGameSummary: ReturnType<typeof vi.fn>;
+  };
+  profileSnapshotsRepository: {
+    createForProfileId: ReturnType<typeof vi.fn>;
+    findLatestBySteamProfileId: ReturnType<typeof vi.fn>;
   };
   achievementSyncRepository: {
     applyGameAchievementMetadata: ReturnType<typeof vi.fn>;
@@ -524,6 +579,7 @@ function createService(mocks: SyncWorkflowMocks): SyncWorkflowService {
     mocks.steamProfilesRepository as unknown as SteamProfilesDataService,
     mocks.gamesRepository as unknown as GamesDataService,
     mocks.profileGamesRepository as unknown as ProfileGamesDataService,
+    mocks.profileSnapshotsRepository as unknown as ProfileSnapshotsDataService,
     mocks.achievementSyncRepository as unknown as AchievementSyncDataService,
     mocks.syncRunsRepository as unknown as SyncRunsDataService,
   );
@@ -558,6 +614,16 @@ function createMocks(): SyncWorkflowMocks {
     profileGamesRepository: {
       upsertOwnedGameProgressPreservingAchievementStats: vi.fn(),
       findProfileGamesForAchievementSync: vi.fn(async () => []),
+      getProfileGameSummary: vi.fn(async () => ({
+        totalGames: 0,
+        completedGames: 0,
+        totalAchievements: 0,
+        unlockedAchievements: 0,
+      })),
+    },
+    profileSnapshotsRepository: {
+      createForProfileId: vi.fn(),
+      findLatestBySteamProfileId: vi.fn(async () => null),
     },
     achievementSyncRepository: {
       applyGameAchievementMetadata: vi.fn(async (input) => ({
