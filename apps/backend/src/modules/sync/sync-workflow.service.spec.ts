@@ -1,8 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { AchievementSyncDataService } from '../../db/services/achievement-sync-data.service';
+import type { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
 import type { GamesDataService } from '../../db/services/games-data.service';
 import type { ProfileGamesDataService } from '../../db/services/profile-games-data.service';
+import type { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import type { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
 import type {
   SteamProfile,
@@ -54,6 +56,15 @@ describe('SyncWorkflowService', () => {
     expect(mocks.syncRunsRepository.markSuccess).toHaveBeenCalledWith(
       'sync-run-id',
       { profilesSynced: 1 },
+    );
+    expect(mocks.activityEventsRepository.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        steamProfileId: 'profile-id',
+        eventType: 'profile_synced',
+        entityType: 'steam_profile',
+        entityId: 'profile-id',
+        metadata: { scope: 'profile' },
+      }),
     );
   });
 
@@ -560,6 +571,12 @@ interface SyncWorkflowMocks {
     createForProfileId: ReturnType<typeof vi.fn>;
     findLatestBySteamProfileId: ReturnType<typeof vi.fn>;
   };
+  profileMilestonesRepository: {
+    createFromSnapshot: ReturnType<typeof vi.fn>;
+  };
+  activityEventsRepository: {
+    create: ReturnType<typeof vi.fn>;
+  };
   achievementSyncRepository: {
     applyGameAchievementMetadata: ReturnType<typeof vi.fn>;
     applyGameAchievementSync: ReturnType<typeof vi.fn>;
@@ -580,6 +597,8 @@ function createService(mocks: SyncWorkflowMocks): SyncWorkflowService {
     mocks.gamesRepository as unknown as GamesDataService,
     mocks.profileGamesRepository as unknown as ProfileGamesDataService,
     mocks.profileSnapshotsRepository as unknown as ProfileSnapshotsDataService,
+    mocks.profileMilestonesRepository as unknown as ProfileMilestonesDataService,
+    mocks.activityEventsRepository as unknown as ActivityEventsDataService,
     mocks.achievementSyncRepository as unknown as AchievementSyncDataService,
     mocks.syncRunsRepository as unknown as SyncRunsDataService,
   );
@@ -624,6 +643,12 @@ function createMocks(): SyncWorkflowMocks {
     profileSnapshotsRepository: {
       createForProfileId: vi.fn(),
       findLatestBySteamProfileId: vi.fn(async () => null),
+    },
+    profileMilestonesRepository: {
+      createFromSnapshot: vi.fn(async () => []),
+    },
+    activityEventsRepository: {
+      create: vi.fn(async () => ({ id: 'activity-id' })),
     },
     achievementSyncRepository: {
       applyGameAchievementMetadata: vi.fn(async (input) => ({

@@ -196,6 +196,72 @@ order by column_name;
 The only token column should be `session_token_hash`. Do not select or print
 that column's values.
 
+### Guide Auth Smoke
+
+Use the deterministic local guide smoke when browser Steam login is not
+available:
+
+```sh
+docker-compose exec -T backend pnpm seed:dev
+docker-compose exec -T backend pnpm guide:auth-smoke
+```
+
+The smoke uses demo Steam ID `76561198000000000` and app `910001`. It creates a
+temporary raw session token in process memory, stores only the hash in
+`auth_sessions`, calls the real guide HTTP endpoints with an internal cookie
+header, then revokes the session. The command prints only safe IDs, slug, status,
+visibility, and counts.
+
+Safe inspection after a run:
+
+```sql
+select slug, status, visibility, (author_user_id is not null) as has_author
+from guides
+where steam_app_id = 910001
+order by updated_at desc
+limit 5;
+
+select count(*) as guide_sections_count from guide_sections;
+select count(*) as guide_achievements_count from guide_achievements;
+```
+
+Do not select `auth_sessions.session_token_hash`, cookie values, or raw session
+tokens.
+
+### Community Auth Smoke
+
+Use the deterministic community smoke to verify report intake without relying on
+a browser cookie:
+
+```sh
+docker-compose exec -T backend pnpm guide:auth-smoke
+docker-compose exec -T backend pnpm session:auth-smoke
+docker-compose exec -T backend pnpm community:auth-smoke
+```
+
+`community:auth-smoke` creates a smoke guide comment and reports it through the
+real `POST /reports` endpoint. It reuses a local smoke app user, creates the raw
+session token only in memory, stores only the session hash in `auth_sessions`,
+and prints only safe IDs/counts. Repeated runs remove only smoke-owned
+guide/comment/report rows created by that script.
+
+Safe report inspection:
+
+```sql
+select target_type, reason, status, count(*) as reports
+from content_reports
+group by target_type, reason, status
+order by target_type, reason, status;
+
+select target_type, reason, status, created_at
+from content_reports
+order by created_at desc
+limit 10;
+```
+
+Do not select auth cookie values, raw session tokens, or
+`auth_sessions.session_token_hash` while inspecting reports.
+
 ### Account Settings Smoke
 
 After browser login, open:
@@ -423,6 +489,41 @@ Verify the progress refresh function exists:
 select proname
 from pg_proc
 where proname = 'refresh_profile_game_achievement_progress';
+```
+
+## Milestone Backfill
+
+Milestones are generated from profile snapshots. If snapshots already exist but
+`profile_milestones` is empty, run the local/dev backfill:
+
+```sh
+docker-compose exec -T backend pnpm milestones:backfill-dev
+```
+
+For one Steam profile:
+
+```sh
+docker-compose exec -T backend pnpm milestones:backfill-dev -- 76561198000000000
+```
+
+The command is idempotent. It creates missing milestones from the latest
+snapshot and records `milestone_reached` activity only for newly inserted
+milestones. It prints counts only and does not print secrets, cookies, session
+tokens, token hashes, or Steam API keys.
+
+Safe inspection:
+
+```sql
+select
+  sp.steam_id,
+  pm.milestone_type,
+  pm.threshold_value,
+  pm.title,
+  pm.achieved_at
+from profile_milestones pm
+join steam_profiles sp on sp.id = pm.steam_profile_id
+order by pm.achieved_at desc
+limit 20;
 ```
 
 ## Source Of Truth

@@ -2,11 +2,21 @@ import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
 
+import { DatabaseService } from './database.service';
+import { ActivityEventsRepository } from './repositories/activity-events.repository';
+import { ProfileMilestonesRepository } from './repositories/profile-milestones.repository';
+import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.repository';
+import { ActivityEventsDataService } from './services/activity-events-data.service';
+import { ProfileMilestoneBackfillDataService } from './services/profile-milestone-backfill-data.service';
+import { ProfileMilestonesDataService } from './services/profile-milestones-data.service';
+import { ProfileSnapshotsDataService } from './services/profile-snapshots-data.service';
 import {
   achievements,
+  activityEvents,
   games,
   profileAchievements,
   profileGames,
+  profileMilestones,
   profileSnapshots,
   steamProfiles,
   syncRuns,
@@ -165,18 +175,27 @@ async function main(): Promise<void> {
       return;
     }
 
-    await seedDemoData(db);
+    const profileId = await seedDemoData(db);
+    const milestoneBackfill = createMilestoneBackfillDataService(db);
+    const backfillResult =
+      await milestoneBackfill.backfillMilestonesForProfile(profileId);
+
     console.log(`Development seed data ready for Steam ID ${DEMO_STEAM_ID}.`);
     console.log(
       `Seeded app IDs: ${GAME_SEEDS.map((game) => game.steamAppId).join(', ')}.`,
+    );
+    console.log(
+      `Demo milestones ready: ${backfillResult.milestonesCreated} created, ${backfillResult.activityEventsCreated} activity events created.`,
     );
   } finally {
     await pool.end();
   }
 }
 
-async function seedDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Promise<void> {
-  await db.transaction(async (tx) => {
+async function seedDemoData(
+  db: ReturnType<typeof drizzle<typeof schema>>,
+): Promise<string> {
+  return db.transaction(async (tx) => {
     const [profile] = await tx
       .insert(steamProfiles)
       .values({
@@ -319,6 +338,8 @@ async function seedDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Prom
 
     await seedSyncRuns(tx, profile.id);
     await seedSnapshotIfMissing(tx, profile.id);
+
+    return profile.id;
   });
 }
 
@@ -343,6 +364,34 @@ async function resetDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Pro
     const gameIds = gameRows.map((row) => row.id);
 
     if (profileId !== undefined) {
+      const milestoneRows = await tx
+        .select({ id: profileMilestones.id })
+        .from(profileMilestones)
+        .where(eq(profileMilestones.steamProfileId, profileId));
+      const milestoneIds = milestoneRows.map((row) => row.id);
+
+      if (milestoneIds.length > 0) {
+        await tx
+          .delete(activityEvents)
+          .where(
+            or(
+              eq(activityEvents.steamProfileId, profileId),
+              and(
+                eq(activityEvents.entityType, 'milestone'),
+                inArray(activityEvents.entityId, milestoneIds),
+              ),
+            ),
+          );
+      } else {
+        await tx
+          .delete(activityEvents)
+          .where(eq(activityEvents.steamProfileId, profileId));
+      }
+
+      await tx
+        .delete(profileMilestones)
+        .where(eq(profileMilestones.steamProfileId, profileId));
+
       await tx
         .delete(profileSnapshots)
         .where(eq(profileSnapshots.steamProfileId, profileId));
@@ -406,6 +455,22 @@ async function resetDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Pro
         ),
       );
   });
+}
+
+function createMilestoneBackfillDataService(
+  db: ReturnType<typeof drizzle<typeof schema>>,
+): ProfileMilestoneBackfillDataService {
+  const databaseService = { db } as unknown as DatabaseService;
+
+  return new ProfileMilestoneBackfillDataService(
+    new ProfileSnapshotsDataService(
+      new ProfileSnapshotsRepository(databaseService),
+    ),
+    new ProfileMilestonesDataService(
+      new ProfileMilestonesRepository(databaseService),
+    ),
+    new ActivityEventsDataService(new ActivityEventsRepository(databaseService)),
+  );
 }
 
 async function seedSnapshotIfMissing(

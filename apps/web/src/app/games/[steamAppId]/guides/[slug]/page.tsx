@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { AuthStatus } from '@/features/auth/components/auth-status';
+import { GuideCommunitySection } from '@/features/community/components/guide-community-section';
 import { useGuide } from '@/features/guides/api/use-guide';
 import { GuideDetail } from '@/features/guides/components/guide-detail';
 import { getErrorMessage, getHttpStatus } from '@/lib/format';
@@ -38,7 +39,12 @@ export default function GameGuideDetailPage() {
       {!isMissing && guide.isError ? (
         <ErrorState message={getErrorMessage(guide.error)} title="Guide unavailable" />
       ) : null}
-      {guide.data ? <GuideDetail guide={guide.data} /> : null}
+      {guide.data ? (
+        <div className="grid gap-6">
+          <GuideDetail guide={guide.data} />
+          <GuideCommunitySection guideId={guide.data.id} />
+        </div>
+      ) : null}
     </main>
   );
 }

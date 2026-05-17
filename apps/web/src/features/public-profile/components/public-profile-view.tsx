@@ -6,6 +6,10 @@ import type { ReactNode } from 'react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { SummaryCard } from '@/components/ui/summary-card';
 import { asPublicProfileSettings } from '@/features/account/utils/settings';
+import { useProfileActivity } from '@/features/activity/api/use-profile-activity';
+import { ActivityFeed } from '@/features/activity/components/activity-feed';
+import { useProfileMilestones } from '@/features/milestones/api/use-profile-milestones';
+import { MilestonesList } from '@/features/milestones/components/milestones-list';
 
 import { usePublicProfile } from '../api/use-public-profile';
 
@@ -15,6 +19,9 @@ export function PublicProfileView({
   slug: string;
 }>): ReactNode {
   const profile = usePublicProfile(slug);
+  const steamId = profile.data?.steamProfile.steamId ?? '';
+  const activity = useProfileActivity(steamId, { limit: 5, offset: 0 });
+  const milestones = useProfileMilestones(steamId, { limit: 5, offset: 0 });
 
   if (profile.isLoading) {
     return <LoadingState message="Loading public profile..." />;
@@ -145,6 +152,25 @@ export function PublicProfileView({
           )}
         </section>
       )}
+
+      {data.steamProfile.steamId ? (
+        <>
+          <MilestonesList
+            error={milestones.error}
+            isError={milestones.isError}
+            isLoading={milestones.isLoading}
+            milestones={milestones.data?.items}
+            title="Milestones"
+          />
+          <ActivityFeed
+            error={activity.error}
+            isError={activity.isError}
+            isLoading={activity.isLoading}
+            items={activity.data?.items}
+            title="Recent activity"
+          />
+        </>
+      ) : null}
 
       {data.steamProfile.steamId ? (
         <Link

@@ -2,16 +2,25 @@ import { Module } from '@nestjs/common';
 
 import { AccountController } from '../modules/account/account.controller';
 import { AccountService } from '../modules/account/account.service';
+import { ActivityController } from '../modules/activity/activity.controller';
+import { ActivityService } from '../modules/activity/activity.service';
 import { AchievementsController } from '../modules/achievements/achievements.controller';
 import { AchievementsService } from '../modules/achievements/achievements.service';
 import { GamesController } from '../modules/games/games.controller';
 import { GamesService } from '../modules/games/games.service';
 import { GlobalGamesController } from '../modules/games/global-games.controller';
+import { CommunityController } from '../modules/community/community.controller';
+import { CommunityService } from '../modules/community/community.service';
+import { ReportsController } from '../modules/community/reports.controller';
+import { GamingSessionsController } from '../modules/gaming-sessions/gaming-sessions.controller';
+import { GamingSessionsService } from '../modules/gaming-sessions/gaming-sessions.service';
 import { GuidesController } from '../modules/guides/guides.controller';
 import { GuidesService } from '../modules/guides/guides.service';
 import { HealthController } from '../modules/health/health.controller';
 import { LeaderboardsController } from '../modules/leaderboards/leaderboards.controller';
 import { LeaderboardsService } from '../modules/leaderboards/leaderboards.service';
+import { MilestonesController } from '../modules/milestones/milestones.controller';
+import { MilestonesService } from '../modules/milestones/milestones.service';
 import { AuthCookieService } from '../modules/auth/auth-cookie.service';
 import { AuthController } from '../modules/auth/auth.controller';
 import { AuthService } from '../modules/auth/auth.service';
@@ -24,18 +33,24 @@ import { SnapshotsService } from '../modules/snapshots/snapshots.service';
 import { SyncController } from '../modules/sync/sync.controller';
 import { SyncService } from '../modules/sync/sync.service';
 import { SessionAuthGuard } from '../modules/auth/session-auth.guard';
+import { OptionalSessionAuthGuard } from '../modules/auth/optional-session-auth.guard';
 
 const serviceStub = {};
 
 @Module({
   controllers: [
     HealthController,
+    ActivityController,
     ProfilesController,
     GlobalGamesController,
+    CommunityController,
+    ReportsController,
+    GamingSessionsController,
     GuidesController,
     GamesController,
     AchievementsController,
     SnapshotsController,
+    MilestonesController,
     LeaderboardsController,
     SyncController,
     AuthController,
@@ -44,10 +59,14 @@ const serviceStub = {};
   ],
   providers: [
     { provide: ProfilesService, useValue: serviceStub },
+    { provide: ActivityService, useValue: serviceStub },
     { provide: GamesService, useValue: serviceStub },
+    { provide: CommunityService, useValue: serviceStub },
+    { provide: GamingSessionsService, useValue: serviceStub },
     { provide: GuidesService, useValue: serviceStub },
     { provide: AchievementsService, useValue: serviceStub },
     { provide: SnapshotsService, useValue: serviceStub },
+    { provide: MilestonesService, useValue: serviceStub },
     { provide: LeaderboardsService, useValue: serviceStub },
     { provide: SyncService, useValue: serviceStub },
     { provide: AuthService, useValue: serviceStub },
@@ -55,6 +74,7 @@ const serviceStub = {};
     { provide: AccountService, useValue: serviceStub },
     { provide: PublicProfilesService, useValue: serviceStub },
     { provide: SessionAuthGuard, useValue: serviceStub },
+    { provide: OptionalSessionAuthGuard, useValue: serviceStub },
   ],
 })
 export class OpenApiDocumentModule {}

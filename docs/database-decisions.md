@@ -146,3 +146,57 @@ return the current author's drafts and private/unlisted work.
 
 Rich text, images, comments, votes, moderation workflows, and guide history are
 deferred until they have reviewed data models and migrations.
+
+## Gaming Sessions Decision
+
+`0004-add-gaming-sessions-foundation.sql` adds Steam game session tables:
+
+- `gaming_sessions` stores scheduled co-op/boosting sessions for one Steam app.
+- `gaming_session_participants` stores host and participant membership state.
+- `gaming_session_achievements` links sessions to canonical Steam achievements.
+
+The schema is Steam-only and uses `steam_app_id` directly. It intentionally does
+not add platform-neutral abstractions.
+
+Session history uses status fields (`open`, `full`, `completed`, `cancelled`)
+instead of destructive deletes. Foreign keys use `ON DELETE RESTRICT` so session
+history is not removed accidentally when users, games, or achievements are
+cleaned up later.
+
+Chat, comments, reminders, calendar integrations, uploads, moderation, and
+payments are deferred until each has its own reviewed data model.
+
+## Community Interactions Decision
+
+`0005-add-community-interactions.sql` adds lightweight community tables:
+
+- `guide_votes` for one authenticated upvote/downvote per user per guide.
+- `guide_comments` for flat guide comments.
+- `session_comments` for flat gaming-session comments.
+- `content_reports` for authenticated report intake.
+
+Comments and reports use status fields instead of destructive deletes. Comment
+deletes are soft deletes (`deleted`), and reports remain private intake records
+for a future moderation dashboard.
+
+The schema intentionally does not add nested threads, real-time chat,
+notifications, uploads, or moderation action tables yet. Those features need
+separate reviewed migrations when their workflows are designed.
+
+## Activity And Milestones Decision
+
+`0006-add-activity-feed-and-milestones.sql` adds:
+
+- `activity_events` for public/private platform events with safe JSON metadata.
+- `profile_milestones` for one-time profile milestones generated from snapshots.
+
+Activity rows are append-only public history records. They intentionally store
+display-safe metadata only and must not contain secrets, cookies, raw session
+tokens, token hashes, OpenID payloads, or private account settings.
+
+Milestones are generated after snapshot creation and deduped by Steam profile,
+milestone type, and threshold. A new milestone also records a
+`milestone_reached` activity event.
+
+Notifications, real-time feed delivery, share cards, badge artwork, and richer
+privacy controls are deferred to future reviewed migrations.

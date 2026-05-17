@@ -457,6 +457,75 @@ Rows include public Steam metadata and `publicSlug` when a linked public profile
 is published. Frontend links should prefer `/u/:slug` and otherwise fall back to
 `/profiles/:steamId`.
 
+## Gaming Sessions
+
+Session endpoints are Steam-only, database-backed, and do not call Steam at
+request time.
+
+### `GET /sessions`
+
+Lists public sessions across tracked Steam games.
+
+Query parameters:
+- `status`: `open`, `full`, `completed`, or `cancelled`; default `open`.
+- `steamAppId`: optional positive Steam app ID.
+- `from` / `to`: optional ISO datetimes filtering scheduled start time.
+- `limit`: integer from `1` to `100`; default `20`.
+- `offset`: non-negative integer; default `0`.
+
+### `GET /games/:steamAppId/sessions`
+
+Lists public sessions for one tracked Steam game. Uses the same query
+parameters as the global list except `steamAppId` comes from the path.
+
+### `GET /sessions/:sessionId`
+
+Returns public session detail. Private and unlisted session detail is returned
+only to the host, admins/moderators, or joined participants.
+
+### `POST /games/:steamAppId/sessions`
+
+Requires auth. Creates a session and automatically adds the current user as the
+host participant.
+
+Request fields:
+- `title`
+- `description`
+- `scheduledStartAt`
+- `scheduledEndAt`
+- `timezone`
+- `maxParticipants`
+- `visibility`
+- `externalVoiceUrl`
+
+### `PATCH /sessions/:sessionId`
+
+Requires auth. Only the host, admin, or moderator can update session metadata or
+status.
+
+### `POST /sessions/:sessionId/join`
+
+Requires auth. Joins an open session unless it is full, completed, cancelled, or
+the user is already joined.
+
+### `POST /sessions/:sessionId/leave`
+
+Requires auth. Participants can leave. Hosts cannot leave in v1; they should
+cancel the session instead.
+
+### `POST /sessions/:sessionId/cancel`
+
+Requires host, admin, or moderator. Sets `status=cancelled`.
+
+### `POST /sessions/:sessionId/achievements`
+
+Requires host, admin, or moderator. Attaches achievement IDs that belong to the
+same Steam app as the session.
+
+### `DELETE /sessions/:sessionId/achievements/:achievementId`
+
+Requires host, admin, or moderator. Removes one achievement mapping.
+
 ## Sync Runs
 
 ### `POST /profiles/:steamId/sync`
@@ -518,6 +587,70 @@ Response shape:
 - `items`: sync type, status, timestamps, optional error message, and metadata.
 
 ## Decisions
+
+## Community Interaction Endpoints
+
+Community endpoints are database-backed and Steam-only. They never expose
+cookies, raw session tokens, token hashes, or private account fields.
+
+Guide votes:
+
+- `GET /guides/:guideId/votes/summary`: public vote summary. If called with an
+  authenticated session, `currentUserVote` reflects the signed-in user's vote.
+- `PUT /guides/:guideId/vote`: authenticated upsert of `value` `1` or `-1`.
+- `DELETE /guides/:guideId/vote`: authenticated removal of the current user's
+  vote.
+
+Guide comments:
+
+- `GET /guides/:guideId/comments`: public visible comments only.
+- `POST /guides/:guideId/comments`: authenticated comment creation.
+- `PATCH /guides/:guideId/comments/:commentId`: author/admin/moderator edit.
+- `DELETE /guides/:guideId/comments/:commentId`: author/admin/moderator
+  soft-delete.
+
+Session comments:
+
+- `GET /sessions/:sessionId/comments`: visible comments for public sessions, or
+  private/unlisted comments for hosts, joined participants, admins, and
+  moderators.
+- `POST /sessions/:sessionId/comments`: authenticated creation following the
+  same visibility rules.
+- `PATCH /sessions/:sessionId/comments/:commentId`: author/admin/moderator edit.
+- `DELETE /sessions/:sessionId/comments/:commentId`: author/admin/moderator
+  soft-delete.
+
+Reports:
+
+- `POST /reports`: authenticated report intake for `guide`, `guide_comment`,
+  `gaming_session`, or `session_comment`.
+
+Report target validation confirms the target exists before inserting the report.
+The response exposes only the report id, target type/id, reason, details,
+status, and timestamps. It does not expose reporter private fields or session
+data.
+
+There is no moderation dashboard, nested threads, real-time chat, or
+notification workflow yet.
+
+## Activity And Milestone Endpoints
+
+Activity and milestone endpoints are public database-backed reads. They return
+only `visibility = public` activity and safe milestone metadata.
+
+- `GET /activity`: latest public platform activity. Optional query params:
+  `eventType`, `limit`, `offset`.
+- `GET /profiles/:steamId/activity`: public activity for one Steam profile.
+- `GET /games/:steamAppId/activity`: public activity for one Steam game.
+- `GET /profiles/:steamId/milestones`: milestone history for one Steam profile.
+
+Activity responses include safe actor/profile display data, event type,
+timestamp, entity type/id, optional Steam app id, and safe public metadata. They
+do not expose auth sessions, token hashes, private account fields, cookies, raw
+OpenID payloads, or Steam API keys.
+
+Development seed data and `pnpm milestones:backfill-dev` ensure demo snapshots
+can be converted into milestone rows without requiring a live Steam sync.
 
 ### Decision
 

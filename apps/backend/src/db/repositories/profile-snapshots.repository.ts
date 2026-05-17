@@ -52,6 +52,15 @@ export class ProfileSnapshotsRepository {
       .offset(input.offset);
   }
 
+  async findSteamProfileIdsWithSnapshots(): Promise<string[]> {
+    const rows = await this.databaseService.db
+      .selectDistinct({ steamProfileId: profileSnapshots.steamProfileId })
+      .from(profileSnapshots)
+      .orderBy(profileSnapshots.steamProfileId);
+
+    return rows.map((row) => row.steamProfileId);
+  }
+
   async countBySteamProfileId(steamProfileId: string): Promise<number> {
     const rows = await this.databaseService.db
       .select({ total: sql<number>`cast(count(*) as int)` })

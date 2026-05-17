@@ -34,6 +34,7 @@ The data includes:
 - one high-playtime unfinished game;
 - rare, common, hidden, locked, and unlocked achievements;
 - success, partial success, and failed sync runs.
+- a profile snapshot and deterministic milestones generated from that snapshot.
 
 Frontend game detail pages must display achievement `unlockState` explicitly.
 If future seed data includes metadata-only achievements, show
@@ -57,6 +58,23 @@ Seed the demo data:
 
 ```sh
 docker-compose exec backend pnpm seed:dev
+```
+
+`seed:dev` creates the demo snapshot if needed and immediately backfills
+milestones for the demo Steam profile. Repeated seed runs are idempotent:
+existing milestones are reused, and duplicate `milestone_reached` activity is
+not created.
+
+If existing local snapshots predate milestone generation, run:
+
+```sh
+docker-compose exec backend pnpm milestones:backfill-dev
+```
+
+or for only the demo profile:
+
+```sh
+docker-compose exec backend pnpm milestones:backfill-dev -- 76561198000000000
 ```
 
 Reset only the deterministic demo data:
@@ -105,18 +123,27 @@ Useful tables:
 - `achievements`
 - `profile_achievements`
 - `sync_runs`
+- `profile_snapshots`
+- `profile_milestones`
+- `activity_events`
 
 Filter by:
 
 ```sql
 select * from steam_profiles where steam_id = '76561198000000000';
 select * from games where steam_app_id between 910001 and 910006;
+select pm.milestone_type, pm.threshold_value, pm.title, pm.achieved_at
+from profile_milestones pm
+join steam_profiles sp on sp.id = pm.steam_profile_id
+where sp.steam_id = '76561198000000000'
+order by pm.achieved_at desc;
 ```
 
 ## Notes
 
 - The seed data is fake and local-only.
-- Steam sync is not implemented yet.
+- Steam sync is implemented separately from fake seed data and should not be
+  required to view demo milestones.
 - Backend container `DATABASE_URL` must continue to use the Docker hostname:
   `postgresql://postgres:postgres@postgres:5432/steam_tracker`.
 - Host-only curl examples may use `localhost:3000` because they call the

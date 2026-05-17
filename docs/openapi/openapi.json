@@ -24,6 +24,164 @@
         ]
       }
     },
+    "/activity": {
+      "get": {
+        "operationId": "listActivity",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "eventType",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "profile_synced",
+                "game_completed",
+                "rare_achievement_synced",
+                "guide_published",
+                "guide_commented",
+                "guide_voted",
+                "session_created",
+                "session_joined",
+                "session_commented",
+                "milestone_reached"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityFeedResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List latest public activity events",
+        "tags": [
+          "activity"
+        ]
+      }
+    },
+    "/profiles/{steamId}/activity": {
+      "get": {
+        "operationId": "listProfileActivity",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityFeedResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile was not found."
+          }
+        },
+        "summary": "List public activity for a Steam profile",
+        "tags": [
+          "activity"
+        ]
+      }
+    },
+    "/games/{steamAppId}/activity": {
+      "get": {
+        "operationId": "listGameActivity",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActivityFeedResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game was not found."
+          }
+        },
+        "summary": "List public activity for a Steam game",
+        "tags": [
+          "activity"
+        ]
+      }
+    },
     "/profiles/{steamId}": {
       "get": {
         "description": "Reads profile metadata from PostgreSQL only.",
@@ -401,6 +559,978 @@
         "summary": "List tracked players for a game",
         "tags": [
           "games"
+        ]
+      }
+    },
+    "/guides/{guideId}/votes/summary": {
+      "get": {
+        "operationId": "getGuideVoteSummary",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideVoteSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Guide was not found."
+          }
+        },
+        "summary": "Get guide vote summary",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/guides/{guideId}/vote": {
+      "put": {
+        "operationId": "upsertGuideVote",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpsertGuideVoteDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideVoteSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Guide was not found."
+          }
+        },
+        "summary": "Create or update current user guide vote",
+        "tags": [
+          "community"
+        ]
+      },
+      "delete": {
+        "operationId": "removeGuideVote",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GuideVoteSummaryResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Guide was not found."
+          }
+        },
+        "summary": "Remove current user guide vote",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/guides/{guideId}/comments": {
+      "get": {
+        "operationId": "listGuideComments",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentListResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Guide was not found."
+          }
+        },
+        "summary": "List visible guide comments",
+        "tags": [
+          "community"
+        ]
+      },
+      "post": {
+        "operationId": "createGuideComment",
+        "parameters": [
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Create a guide comment",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/guides/{guideId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "updateGuideComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this comment."
+          }
+        },
+        "summary": "Update a guide comment",
+        "tags": [
+          "community"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteGuideComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "guideId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Comment deleted."
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this comment."
+          }
+        },
+        "summary": "Soft-delete a guide comment",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/comments": {
+      "get": {
+        "operationId": "listSessionComments",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentListResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session was not found or is private."
+          }
+        },
+        "summary": "List visible session comments",
+        "tags": [
+          "community"
+        ]
+      },
+      "post": {
+        "operationId": "createSessionComment",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Create a session comment",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/comments/{commentId}": {
+      "patch": {
+        "operationId": "updateSessionComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateCommentDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CommentResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this comment."
+          }
+        },
+        "summary": "Update a session comment",
+        "tags": [
+          "community"
+        ]
+      },
+      "delete": {
+        "operationId": "deleteSessionComment",
+        "parameters": [
+          {
+            "name": "commentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Comment deleted."
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this comment."
+          }
+        },
+        "summary": "Soft-delete a session comment",
+        "tags": [
+          "community"
+        ]
+      }
+    },
+    "/reports": {
+      "post": {
+        "operationId": "createContentReport",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateContentReportDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContentReportResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Reported content was not found."
+          }
+        },
+        "summary": "Create a moderation intake report",
+        "tags": [
+          "reports"
+        ]
+      }
+    },
+    "/sessions": {
+      "get": {
+        "operationId": "listGlobalSessions",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "open",
+                "full",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List public upcoming Steam game sessions",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/games/{steamAppId}/sessions": {
+      "get": {
+        "operationId": "listGameSessions",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "open",
+                "full",
+                "completed",
+                "cancelled"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionListResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "List public sessions for a Steam game",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "post": {
+        "operationId": "createGameSession",
+        "parameters": [
+          {
+            "name": "steamAppId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": 910001,
+              "type": "number"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGamingSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Game has not been tracked."
+          }
+        },
+        "summary": "Create a scheduled Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}": {
+      "get": {
+        "description": "Returns public session details, or private/unlisted details to the host or joined participants.",
+        "operationId": "getSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Session was not found or is private."
+          }
+        },
+        "summary": "Get a Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      },
+      "patch": {
+        "description": "Only the host, admin, or moderator can update a session.",
+        "operationId": "updateSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGamingSessionDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this session."
+          },
+          "404": {
+            "description": "Session was not found."
+          }
+        },
+        "summary": "Update a Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/join": {
+      "post": {
+        "operationId": "joinSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Session was not found."
+          }
+        },
+        "summary": "Join an open Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/leave": {
+      "post": {
+        "operationId": "leaveSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "404": {
+            "description": "Session was not found."
+          }
+        },
+        "summary": "Leave a Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/cancel": {
+      "post": {
+        "operationId": "cancelSession",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamingSessionDetailResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this session."
+          }
+        },
+        "summary": "Cancel a Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/achievements": {
+      "post": {
+        "operationId": "addSessionAchievements",
+        "parameters": [
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddSessionAchievementsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AddSessionAchievementsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this session."
+          }
+        },
+        "summary": "Attach achievements to a Steam game session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/sessions/{sessionId}/achievements/{achievementId}": {
+      "delete": {
+        "operationId": "removeSessionAchievement",
+        "parameters": [
+          {
+            "name": "achievementId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sessionId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Achievement mapping removed."
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "403": {
+            "description": "User cannot manage this session."
+          }
+        },
+        "summary": "Detach an achievement from a Steam game session",
+        "tags": [
+          "sessions"
         ]
       }
     },
@@ -1247,6 +2377,55 @@
         ]
       }
     },
+    "/profiles/{steamId}/milestones": {
+      "get": {
+        "operationId": "listProfileMilestones",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileMilestonesResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile was not found."
+          }
+        },
+        "summary": "List profile milestones",
+        "tags": [
+          "milestones"
+        ]
+      }
+    },
     "/leaderboards": {
       "get": {
         "operationId": "listLeaderboards",
@@ -1782,6 +2961,156 @@
           "status"
         ]
       },
+      "ActivityActorResponseDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Steam Hunter"
+          },
+          "steamId": {
+            "type": "string",
+            "nullable": true,
+            "example": "76561198000000000"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "publicSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "nero"
+          }
+        }
+      },
+      "ActivitySteamProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "personaName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Steam Hunter"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "steamId"
+        ]
+      },
+      "ActivityEventResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "eventType": {
+            "type": "string",
+            "enum": [
+              "profile_synced",
+              "game_completed",
+              "rare_achievement_synced",
+              "guide_published",
+              "guide_commented",
+              "guide_voted",
+              "session_created",
+              "session_joined",
+              "session_commented",
+              "milestone_reached"
+            ],
+            "example": "guide_published"
+          },
+          "occurredAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "actor": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivityActorResponseDto"
+              }
+            ]
+          },
+          "steamProfile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ActivitySteamProfileResponseDto"
+              }
+            ]
+          },
+          "steamAppId": {
+            "type": "number",
+            "nullable": true,
+            "example": 910001
+          },
+          "entityType": {
+            "type": "string",
+            "example": "guide"
+          },
+          "entityId": {
+            "type": "string",
+            "nullable": true,
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "title": "Demo Roadmap"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "eventType",
+          "occurredAt",
+          "entityType",
+          "metadata"
+        ]
+      },
+      "ActivityFeedResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActivityEventResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 30
+          },
+          "limit": {
+            "type": "number",
+            "example": 30
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
       "ProfileDetailResponseDto": {
         "type": "object",
         "properties": {
@@ -2106,6 +3435,10 @@
       "GlobalGameAchievementResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
           "apiName": {
             "type": "string",
             "example": "ACH_WIN_ONE_GAME"
@@ -2141,6 +3474,7 @@
           }
         },
         "required": [
+          "id",
           "apiName",
           "hidden"
         ]
@@ -2258,6 +3592,647 @@
           "total",
           "limit",
           "offset"
+        ]
+      },
+      "GuideVoteSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "upvotes": {
+            "type": "number",
+            "example": 12
+          },
+          "downvotes": {
+            "type": "number",
+            "example": 2
+          },
+          "score": {
+            "type": "number",
+            "example": 10
+          },
+          "currentUserVote": {
+            "type": "number",
+            "enum": [
+              -1,
+              1
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "upvotes",
+          "downvotes",
+          "score"
+        ]
+      },
+      "UpsertGuideVoteDto": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "number",
+            "enum": [
+              -1,
+              1
+            ],
+            "example": 1
+          }
+        },
+        "required": [
+          "value"
+        ]
+      },
+      "CommunityAuthorResponseDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "steamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicSlug": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "CommentResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "example": "visible"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "author": {
+            "$ref": "#/components/schemas/CommunityAuthorResponseDto"
+          }
+        },
+        "required": [
+          "id",
+          "body",
+          "status",
+          "createdAt",
+          "updatedAt",
+          "author"
+        ]
+      },
+      "CommentListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/CommentResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "CreateCommentDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "UpdateCommentDto": {
+        "type": "object",
+        "properties": {
+          "body": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 2000
+          }
+        },
+        "required": [
+          "body"
+        ]
+      },
+      "CreateContentReportDto": {
+        "type": "object",
+        "properties": {
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "guide",
+              "guide_comment",
+              "gaming_session",
+              "session_comment"
+            ]
+          },
+          "targetId": {
+            "type": "string"
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "spam",
+              "abuse",
+              "off_topic",
+              "cheating",
+              "other"
+            ]
+          },
+          "details": {
+            "type": "string",
+            "maxLength": 2000,
+            "nullable": true
+          }
+        },
+        "required": [
+          "targetType",
+          "targetId",
+          "reason"
+        ]
+      },
+      "ContentReportResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "targetType": {
+            "type": "string",
+            "enum": [
+              "guide",
+              "guide_comment",
+              "gaming_session",
+              "session_comment"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "enum": [
+              "spam",
+              "abuse",
+              "off_topic",
+              "cheating",
+              "other"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          },
+          "createdAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "targetType",
+          "reason",
+          "status",
+          "createdAt"
+        ]
+      },
+      "SessionUserResponseDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "steamId": {
+            "type": "string",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "publicSlug": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "GamingSessionSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "steamAppId": {
+            "type": "number"
+          },
+          "gameName": {
+            "type": "string"
+          },
+          "gameIconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "full",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ]
+          },
+          "scheduledStartAt": {
+            "type": "string"
+          },
+          "scheduledEndAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          },
+          "maxParticipants": {
+            "type": "number"
+          },
+          "participantCount": {
+            "type": "number"
+          },
+          "achievementCount": {
+            "type": "number"
+          },
+          "externalVoiceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "host": {
+            "$ref": "#/components/schemas/SessionUserResponseDto"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "gameName",
+          "title",
+          "status",
+          "visibility",
+          "scheduledStartAt",
+          "maxParticipants",
+          "participantCount",
+          "achievementCount",
+          "host",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "GamingSessionListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GamingSessionSummaryResponseDto"
+            }
+          },
+          "total": {
+            "type": "number"
+          },
+          "limit": {
+            "type": "number"
+          },
+          "offset": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "GamingSessionParticipantResponseDto": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string"
+          },
+          "joinedAt": {
+            "type": "string"
+          },
+          "leftAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "user": {
+            "$ref": "#/components/schemas/SessionUserResponseDto"
+          }
+        },
+        "required": [
+          "role",
+          "status",
+          "joinedAt",
+          "user"
+        ]
+      },
+      "GamingSessionAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "apiName": {
+            "type": "string"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true
+          },
+          "globalPercentage": {
+            "type": "number",
+            "nullable": true
+          },
+          "hidden": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "apiName",
+          "hidden"
+        ]
+      },
+      "GamingSessionDetailResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "steamAppId": {
+            "type": "number"
+          },
+          "gameName": {
+            "type": "string"
+          },
+          "gameIconUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "full",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ]
+          },
+          "scheduledStartAt": {
+            "type": "string"
+          },
+          "scheduledEndAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "nullable": true
+          },
+          "maxParticipants": {
+            "type": "number"
+          },
+          "participantCount": {
+            "type": "number"
+          },
+          "achievementCount": {
+            "type": "number"
+          },
+          "externalVoiceUrl": {
+            "type": "string",
+            "nullable": true
+          },
+          "host": {
+            "$ref": "#/components/schemas/SessionUserResponseDto"
+          },
+          "createdAt": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string"
+          },
+          "participants": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GamingSessionParticipantResponseDto"
+            }
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GamingSessionAchievementResponseDto"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "gameName",
+          "title",
+          "status",
+          "visibility",
+          "scheduledStartAt",
+          "maxParticipants",
+          "participantCount",
+          "achievementCount",
+          "host",
+          "createdAt",
+          "updatedAt",
+          "participants",
+          "achievements"
+        ]
+      },
+      "CreateGamingSessionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "scheduledStartAt": {
+            "type": "string",
+            "example": "2026-05-18T15:00:00.000Z"
+          },
+          "scheduledEndAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100,
+            "example": "Asia/Kolkata"
+          },
+          "maxParticipants": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 100,
+            "default": 4
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ],
+            "default": "public"
+          },
+          "externalVoiceUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "title",
+          "scheduledStartAt"
+        ]
+      },
+      "UpdateGamingSessionDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 120
+          },
+          "description": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "scheduledStartAt": {
+            "type": "string"
+          },
+          "scheduledEndAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "timezone": {
+            "type": "string",
+            "maxLength": 100,
+            "nullable": true
+          },
+          "maxParticipants": {
+            "type": "number",
+            "minimum": 2,
+            "maximum": 100
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "unlisted",
+              "private"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "open",
+              "full",
+              "completed",
+              "cancelled"
+            ]
+          },
+          "externalVoiceUrl": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "AddSessionAchievementsDto": {
+        "type": "object",
+        "properties": {
+          "achievementIds": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        },
+        "required": [
+          "achievementIds"
+        ]
+      },
+      "AddSessionAchievementsResponseDto": {
+        "type": "object",
+        "properties": {
+          "added": {
+            "type": "number"
+          }
+        },
+        "required": [
+          "added"
         ]
       },
       "GuideAuthorResponseDto": {
@@ -3268,6 +5243,82 @@
           },
           "offset": {
             "type": "number"
+          }
+        },
+        "required": [
+          "steamId",
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "ProfileMilestoneResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "milestoneType": {
+            "type": "string",
+            "example": "completed_games_count"
+          },
+          "thresholdValue": {
+            "type": "number",
+            "nullable": true,
+            "example": 10
+          },
+          "title": {
+            "type": "string",
+            "example": "10 Completed Games"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Reached 10 completed tracked Steam games."
+          },
+          "achievedAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {}
+          }
+        },
+        "required": [
+          "id",
+          "milestoneType",
+          "title",
+          "achievedAt",
+          "metadata"
+        ]
+      },
+      "ProfileMilestonesResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileMilestoneResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 20
+          },
+          "limit": {
+            "type": "number",
+            "example": 20
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
           }
         },
         "required": [

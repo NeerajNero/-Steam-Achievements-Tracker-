@@ -188,7 +188,10 @@ Use clear numbered filenames:
 ```txt
 0001-initial-platform-schema.sql
 0002-add-profile-snapshots-and-leaderboards.sql
-0003-add-achievement-goals.sql
+0003-add-guides-foundation.sql
+0004-add-gaming-sessions-foundation.sql
+0005-add-community-interactions.sql
+0006-add-activity-feed-and-milestones.sql
 ```
 
 The runner sorts filenames lexicographically, so keep the zero-padded prefix.
@@ -223,3 +226,18 @@ For future rollback support:
 Do not introduce Prisma, TypeORM, or ORM schema sync for this project. The migration runner executes raw SQL only.
 
 Do not use `drizzle-kit push` or any other schema-push workflow. When a migration changes a table, update the matching Drizzle schema file in `apps/backend/src/db/schema` in the same change so repositories and database-facing services remain type-safe.
+
+## Current Forward Migrations
+
+- `0001-initial-platform-schema.sql`: Steam profile/game/achievement sync schema,
+  auth/profile claiming foundation, and profile-game progress function.
+- `0002-add-profile-snapshots-and-leaderboards.sql`: profile snapshots and
+  leaderboard v1 support.
+- `0003-add-guides-foundation.sql`: Steam game guides, guide sections, and guide
+  achievement mapping.
+- `0004-add-gaming-sessions-foundation.sql`: scheduled Steam game sessions,
+  participants, and targeted session achievement mapping.
+- `0005-add-community-interactions.sql`: guide votes, guide comments, session
+  comments, and moderation report intake.
+- `0006-add-activity-feed-and-milestones.sql`: public/private activity events
+  and profile milestone history generated from snapshots.

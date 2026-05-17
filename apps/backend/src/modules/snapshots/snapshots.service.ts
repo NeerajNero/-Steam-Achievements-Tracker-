@@ -4,6 +4,8 @@ import {
   ProfileSnapshotsDataService,
   type ProfileSnapshot,
 } from '../../db/services/profile-snapshots-data.service';
+import { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
+import { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
 import { UserSteamAccountsDataService } from '../../db/services/user-steam-accounts-data.service';
 import type { AuthenticatedUserContext } from '../auth/authenticated-user.types';
@@ -18,6 +20,8 @@ export class SnapshotsService {
   constructor(
     private readonly steamProfilesDataService: SteamProfilesDataService,
     private readonly profileSnapshotsDataService: ProfileSnapshotsDataService,
+    private readonly profileMilestonesDataService: ProfileMilestonesDataService,
+    private readonly activityEventsDataService: ActivityEventsDataService,
     private readonly userSteamAccountsDataService: UserSteamAccountsDataService,
   ) {}
 
@@ -41,6 +45,8 @@ export class SnapshotsService {
     if (snapshot === null) {
       throw new NotFoundException(`Steam profile ${steamId} was not found`);
     }
+
+    await this.createMilestoneEvents(snapshot);
 
     return mapSnapshot(snapshot);
   }
@@ -93,6 +99,25 @@ export class SnapshotsService {
       throw new ForbiddenException(
         'You can create snapshots only for a claimed Steam profile.',
       );
+    }
+  }
+
+  private async createMilestoneEvents(snapshot: ProfileSnapshot): Promise<void> {
+    const milestones =
+      await this.profileMilestonesDataService.createFromSnapshot(snapshot);
+
+    for (const milestone of milestones) {
+      await this.activityEventsDataService.create({
+        steamProfileId: milestone.steamProfileId,
+        eventType: 'milestone_reached',
+        entityType: 'milestone',
+        entityId: milestone.id,
+        metadata: {
+          milestoneType: milestone.milestoneType,
+          thresholdValue: milestone.thresholdValue,
+          title: milestone.title,
+        },
+      });
     }
   }
 }

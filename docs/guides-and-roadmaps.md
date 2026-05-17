@@ -55,14 +55,60 @@ The editor is intentionally plain:
 - no image uploads;
 - achievement attachment by UUID for now.
 
+## Manual Smoke
+
+Use a real signed-in browser session:
+
+1. Open `/games/910001/guides/new`.
+2. Create `Demo Completion Roadmap` with summary `Local smoke guide`.
+3. Add one guide section.
+4. Attach one achievement UUID from Steam App `910001`.
+5. Publish the guide.
+6. Verify `/games/910001/guides` lists it.
+7. Verify `/games/910001/guides/:slug` shows the section and achievement.
+8. Verify `/account/guides` lists it for the author.
+9. Keep a draft/private guide unpublished and verify it is hidden publicly.
+
+Do not print cookies, session tokens, token hashes, Steam API keys, or OpenID
+payloads while testing.
+
+## Deterministic Auth Smoke
+
+For Docker/local verification without relying on a browser cookie, run:
+
+```sh
+docker-compose exec -T backend pnpm guide:auth-smoke
+```
+
+The script uses demo Steam ID `76561198000000000` and demo app ID `910001`.
+It creates or reuses the local smoke auth link, creates a raw session token only
+in process memory, stores only the hash in `auth_sessions`, and calls the real
+HTTP guide endpoints with an internal `Cookie` header. It never prints the
+cookie, raw token, token hash, Steam API key, or OpenID payloads.
+
+The smoke creates a published guide titled `Demo Completion Roadmap`, adds one
+section, attaches one achievement from app `910001`, verifies public list/detail
+plus `/account/guides`, then verifies one guide vote and one visible guide
+comment. It also verifies public `guide_published` and `guide_commented`
+activity events. Before creating the guide, it removes only prior smoke guides for the
+same smoke author, app, title, and summary so repeated runs are deterministic
+and do not delete user-created guides.
+
+To include the created guide in frontend route smoke, pass the reported slug:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 \
+  -e WEB_GUIDE_SLUG=<slug> web node scripts/web-smoke.js
+```
+
 ## Deferred Work
 
 Future reviewed migrations/features can add:
 
 - rich text or markdown rendering;
 - guide images through the future media upload flow;
-- comments and voting;
-- moderation/review queues;
+- richer comment editing UX, nested threads, and voting analytics;
+- moderation/review queues for `content_reports`;
 - guide version history;
 - session-planning integration.
 

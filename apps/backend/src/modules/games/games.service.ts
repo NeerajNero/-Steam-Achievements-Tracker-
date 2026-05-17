@@ -265,6 +265,7 @@ function mapGlobalGameItem(row: GlobalGameListRow): GlobalGameItemResponseDto {
 }
 
 function mapGlobalAchievement(row: {
+  id: string;
   apiName: string;
   displayName: string | null;
   description: string | null;
@@ -274,6 +275,7 @@ function mapGlobalAchievement(row: {
   globalPercentage: number | null;
 }): GlobalGameAchievementResponseDto {
   return {
+    id: row.id,
     apiName: row.apiName,
     displayName: row.displayName,
     description: row.description,

@@ -48,6 +48,10 @@ export class ProfileSnapshotsDataService {
     return rows[0] ?? null;
   }
 
+  async findSteamProfileIdsWithSnapshots(): Promise<string[]> {
+    return this.profileSnapshotsRepository.findSteamProfileIdsWithSnapshots();
+  }
+
   async countBySteamProfileId(steamProfileId: string): Promise<number> {
     return this.profileSnapshotsRepository.countBySteamProfileId(steamProfileId);
   }

@@ -1,0 +1,59 @@
+'use client';
+
+import { CreateContentReportDtoTargetTypeEnum } from '@steam-achievement/client-sdk';
+import type { ReactNode } from 'react';
+
+import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { getErrorMessage } from '@/lib/format';
+
+import { useCreateSessionComment } from '../api/use-create-session-comment';
+import { useSessionComments } from '../api/use-session-comments';
+import { CommentForm } from './comment-form';
+import { CommentsList } from './comments-list';
+import { ReportContentButton } from './report-content-button';
+
+export function SessionCommunitySection({
+  sessionId,
+}: Readonly<{
+  sessionId: string;
+}>): ReactNode {
+  const currentUser = useCurrentUser();
+  const comments = useSessionComments(sessionId);
+  const createComment = useCreateSessionComment(sessionId);
+
+  return (
+    <section className="grid gap-6">
+      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+        <div className="border-b border-slate-200 p-4">
+          <h2 className="font-semibold text-slate-950">Session comments</h2>
+          <p className="mt-1 text-sm text-slate-600">
+            Use comments for planning details. Real-time chat is not implemented.
+          </p>
+        </div>
+        <div className="border-b border-slate-200 p-4">
+          {currentUser.data ? (
+            <CommentForm onSubmit={(body) => createComment.mutateAsync(body)} />
+          ) : (
+            <p className="text-sm text-slate-600">
+              Sign in with Steam to comment.
+            </p>
+          )}
+        </div>
+        {comments.isLoading ? <LoadingState message="Loading comments..." /> : null}
+        {comments.isError ? (
+          <ErrorState
+            message={getErrorMessage(comments.error)}
+            title="Comments unavailable"
+          />
+        ) : null}
+        {comments.data ? <CommentsList comments={comments.data.items} /> : null}
+      </section>
+
+      <ReportContentButton
+        targetId={sessionId}
+        targetType={CreateContentReportDtoTargetTypeEnum.GamingSession}
+      />
+    </section>
+  );
+}

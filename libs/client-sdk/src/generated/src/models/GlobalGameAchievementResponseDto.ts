@@ -24,6 +24,12 @@ export interface GlobalGameAchievementResponseDto {
      * @type {string}
      * @memberof GlobalGameAchievementResponseDto
      */
+    id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof GlobalGameAchievementResponseDto
+     */
     apiName: string;
     /**
      * 
@@ -67,6 +73,7 @@ export interface GlobalGameAchievementResponseDto {
  * Check if a given object implements the GlobalGameAchievementResponseDto interface.
  */
 export function instanceOfGlobalGameAchievementResponseDto(value: object): value is GlobalGameAchievementResponseDto {
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('apiName' in value) || value['apiName'] === undefined) return false;
     if (!('hidden' in value) || value['hidden'] === undefined) return false;
     return true;
@@ -82,6 +89,7 @@ export function GlobalGameAchievementResponseDtoFromJSONTyped(json: any, ignoreD
     }
     return {
         
+        'id': json['id'],
         'apiName': json['apiName'],
         'displayName': json['displayName'] == null ? undefined : json['displayName'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -98,6 +106,7 @@ export function GlobalGameAchievementResponseDtoToJSON(value?: GlobalGameAchieve
     }
     return {
         
+        'id': value['id'],
         'apiName': value['apiName'],
         'displayName': value['displayName'],
         'description': value['description'],

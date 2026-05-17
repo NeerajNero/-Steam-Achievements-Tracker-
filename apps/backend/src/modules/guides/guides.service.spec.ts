@@ -1,6 +1,7 @@
 import { BadRequestException, ForbiddenException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
 import type { GamesDataService } from '../../db/services/games-data.service';
 import type { GuideAchievementsDataService } from '../../db/services/guide-achievements-data.service';
 import type { GuideSectionsDataService } from '../../db/services/guide-sections-data.service';
@@ -66,7 +67,7 @@ describe('GuidesService', () => {
   });
 
   it('allows moderator guide updates and sets publishedAt on first publish', async () => {
-    const { service, guidesDataService } = createService({
+    const { service, guidesDataService, activityEventsDataService } = createService({
       editableGuide: createGuide(),
     });
 
@@ -79,6 +80,15 @@ describe('GuidesService', () => {
       expect.objectContaining({
         status: 'published',
         publishedAt: expect.any(Date),
+      }),
+    );
+    expect(activityEventsDataService.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorUserId: 'user-id',
+        eventType: 'guide_published',
+        entityType: 'guide',
+        entityId: 'guide-id',
+        steamAppId: 910001,
       }),
     );
   });
@@ -236,6 +246,11 @@ function createService(
           },
     ),
   };
+  const activityEventsDataService = {
+    create: vi.fn(async () => ({
+      id: 'activity-id',
+    })),
+  };
 
   return {
     service: new GuidesService(
@@ -243,9 +258,11 @@ function createService(
       guideSectionsDataService as unknown as GuideSectionsDataService,
       guideAchievementsDataService as unknown as GuideAchievementsDataService,
       gamesDataService as unknown as GamesDataService,
+      activityEventsDataService as unknown as ActivityEventsDataService,
     ),
     guidesDataService,
     guideAchievementsDataService,
+    activityEventsDataService,
   };
 }
 

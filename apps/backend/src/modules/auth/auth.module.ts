@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import { SessionService } from './session.service';
 import { SessionAuthGuard } from './session-auth.guard';
+import { OptionalSessionAuthGuard } from './optional-session-auth.guard';
 import { SteamOpenIdService } from './steam-openid.service';
 
 @Module({
@@ -16,9 +17,10 @@ import { SteamOpenIdService } from './steam-openid.service';
     AuthCookieService,
     SessionService,
     SessionAuthGuard,
+    OptionalSessionAuthGuard,
     SteamOpenIdService,
     AuthService,
   ],
-  exports: [AuthCookieService, AuthService, SessionAuthGuard],
+  exports: [AuthCookieService, AuthService, SessionAuthGuard, OptionalSessionAuthGuard],
 })
 export class AuthModule {}

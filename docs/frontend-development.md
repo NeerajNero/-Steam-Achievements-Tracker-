@@ -128,6 +128,9 @@ or derived view models.
 Reminder: do not add raw `fetch` wrappers or Axios calls for OpenAPI-backed
 backend endpoints.
 Reminder: regenerate SDK packages only if the backend API shape changes.
+After SDK regeneration, run `pnpm sdk:build` and recreate the web container with
+`docker-compose up -d --force-recreate web` so Next.js does not keep a stale SDK
+module graph.
 
 ## Auth UI
 
@@ -326,6 +329,44 @@ The current editor is intentionally basic: metadata fields, plain textarea
 sections, and achievement UUID attachment. Do not add rich text, uploads,
 comments, votes, or moderation UI until the backend models for those features
 exist.
+
+Manual guide smoke:
+- sign in with Steam;
+- open `/games/910001/guides/new`;
+- create a draft guide named `Demo Completion Roadmap`;
+- add one section;
+- attach one achievement UUID from Steam App `910001`;
+- publish the guide from `/guides/:guideId/edit`;
+- verify `/games/910001/guides`, `/games/910001/guides/:slug`, and
+  `/account/guides`.
+
+Deterministic guide auth smoke is available when a real browser session is not
+practical:
+
+```sh
+docker-compose exec -T backend pnpm guide:auth-smoke
+```
+
+The script uses the demo Steam ID and app `910001`, stores only a session token
+hash in PostgreSQL, never prints cookie/token values, and reports the created
+guide slug. To smoke the public guide detail page afterward:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 \
+  -e WEB_GUIDE_SLUG=<slug> web node scripts/web-smoke.js
+```
+
+If the web container reports that `GuidesApi` or another generated API export is
+missing, rebuild the SDK and recreate web:
+
+```sh
+pnpm sdk:build
+docker-compose up -d --force-recreate web
+```
+
+The SDK package build normalizes emitted ESM imports in `libs/client-sdk/dist`.
+If this step is skipped, Node may fail to resolve generated SDK entrypoints even
+when the TypeScript source exists.
 
 ## Image Rendering
 
@@ -542,8 +583,11 @@ Manual browser smoke:
 - open a seeded game such as `910001`;
 - open `http://localhost:3001/games`;
 - open `http://localhost:3001/games/910001`;
+- open `http://localhost:3001/sessions`;
+- open `http://localhost:3001/games/910001/sessions`;
 - verify global game filters update URL params;
 - verify game achievement and tracked-player sections render;
+- verify session status filters update URL params;
 - verify Sync Profile, Sync Games, and Sync Achievements enqueue through the
   SDK;
 - verify sync runs update and stop polling when terminal;
@@ -591,3 +635,71 @@ The only direct browser navigation is the Sign in with Steam redirect to
 The sync buttons enqueue through the generated SDK. After enqueue, the profile
 page refreshes sync runs immediately, polls every few seconds while the relevant
 run is `queued` or `running`, and stops once that run reaches a terminal status.
+
+## Gaming Sessions UI
+
+Gaming session frontend routes:
+
+- `/sessions`: public global session browse page.
+- `/sessions/:sessionId`: public or participant-visible session detail page.
+- `/games/:steamAppId/sessions`: public sessions for one Steam game.
+- `/games/:steamAppId/sessions/new`: authenticated create form.
+- `/sessions/:sessionId/edit`: host/admin/moderator edit form and achievement
+  attachment.
+
+The frontend uses `SessionsApi` from `@steam-achievement/client-sdk`; do not add
+raw fetch or Axios wrappers for these endpoints. Sign-in prompts are client-side
+for now, matching the existing settings/guides pattern.
+
+The session forms intentionally use plain datetime inputs. Calendar integration,
+reminders, real-time chat, uploads, and payment-related features are deferred.
+Flat session comments exist on the session detail page, but they are not a chat
+replacement.
+
+## Community UI
+
+Guide detail pages render:
+
+- guide vote controls through `CommunityApi`;
+- visible guide comments through `CommunityApi`;
+- a comment form for signed-in users;
+- a report form through `ReportsApi`.
+
+Session detail pages render:
+
+- visible session comments through `CommunityApi`;
+- a comment form for signed-in users;
+- a report form through `ReportsApi`.
+
+Keep these interactions SDK-backed. Do not add raw fetch or Axios wrappers for
+community endpoints. Report forms create private moderation-intake rows only;
+there is no moderation dashboard, nested thread UI, or real-time update loop yet.
+
+Run deterministic backend smoke after seed data when changing sessions:
+
+```sh
+docker-compose exec -T backend pnpm session:auth-smoke
+```
+
+Optional web smoke can check a known session detail route when a smoke-created
+session ID is provided:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 -e WEB_SESSION_ID=<session-id> web node scripts/web-smoke.js
+```
+
+## Activity And Milestones UI
+
+Activity and milestone frontend surfaces are SDK-backed:
+
+- `/activity` renders the latest public activity feed using `ActivityApi`.
+- `/profiles/:steamId` renders recent activity and milestones for the profile.
+- `/games/:steamAppId` renders recent game activity.
+- `/u/:slug` renders public profile activity and milestones when the public
+  profile response includes a Steam ID.
+
+The feed is not real-time and does not poll. It reads current public events from
+PostgreSQL through the generated SDK. Do not add raw fetch or Axios wrappers for
+activity or milestone endpoints.
+
+`web-smoke` checks `/activity` with the marker `Steam Activity`.

@@ -1,6 +1,8 @@
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
+import type { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
+import type { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import type { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
 import type { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
 import type { UserSteamAccountsDataService } from '../../db/services/user-steam-accounts-data.service';
@@ -106,6 +108,12 @@ function createService(
     findBySteamProfileId: vi.fn(async () => [snapshot]),
     countBySteamProfileId: vi.fn(async () => 1),
   };
+  const profileMilestonesDataService = {
+    createFromSnapshot: vi.fn(async () => []),
+  };
+  const activityEventsDataService = {
+    create: vi.fn(async () => ({ id: 'activity-id' })),
+  };
   const userSteamAccountsDataService = {
     findByUserAndProfileId: vi.fn(async () =>
       options.owner === false
@@ -122,6 +130,8 @@ function createService(
   return new SnapshotsService(
     steamProfilesDataService as unknown as SteamProfilesDataService,
     profileSnapshotsDataService as unknown as ProfileSnapshotsDataService,
+    profileMilestonesDataService as unknown as ProfileMilestonesDataService,
+    activityEventsDataService as unknown as ActivityEventsDataService,
     userSteamAccountsDataService as unknown as UserSteamAccountsDataService,
   );
 }

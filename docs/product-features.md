@@ -120,6 +120,7 @@ The product can take inspiration from public profile/stat tracking, completion d
 
 - Optional share links for static profile summaries if public profile support is ready.
 - Public leaderboard v1 from latest profile snapshots.
+- Public activity feed for synced profiles, guide/session events, and milestones.
 
 ### V2
 
@@ -147,19 +148,23 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Suggested next games to complete.
 - Suggested achievements to target in games already close to 100%.
 - Basic authored roadmaps for game completion.
+- Scheduled Steam game sessions for co-op and multiplayer achievement boosting.
+- Snapshot-derived profile milestones for visible progress moments.
 
 ### V2
 
 - Achievement goals.
 - Completion plans by game.
-- Guide comments, voting, or moderation after dedicated models exist.
+- Guide comments, voting, and report intake exist as a foundation; richer
+  moderation workflows remain deferred.
 - Ignore or defer games from recommendation calculations.
 - Weekly or monthly completion targets.
 
 ### Later
 
 - Calendar-style achievement planner.
-- Personal milestone tracking.
+- Session reminders and calendar export.
+- Rich milestone artwork, share cards, and notification delivery.
 - Completion campaigns across multiple games.
 
 ## Future AI-Assisted Features

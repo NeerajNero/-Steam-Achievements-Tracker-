@@ -59,6 +59,16 @@ const checks: SmokeCheck[] = [
     validate: (body) => expectItems(body),
   },
   {
+    label: 'profile milestones',
+    path: `/profiles/${DEMO_STEAM_ID}/milestones?limit=5`,
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'profile activity',
+    path: `/profiles/${DEMO_STEAM_ID}/activity?limit=5`,
+    validate: (body) => expectCollection(body),
+  },
+  {
     label: 'game detail',
     path: `/profiles/${DEMO_STEAM_ID}/games/${DETAIL_APP_ID}`,
     validate: (body) =>
@@ -97,8 +107,28 @@ const checks: SmokeCheck[] = [
     validate: (body) => expectItems(body),
   },
   {
+    label: 'game activity',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}/activity?limit=5`,
+    validate: (body) => expectCollection(body),
+  },
+  {
+    label: 'global activity',
+    path: '/activity?limit=5',
+    validate: (body) => expectCollection(body),
+  },
+  {
     label: 'game guides',
     path: `/games/${GLOBAL_DETAIL_APP_ID}/guides?limit=5`,
+    validate: (body) => expectCollection(body),
+  },
+  {
+    label: 'global sessions',
+    path: '/sessions?limit=5',
+    validate: (body) => expectCollection(body),
+  },
+  {
+    label: 'game sessions',
+    path: `/games/${GLOBAL_DETAIL_APP_ID}/sessions?limit=5`,
     validate: (body) => expectCollection(body),
   },
   {

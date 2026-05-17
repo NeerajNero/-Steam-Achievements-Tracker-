@@ -234,6 +234,12 @@ message and does not turn an otherwise successful sync into a failed sync. This
 keeps the sync result focused on Steam data persistence while still feeding
 leaderboard and historical-progress reads from stored aggregate data.
 
+After successful or partial successful sync completion, the workflow also writes
+a public `profile_synced` activity event with safe metadata. If a new snapshot
+creates new milestones, each new milestone records one `milestone_reached`
+activity event. These writes are best-effort and must not include secrets,
+cookies, token hashes, raw Steam API payloads, or private account fields.
+
 For v1, one snapshot per completed sync is acceptable. A later scheduled sync
 or retention policy can reduce duplicate snapshots if they become noisy.
 

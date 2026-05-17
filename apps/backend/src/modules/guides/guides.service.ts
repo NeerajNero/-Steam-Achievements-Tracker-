@@ -11,6 +11,7 @@ import {
   type GuideStatus,
   type GuideWithAuthor,
 } from '../../db/services/guides-data.service';
+import { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
 import {
   GuideSectionsDataService,
   type GuideSection,
@@ -47,6 +48,7 @@ export class GuidesService {
     private readonly guideSectionsDataService: GuideSectionsDataService,
     private readonly guideAchievementsDataService: GuideAchievementsDataService,
     private readonly gamesDataService: GamesDataService,
+    private readonly activityEventsDataService: ActivityEventsDataService,
   ) {}
 
   async listGameGuides(
@@ -162,6 +164,21 @@ export class GuidesService {
 
     if (row === null) {
       throw new NotFoundException('Guide was not found.');
+    }
+
+    if (guide.status !== 'published' && nextStatus === 'published') {
+      await this.activityEventsDataService.create({
+        actorUserId: currentUser.userId,
+        eventType: 'guide_published',
+        entityType: 'guide',
+        entityId: row.guide.id,
+        steamAppId: row.guide.steamAppId,
+        metadata: {
+          title: row.guide.title,
+          slug: row.guide.slug,
+          steamAppId: row.guide.steamAppId,
+        },
+      });
     }
 
     return this.buildGuideDetail(row);

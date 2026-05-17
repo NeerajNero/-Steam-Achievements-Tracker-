@@ -93,6 +93,7 @@ Future work can add:
 
 - scheduled snapshot jobs;
 - snapshot retention policy;
+- richer milestone types and activity-feed ranking summaries;
 - public/private leaderboard visibility controls;
 - moderation and anti-cheat review flows;
 - friend or group leaderboards.

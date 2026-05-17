@@ -12,7 +12,11 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 import { useEffect, useMemo, useState } from 'react';
 
 import { EmptyState, ErrorState } from '@/components/ui/panel-state';
+import { useProfileActivity } from '@/features/activity/api/use-profile-activity';
+import { ActivityFeed } from '@/features/activity/components/activity-feed';
 import { AuthStatus } from '@/features/auth/components/auth-status';
+import { useProfileMilestones } from '@/features/milestones/api/use-profile-milestones';
+import { MilestonesList } from '@/features/milestones/components/milestones-list';
 import { useEnqueueSync } from '@/features/profile/api/use-enqueue-sync';
 import { useNearestCompletions } from '@/features/profile/api/use-nearest-completions';
 import { useProfile } from '@/features/profile/api/use-profile';
@@ -95,6 +99,8 @@ export default function ProfilePage() {
   const rarestAchievements = useRarestAchievements(steamId, 5);
   const syncRuns = useSyncRuns(steamId, SYNC_RUNS_LIMIT);
   const snapshots = useProfileSnapshots(steamId, { limit: 5, offset: 0 });
+  const activity = useProfileActivity(steamId, { limit: 5, offset: 0 });
+  const milestones = useProfileMilestones(steamId, { limit: 5, offset: 0 });
   const enqueueSync = useEnqueueSync(steamId);
   const refetchSyncRuns = syncRuns.refetch;
 
@@ -285,6 +291,20 @@ export default function ProfilePage() {
             isError={snapshots.isError}
             isLoading={snapshots.isLoading}
             snapshots={snapshots.data?.items}
+          />
+          <MilestonesList
+            error={milestones.error}
+            isError={milestones.isError}
+            isLoading={milestones.isLoading}
+            milestones={milestones.data?.items}
+            title="Recent milestones"
+          />
+          <ActivityFeed
+            error={activity.error}
+            isError={activity.isError}
+            isLoading={activity.isLoading}
+            items={activity.data?.items}
+            title="Recent activity"
           />
         </aside>
       </section>

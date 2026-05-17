@@ -141,12 +141,43 @@ UI implementation.
 5. Run `pnpm sdk:generate`.
 6. Run `pnpm --filter @steam-achievement/client-sdk build`.
 7. Run `pnpm sdk:build` before handing frontend contract changes over.
+8. Recreate the web container so Next.js sees the refreshed SDK `dist` output:
+
+   ```sh
+   docker-compose up -d --force-recreate web
+   ```
 
 After regeneration, run the web checks too:
 
 ```sh
 pnpm --filter @steam-achievement/web type-check
 pnpm --filter @steam-achievement/web build
+```
+
+## Docker SDK Freshness
+
+The web app imports `@steam-achievement/client-sdk` through the package export,
+which points at `libs/client-sdk/dist`. After SDK regeneration, stale `dist`
+output can make the web container fail at runtime with an error such as a
+missing newly generated API class.
+
+The web container startup builds the SDK before running Next dev:
+
+```sh
+pnpm --filter @steam-achievement/client-sdk build && pnpm dev
+```
+
+The SDK build also normalizes emitted ESM relative imports in `dist` so Node can
+resolve generated APIs such as `GuidesApi` from inside the web container.
+
+Still recreate the web container after contract changes so the running Next
+process and module graph are clean:
+
+```sh
+pnpm openapi:generate
+pnpm sdk:generate
+pnpm sdk:build
+docker-compose up -d --force-recreate web
 ```
 
 ## Current Notes
@@ -170,5 +201,14 @@ pnpm --filter @steam-achievement/web build
   `GET /leaderboards/:type`.
 - `SnapshotsApi` is generated for profile snapshot reads and local/manual
   snapshot creation.
+- `ActivityApi` is generated for global, profile-scoped, and game-scoped public
+  activity feed reads.
+- `MilestonesApi` is generated for profile milestone history reads.
 - `GuidesApi` is generated for public game guide reads and authenticated guide
   creation/editing.
+- `SessionsApi` is generated for public gaming session reads and authenticated
+  session create/update/join/leave/cancel/achievement attachment.
+- `CommunityApi` is generated for guide votes, guide comments, and session
+  comments.
+- `ReportsApi` is generated for report intake. Report moderation review
+  endpoints are not implemented yet.
