@@ -200,3 +200,21 @@ milestone type, and threshold. A new milestone also records a
 
 Notifications, real-time feed delivery, share cards, badge artwork, and richer
 privacy controls are deferred to future reviewed migrations.
+
+## Badges And Showcase Decision
+
+`0007-add-badges-and-showcase.sql` adds:
+
+- `badges` for product-defined badge definitions seeded by migration;
+- `profile_badges` for milestone-derived badge awards;
+- `profile_showcase_items` for owner-curated public/private profile showcase
+  entries.
+
+Badges are derived from milestone rows and deduped by Steam profile and badge.
+Badge awarding records a `badge_earned` activity event only when a new badge is
+inserted.
+
+Showcase items are managed by the authenticated owner of the linked Steam
+profile. V1 limits the showcase to six items and focuses the frontend editor on
+earned badges. Image uploads, Cloudinary, generated share cards, notifications,
+and badge artwork pipelines remain deferred.

@@ -2,6 +2,7 @@ import type { AchievementWithUnlockStateResponseDto } from '@steam-achievement/c
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { formatDateTime, formatPercent, getErrorMessage } from '@/lib/format';
 
 import { UnlockStateBadge } from './unlock-state-badge';
@@ -18,14 +19,11 @@ export function AchievementList({
   isLoading: boolean;
 }>): ReactNode {
   return (
-    <section className="mt-6 rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-xl font-semibold text-slate-950">Achievements</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          Unknown unlock state means metadata exists but Steam did not provide
-          player unlock state. It is not treated as definitely locked.
-        </p>
-      </div>
+    <div className="mt-6">
+      <SectionCard
+        description="Unknown unlock state means metadata exists but Steam did not provide player unlock state. It is not treated as definitely locked."
+        title="Achievements"
+      >
       {isLoading ? <LoadingState message="Loading achievements..." /> : null}
       {isError ? (
         <div className="p-4">
@@ -36,7 +34,7 @@ export function AchievementList({
         <EmptyState message="No achievements are stored for this game." />
       ) : null}
       {achievements && achievements.length > 0 ? (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-white/10">
           {achievements.map((achievement) => (
             <li
               className="grid gap-4 p-4 md:grid-cols-[48px_1fr_auto]"
@@ -45,18 +43,18 @@ export function AchievementList({
               {achievement.iconUrl || achievement.iconGrayUrl ? (
                 <img
                   alt=""
-                  className="h-12 w-12 rounded-md border border-slate-200"
+                  className="h-12 w-12 rounded-xl border border-white/10"
                   src={achievement.iconUrl ?? achievement.iconGrayUrl ?? ''}
                 />
               ) : (
-                <div className="h-12 w-12 rounded-md border border-slate-200 bg-slate-100" />
+                <div className="h-12 w-12 rounded-xl border border-white/10 bg-white/5" />
               )}
               <div>
-                <div className="font-medium text-slate-950">
+                <div className="font-medium text-white">
                   {achievement.displayName ?? achievement.apiName}
                 </div>
                 {achievement.description ? (
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <p className="mt-1 text-sm leading-6 text-slate-400">
                     {achievement.description}
                   </p>
                 ) : null}
@@ -89,6 +87,7 @@ export function AchievementList({
           ))}
         </ul>
       ) : null}
-    </section>
+      </SectionCard>
+    </div>
   );
 }

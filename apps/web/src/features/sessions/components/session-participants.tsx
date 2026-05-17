@@ -16,7 +16,7 @@ export function SessionParticipants({
   }
 
   return (
-    <div className="divide-y divide-slate-200">
+    <div className="divide-y divide-white/10">
       {participants.map((participant, index) => {
         const href = getSessionProfileHref(participant.user);
         const label = participant.user.displayName ?? 'Steam user';
@@ -26,20 +26,20 @@ export function SessionParticipants({
             {participant.user.avatarUrl ? (
               <img
                 alt=""
-                className="h-10 w-10 rounded-full border border-slate-200"
+                className="h-10 w-10 rounded-full border border-white/10"
                 src={participant.user.avatarUrl}
               />
             ) : null}
             <div className="min-w-0">
               {href ? (
                 <Link
-                  className="font-medium text-slate-950 hover:text-blue-700"
+                  className="font-medium text-slate-100 hover:text-lime-300"
                   href={href}
                 >
                   {label}
                 </Link>
               ) : (
-                <p className="font-medium text-slate-950">{label}</p>
+                <p className="font-medium text-slate-100">{label}</p>
               )}
               <p className="text-xs text-slate-500 capitalize">
                 {participant.role} · {participant.status}

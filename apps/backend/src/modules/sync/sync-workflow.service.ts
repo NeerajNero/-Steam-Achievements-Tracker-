@@ -11,6 +11,7 @@ import {
 } from '../../db/services/achievement-sync-data.service';
 import { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
 import { GamesDataService } from '../../db/services/games-data.service';
+import { ProfileBadgesDataService } from '../../db/services/profile-badges-data.service';
 import {
   ProfileGamesDataService,
   type ProfileGameWithGame,
@@ -60,6 +61,7 @@ export class SyncWorkflowService {
     private readonly profileGamesDataService: ProfileGamesDataService,
     private readonly profileSnapshotsDataService: ProfileSnapshotsDataService,
     private readonly profileMilestonesDataService: ProfileMilestonesDataService,
+    private readonly profileBadgesDataService: ProfileBadgesDataService,
     private readonly activityEventsDataService: ActivityEventsDataService,
     private readonly achievementSyncDataService: AchievementSyncDataService,
     private readonly syncRunsDataService: SyncRunsDataService,
@@ -543,6 +545,8 @@ export class SyncWorkflowService {
         },
       });
     }
+
+    await this.profileBadgesDataService.awardFromMilestones(milestones);
   }
 }
 

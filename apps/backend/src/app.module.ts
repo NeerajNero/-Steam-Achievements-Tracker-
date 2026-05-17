@@ -14,7 +14,9 @@ import { OperationsModule } from './modules/operations/operations.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { PublicProfilesModule } from './modules/public-profiles/public-profiles.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { BadgesModule } from './modules/badges/badges.module';
 import { CommunityModule } from './modules/community/community.module';
+import { ShowcaseModule } from './modules/showcase/showcase.module';
 import { SteamModule } from './modules/steam/steam.module';
 import { SnapshotsModule } from './modules/snapshots/snapshots.module';
 import { SyncModule } from './modules/sync/sync.module';
@@ -34,9 +36,11 @@ import { SyncModule } from './modules/sync/sync.module';
     HealthModule,
     OperationsModule,
     AuthModule,
+    BadgesModule,
     CommunityModule,
     AccountModule,
     PublicProfilesModule,
+    ShowcaseModule,
     ActivityModule,
     MilestonesModule,
   ],

@@ -13,6 +13,7 @@ export enum ActivityEventTypeDto {
   SessionJoined = 'session_joined',
   SessionCommented = 'session_commented',
   MilestoneReached = 'milestone_reached',
+  BadgeEarned = 'badge_earned',
 }
 
 export class ActivityQueryDto {

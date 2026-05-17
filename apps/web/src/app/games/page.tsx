@@ -1,10 +1,10 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { useGlobalGames } from '@/features/games/api/use-global-games';
 import { GlobalGamesFilters } from '@/features/games/components/global-games-filters';
 import { GlobalGamesList } from '@/features/games/components/global-games-list';
@@ -17,7 +17,7 @@ import {
 
 export default function GamesPage() {
   return (
-    <Suspense fallback={<main className="p-6 text-sm text-slate-500">Loading games...</main>}>
+    <Suspense fallback={<main className="p-6 text-sm text-slate-400">Loading games...</main>}>
       <GamesPageContent />
     </Suspense>
   );
@@ -75,22 +75,14 @@ function GamesPageContent() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/">
-          Back to home
-        </Link>
-        <AuthStatus />
-      </div>
-
+    <PageShell>
       <div className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-          Steam Games
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+        <PageHero eyebrow="Global game browser" title="Steam Games">
+          <p>
           Browse Steam games already discovered through profile syncs. These pages are
           database-backed and do not call Steam directly from the browser.
-        </p>
+          </p>
+        </PageHero>
       </div>
 
       <div className="grid gap-6">
@@ -116,6 +108,6 @@ function GamesPageContent() {
           total={games.data?.total}
         />
       </div>
-    </main>
+    </PageShell>
   );
 }

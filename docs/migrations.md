@@ -192,6 +192,7 @@ Use clear numbered filenames:
 0004-add-gaming-sessions-foundation.sql
 0005-add-community-interactions.sql
 0006-add-activity-feed-and-milestones.sql
+0007-add-badges-and-showcase.sql
 ```
 
 The runner sorts filenames lexicographically, so keep the zero-padded prefix.
@@ -241,3 +242,6 @@ Do not use `drizzle-kit push` or any other schema-push workflow. When a migratio
   comments, and moderation report intake.
 - `0006-add-activity-feed-and-milestones.sql`: public/private activity events
   and profile milestone history generated from snapshots.
+- `0007-add-badges-and-showcase.sql`: product-defined badge definitions,
+  milestone-derived profile badges, profile showcase items, and `badge_earned`
+  activity events.

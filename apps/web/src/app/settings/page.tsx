@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { AccountSettingsPanel } from '@/features/account/components/account-settings-panel';
 
 export const metadata: Metadata = {
@@ -10,22 +12,26 @@ export const metadata: Metadata = {
 
 export default function SettingsPage(): ReactNode {
   return (
-    <main className="mx-auto min-h-screen w-full max-w-5xl px-5 py-8">
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-          Settings
-        </h1>
-        <p className="mt-2 text-sm text-slate-600">
-          Manage your Steam-only account, linked profile, preferences, and public profile.
-        </p>
-        <Link
-          className="mt-3 inline-flex rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-          href="/account/guides"
+    <PageShell maxWidth="max-w-5xl">
+      <div className="mb-6">
+        <PageHero
+          actions={
+            <Link
+              className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              href="/account/guides"
+            >
+              Manage guides
+            </Link>
+          }
+          eyebrow="Account"
+          title="Settings"
         >
-          Manage guides
-        </Link>
-      </header>
+          <p>
+          Manage your Steam-only account, linked profile, preferences, and public profile.
+          </p>
+        </PageHero>
+      </div>
       <AccountSettingsPanel />
-    </main>
+    </PageShell>
   );
 }

@@ -4,8 +4,9 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useLeaderboard } from '@/features/leaderboards/api/use-leaderboard';
 import { useLeaderboards } from '@/features/leaderboards/api/use-leaderboards';
 import { LeaderboardTable } from '@/features/leaderboards/components/leaderboard-table';
@@ -20,7 +21,7 @@ import { getErrorMessage } from '@/lib/format';
 
 export default function LeaderboardPage() {
   return (
-    <Suspense fallback={<main className="p-6 text-sm text-slate-500">Loading leaderboard...</main>}>
+    <Suspense fallback={<main className="p-6 text-sm text-slate-400">Loading leaderboard...</main>}>
       <LeaderboardPageContent />
     </Suspense>
   );
@@ -52,34 +53,32 @@ function LeaderboardPageContent() {
 
   if (!isValidType) {
     return (
-      <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-        <Link className="text-sm font-medium text-blue-700" href="/leaderboards">
+      <PageShell>
+        <Link className="text-sm font-medium text-lime-200" href="/leaderboards">
           Back to leaderboards
         </Link>
         <div className="mt-6">
           <ErrorState message="This leaderboard type is not available." />
         </div>
-      </main>
+      </PageShell>
     );
   }
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/leaderboards">
+    <PageShell>
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-lime-200" href="/leaderboards">
           Back to leaderboards
         </Link>
-        <AuthStatus />
       </div>
 
-      <section className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-          {getLeaderboardLabel(type)}
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+      <div className="mb-6">
+        <PageHero eyebrow="Leaderboard" title={getLeaderboardLabel(type)}>
+          <p>
           {getLeaderboardDescription(type)}
-        </p>
-      </section>
+          </p>
+        </PageHero>
+      </div>
 
       <div className="mb-6">
         {leaderboards.isLoading ? (
@@ -106,22 +105,22 @@ function LeaderboardPageContent() {
       {leaderboard.data && leaderboard.data.items.length > 0 ? (
         <nav
           aria-label="Leaderboard pagination"
-          className="mt-4 flex flex-wrap items-center justify-between gap-3"
+            className="mt-4 flex flex-wrap items-center justify-between gap-3"
         >
           <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={pagination.offset === 0}
             onClick={() => updateOffset(pagination.offset - pagination.limit)}
             type="button"
           >
             Previous
           </button>
-          <span className="text-sm text-slate-500">
+          <span className="text-sm text-slate-400">
             Showing {pagination.offset + 1}-
             {pagination.offset + leaderboard.data.items.length}
           </span>
           <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
             disabled={leaderboard.data.items.length < pagination.limit}
             onClick={() => updateOffset(pagination.offset + pagination.limit)}
             type="button"
@@ -134,6 +133,6 @@ function LeaderboardPageContent() {
       {leaderboard.data && leaderboard.data.items.length === 0 ? (
         <div className="sr-only">No leaderboard entries</div>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

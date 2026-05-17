@@ -18,7 +18,11 @@ export function buildSignInUrl(returnTo: string): string {
   return `${loginEndpoint}?returnTo=${encodeURIComponent(returnTo)}`;
 }
 
-export function AuthStatus(): ReactNode {
+export function AuthStatus({
+  compact = false,
+}: Readonly<{
+  compact?: boolean;
+}>): ReactNode {
   const { data, error, isLoading, isError } = useCurrentUser();
   const logout = useLogout();
 
@@ -28,24 +32,30 @@ export function AuthStatus(): ReactNode {
   }, []);
 
   if (isLoading) {
-    return <p className="text-sm text-slate-600">Checking sign-in status...</p>;
+    return <p className="text-sm text-slate-400">Checking sign-in status...</p>;
   }
 
   if (isError) {
     const message =
       error instanceof Error ? error.message : 'Unable to check sign-in status.';
 
-    return <p className="text-sm text-amber-700">Auth error: {message}</p>;
+    return <p className="text-sm text-amber-200">Auth error: {message}</p>;
   }
 
   if (!data) {
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-md border border-slate-200 bg-slate-50 p-3">
-        <span className="text-sm text-slate-700">
+      <div
+        className={`flex flex-wrap items-center gap-3 rounded-2xl border border-white/10 bg-white/5 ${
+          compact ? 'p-2' : 'p-3'
+        }`}
+      >
+        {!compact ? (
+          <span className="text-sm text-slate-300">
           You are currently browsing as a guest.
-        </span>
+          </span>
+        ) : null}
         <button
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+          className="rounded-full bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
           onClick={handleSignIn}
           type="button"
         >
@@ -59,28 +69,32 @@ export function AuthStatus(): ReactNode {
   const steamId = data.steamAccount?.steamId ?? 'Not linked';
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-md border border-emerald-100 bg-emerald-50 p-3">
+    <div
+      className={`flex flex-wrap items-center gap-3 rounded-2xl border border-emerald-300/20 bg-emerald-400/10 ${
+        compact ? 'p-2' : 'p-3'
+      }`}
+    >
       {data.user.avatarUrl ? (
         <img
           alt=""
-          className="h-8 w-8 rounded-full border border-emerald-200"
+          className="h-8 w-8 rounded-full border border-emerald-300/30"
           src={data.user.avatarUrl}
         />
       ) : null}
-      <div className="min-w-0">
-        <p className="text-sm font-semibold text-emerald-900">
+      <div className={`min-w-0 ${compact ? 'hidden sm:block' : ''}`}>
+        <p className="text-sm font-semibold text-emerald-100">
           Signed in as {label}
         </p>
-        <p className="text-xs text-emerald-700">Steam ID: {steamId}</p>
+        <p className="text-xs text-emerald-200/80">Steam ID: {steamId}</p>
       </div>
       <Link
-        className="rounded-md border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
+        className="rounded-full border border-emerald-300/30 px-3 py-2 text-sm font-semibold text-emerald-100 hover:bg-emerald-300/10"
         href="/settings"
       >
         Settings
       </Link>
       <button
-        className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60"
+        className="rounded-full bg-emerald-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-emerald-300 disabled:opacity-60"
         disabled={logout.isPending}
         onClick={() => void logout.mutateAsync()}
         type="button"

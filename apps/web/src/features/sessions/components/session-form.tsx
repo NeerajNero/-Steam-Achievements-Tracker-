@@ -39,15 +39,19 @@ export function SessionForm({
     onSubmit(values);
   }
 
+  const labelClassName = 'grid gap-1 text-sm font-medium text-slate-300';
+  const inputClassName =
+    'rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400';
+
   return (
     <form
-      className="grid gap-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm"
+      className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20"
       onSubmit={handleSubmit}
     >
-      <label className="grid gap-1 text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         Title
         <input
-          className="rounded-md border border-slate-300 px-3 py-2"
+          className={inputClassName}
           maxLength={120}
           minLength={3}
           onChange={(event) =>
@@ -58,10 +62,10 @@ export function SessionForm({
         />
       </label>
 
-      <label className="grid gap-1 text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         Description
         <textarea
-          className="min-h-24 rounded-md border border-slate-300 px-3 py-2"
+          className={`${inputClassName} min-h-24`}
           maxLength={1000}
           onChange={(event) =>
             setValues((current) => ({
@@ -74,10 +78,10 @@ export function SessionForm({
       </label>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           Start
           <input
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -89,10 +93,10 @@ export function SessionForm({
             value={values.scheduledStartAt}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           End
           <input
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -106,10 +110,10 @@ export function SessionForm({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           Timezone
           <input
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             maxLength={100}
             onChange={(event) =>
               setValues((current) => ({
@@ -120,10 +124,10 @@ export function SessionForm({
             value={values.timezone}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           Max participants
           <input
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             max={100}
             min={2}
             onChange={(event) =>
@@ -136,10 +140,10 @@ export function SessionForm({
             value={values.maxParticipants}
           />
         </label>
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           Visibility
           <select
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -156,10 +160,10 @@ export function SessionForm({
       </div>
 
       {mode === 'edit' ? (
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+        <label className={labelClassName}>
           Status
           <select
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className={inputClassName}
             onChange={(event) =>
               setValues((current) => ({
                 ...current,
@@ -176,10 +180,10 @@ export function SessionForm({
         </label>
       ) : null}
 
-      <label className="grid gap-1 text-sm font-medium text-slate-700">
+      <label className={labelClassName}>
         Voice URL
         <input
-          className="rounded-md border border-slate-300 px-3 py-2"
+          className={inputClassName}
           onChange={(event) =>
             setValues((current) => ({
               ...current,
@@ -193,7 +197,7 @@ export function SessionForm({
 
       <div>
         <button
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+          className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
           disabled={isSubmitting}
           type="submit"
         >

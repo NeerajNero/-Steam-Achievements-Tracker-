@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AchievementSyncDataService } from '../../db/services/achievement-sync-data.service';
 import type { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
 import type { GamesDataService } from '../../db/services/games-data.service';
+import type { ProfileBadgesDataService } from '../../db/services/profile-badges-data.service';
 import type { ProfileGamesDataService } from '../../db/services/profile-games-data.service';
 import type { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import type { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
@@ -574,6 +575,9 @@ interface SyncWorkflowMocks {
   profileMilestonesRepository: {
     createFromSnapshot: ReturnType<typeof vi.fn>;
   };
+  profileBadgesRepository: {
+    awardFromMilestones: ReturnType<typeof vi.fn>;
+  };
   activityEventsRepository: {
     create: ReturnType<typeof vi.fn>;
   };
@@ -598,6 +602,7 @@ function createService(mocks: SyncWorkflowMocks): SyncWorkflowService {
     mocks.profileGamesRepository as unknown as ProfileGamesDataService,
     mocks.profileSnapshotsRepository as unknown as ProfileSnapshotsDataService,
     mocks.profileMilestonesRepository as unknown as ProfileMilestonesDataService,
+    mocks.profileBadgesRepository as unknown as ProfileBadgesDataService,
     mocks.activityEventsRepository as unknown as ActivityEventsDataService,
     mocks.achievementSyncRepository as unknown as AchievementSyncDataService,
     mocks.syncRunsRepository as unknown as SyncRunsDataService,
@@ -646,6 +651,12 @@ function createMocks(): SyncWorkflowMocks {
     },
     profileMilestonesRepository: {
       createFromSnapshot: vi.fn(async () => []),
+    },
+    profileBadgesRepository: {
+      awardFromMilestones: vi.fn(async () => ({
+        badgesAwarded: 0,
+        activityEventsCreated: 0,
+      })),
     },
     activityEventsRepository: {
       create: vi.fn(async () => ({ id: 'activity-id' })),

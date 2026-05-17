@@ -29,7 +29,7 @@ export function ReportContentButton({
   const [message, setMessage] = useState<string | null>(null);
 
   if (!currentUser.data) {
-    return <p className="text-sm text-slate-600">Sign in to report content.</p>;
+    return <p className="text-sm text-slate-400">Sign in to report content.</p>;
   }
 
   async function submitReport() {
@@ -51,16 +51,16 @@ export function ReportContentButton({
   }
 
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.25)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-slate-950">Report content</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <h2 className="font-semibold text-white">Report content</h2>
+          <p className="mt-1 text-sm text-slate-400">
             Reports are private moderation intake records.
           </p>
         </div>
         <button
-          className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+          className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
           onClick={() => setIsOpen((value) => !value)}
           type="button"
         >
@@ -70,10 +70,10 @@ export function ReportContentButton({
 
       {isOpen ? (
         <div className="mt-4 grid gap-3">
-          <label className="grid gap-1 text-sm font-medium text-slate-700">
+          <label className="grid gap-1 text-sm font-medium text-slate-300">
             Reason
             <select
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-normal"
+              className="rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm font-normal text-slate-100 outline-none focus:border-lime-400"
               onChange={(event) =>
                 setReason(event.target.value as CreateContentReportDtoReasonEnum)
               }
@@ -86,17 +86,17 @@ export function ReportContentButton({
               ))}
             </select>
           </label>
-          <label className="grid gap-1 text-sm font-medium text-slate-700">
+          <label className="grid gap-1 text-sm font-medium text-slate-300">
             Details
             <textarea
-              className="min-h-20 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal"
+              className="min-h-20 rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm font-normal text-slate-100 outline-none focus:border-lime-400"
               maxLength={2000}
               onChange={(event) => setDetails(event.target.value)}
               value={details}
             />
           </label>
           <button
-            className="w-fit rounded-md bg-red-700 px-3 py-2 text-sm font-semibold text-white hover:bg-red-800 disabled:opacity-60"
+            className="w-fit rounded-xl bg-red-500 px-3 py-2 text-sm font-semibold text-white hover:bg-red-400 disabled:opacity-60"
             disabled={report.isPending}
             onClick={() => void submitReport()}
             type="button"
@@ -105,7 +105,7 @@ export function ReportContentButton({
           </button>
         </div>
       ) : null}
-      {message ? <p className="mt-3 text-sm text-slate-700">{message}</p> : null}
+      {message ? <p className="mt-3 text-sm text-slate-300">{message}</p> : null}
     </div>
   );
 }

@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useCreateSession } from '@/features/sessions/api/use-create-session';
 import {
   SessionForm,
@@ -34,21 +35,23 @@ export default function NewSessionPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          className="text-sm font-medium text-blue-700"
-          href={`/games/${steamAppId}/sessions`}
-        >
-          Back to sessions
-        </Link>
-        <AuthStatus />
-      </div>
+    <PageShell maxWidth="max-w-5xl">
+      <PageHero
+        actions={
+          <Link
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            href={`/games/${steamAppId}/sessions`}
+          >
+            Back to sessions
+          </Link>
+        }
+        eyebrow={`Steam App ${steamAppId}`}
+        title="New session"
+      >
+        Schedule a Steam achievement session and coordinate the target unlocks.
+      </PageHero>
 
-      <h1 className="mb-4 text-3xl font-semibold tracking-normal text-slate-950">
-        New session
-      </h1>
-
+      <div className="mt-6">
       {currentUser.isLoading ? <LoadingState message="Checking sign-in..." /> : null}
       {!currentUser.isLoading && !currentUser.data ? (
         <ErrorState
@@ -64,10 +67,11 @@ export default function NewSessionPage() {
             onSubmit={(values) => void submit(values)}
           />
           {errorMessage ? (
-            <p className="mt-3 text-sm text-red-700">{errorMessage}</p>
+            <p className="mt-3 text-sm text-red-300">{errorMessage}</p>
           ) : null}
         </>
       ) : null}
-    </main>
+      </div>
+    </PageShell>
   );
 }

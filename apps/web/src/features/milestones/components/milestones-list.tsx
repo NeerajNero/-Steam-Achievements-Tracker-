@@ -2,6 +2,7 @@ import type { ProfileMilestoneResponseDto } from '@steam-achievement/client-sdk'
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { getErrorMessage } from '@/lib/format';
 
 import { MilestoneCard } from './milestone-card';
@@ -20,8 +21,7 @@ export function MilestonesList({
   title?: string;
 }>): ReactNode {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
+    <SectionCard title={title}>
       {isLoading ? <LoadingState message="Loading milestones..." /> : null}
       {isError ? (
         <ErrorState
@@ -39,6 +39,6 @@ export function MilestonesList({
           ))}
         </div>
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

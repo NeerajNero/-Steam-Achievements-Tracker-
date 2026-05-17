@@ -4,6 +4,8 @@ import { AccountController } from '../modules/account/account.controller';
 import { AccountService } from '../modules/account/account.service';
 import { ActivityController } from '../modules/activity/activity.controller';
 import { ActivityService } from '../modules/activity/activity.service';
+import { BadgesController } from '../modules/badges/badges.controller';
+import { BadgesService } from '../modules/badges/badges.service';
 import { AchievementsController } from '../modules/achievements/achievements.controller';
 import { AchievementsService } from '../modules/achievements/achievements.service';
 import { GamesController } from '../modules/games/games.controller';
@@ -28,6 +30,8 @@ import { ProfilesController } from '../modules/profiles/profiles.controller';
 import { ProfilesService } from '../modules/profiles/profiles.service';
 import { PublicProfilesController } from '../modules/public-profiles/public-profiles.controller';
 import { PublicProfilesService } from '../modules/public-profiles/public-profiles.service';
+import { ShowcaseController } from '../modules/showcase/showcase.controller';
+import { ShowcaseService } from '../modules/showcase/showcase.service';
 import { SnapshotsController } from '../modules/snapshots/snapshots.controller';
 import { SnapshotsService } from '../modules/snapshots/snapshots.service';
 import { SyncController } from '../modules/sync/sync.controller';
@@ -41,6 +45,7 @@ const serviceStub = {};
   controllers: [
     HealthController,
     ActivityController,
+    BadgesController,
     ProfilesController,
     GlobalGamesController,
     CommunityController,
@@ -56,10 +61,12 @@ const serviceStub = {};
     AuthController,
     AccountController,
     PublicProfilesController,
+    ShowcaseController,
   ],
   providers: [
     { provide: ProfilesService, useValue: serviceStub },
     { provide: ActivityService, useValue: serviceStub },
+    { provide: BadgesService, useValue: serviceStub },
     { provide: GamesService, useValue: serviceStub },
     { provide: CommunityService, useValue: serviceStub },
     { provide: GamingSessionsService, useValue: serviceStub },
@@ -73,6 +80,7 @@ const serviceStub = {};
     { provide: AuthCookieService, useValue: serviceStub },
     { provide: AccountService, useValue: serviceStub },
     { provide: PublicProfilesService, useValue: serviceStub },
+    { provide: ShowcaseService, useValue: serviceStub },
     { provide: SessionAuthGuard, useValue: serviceStub },
     { provide: OptionalSessionAuthGuard, useValue: serviceStub },
   ],

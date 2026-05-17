@@ -2,6 +2,7 @@ import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { describe, expect, it, vi } from 'vitest';
 
 import type { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
+import type { ProfileBadgesDataService } from '../../db/services/profile-badges-data.service';
 import type { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import type { ProfileSnapshotsDataService } from '../../db/services/profile-snapshots-data.service';
 import type { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
@@ -111,6 +112,12 @@ function createService(
   const profileMilestonesDataService = {
     createFromSnapshot: vi.fn(async () => []),
   };
+  const profileBadgesDataService = {
+    awardFromMilestones: vi.fn(async () => ({
+      badgesAwarded: 0,
+      activityEventsCreated: 0,
+    })),
+  };
   const activityEventsDataService = {
     create: vi.fn(async () => ({ id: 'activity-id' })),
   };
@@ -131,6 +138,7 @@ function createService(
     steamProfilesDataService as unknown as SteamProfilesDataService,
     profileSnapshotsDataService as unknown as ProfileSnapshotsDataService,
     profileMilestonesDataService as unknown as ProfileMilestonesDataService,
+    profileBadgesDataService as unknown as ProfileBadgesDataService,
     activityEventsDataService as unknown as ActivityEventsDataService,
     userSteamAccountsDataService as unknown as UserSteamAccountsDataService,
   );

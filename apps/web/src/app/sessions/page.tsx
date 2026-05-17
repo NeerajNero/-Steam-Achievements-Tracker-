@@ -1,10 +1,11 @@
 'use client';
 
-import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo } from 'react';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
+import { DataToolbar } from '@/components/ui/data-toolbar';
 import { useGlobalSessions } from '@/features/sessions/api/use-global-sessions';
 import { SessionList } from '@/features/sessions/components/session-list';
 import {
@@ -15,13 +16,13 @@ import {
 
 export default function SessionsPage() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
+    <PageShell>
       <Suspense
-        fallback={<div className="p-6 text-sm text-slate-500">Loading sessions...</div>}
+        fallback={<div className="p-6 text-sm text-slate-400">Loading sessions...</div>}
       >
         <SessionsPageContent />
       </Suspense>
-    </main>
+    </PageShell>
   );
 }
 
@@ -43,27 +44,18 @@ function SessionsPageContent() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link className="text-sm font-medium text-blue-700" href="/">
-            Home
-          </Link>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">
-            Steam sessions
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
+      <PageHero eyebrow="Community scheduling" title="Steam sessions">
+        <p>
             Browse upcoming public co-op and achievement boosting sessions.
-          </p>
-        </div>
-        <AuthStatus />
-      </div>
+        </p>
+      </PageHero>
 
-      <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+      <DataToolbar>
         <div className="flex flex-wrap gap-3">
-          <label className="grid gap-1 text-sm font-medium text-slate-700">
+          <label className="grid gap-1 text-sm font-medium text-slate-300">
             Status
             <select
-              className="rounded-md border border-slate-300 px-3 py-2"
+              className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
               onChange={(event) =>
                 updateFilters({
                   status: event.target.value as SessionListFilters['status'],
@@ -78,10 +70,10 @@ function SessionsPageContent() {
               <option value="cancelled">Cancelled</option>
             </select>
           </label>
-          <label className="grid gap-1 text-sm font-medium text-slate-700">
+          <label className="grid gap-1 text-sm font-medium text-slate-300">
             Page size
             <select
-              className="rounded-md border border-slate-300 px-3 py-2"
+              className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
               onChange={(event) =>
                 updateFilters({ limit: Number(event.target.value), offset: 0 })
               }
@@ -93,7 +85,7 @@ function SessionsPageContent() {
             </select>
           </label>
         </div>
-      </section>
+      </DataToolbar>
 
       <SessionList
         error={sessions.error}

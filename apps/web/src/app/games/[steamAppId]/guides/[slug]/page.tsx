@@ -3,8 +3,8 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { GuideCommunitySection } from '@/features/community/components/guide-community-section';
 import { useGuide } from '@/features/guides/api/use-guide';
 import { GuideDetail } from '@/features/guides/components/guide-detail';
@@ -18,15 +18,14 @@ export default function GameGuideDetailPage() {
   const isMissing = getHttpStatus(guide.error) === 404;
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+    <PageShell maxWidth="max-w-5xl">
+      <div className="mb-4">
         <Link
-          className="text-sm font-medium text-blue-700"
+          className="text-sm font-medium text-lime-200 hover:text-lime-100"
           href={`/games/${steamAppId}/guides`}
         >
           Back to guides
         </Link>
-        <AuthStatus />
       </div>
 
       {guide.isLoading ? <LoadingState message="Loading guide..." /> : null}
@@ -45,6 +44,6 @@ export default function GameGuideDetailPage() {
           <GuideCommunitySection guideId={guide.data.id} />
         </div>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

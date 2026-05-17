@@ -58,7 +58,7 @@ export const activityEvents = pgTable(
     index('activity_events_entity_idx').on(table.entityType, table.entityId),
     check(
       'activity_events_event_type_check',
-      sql`${table.eventType} IN ('profile_synced', 'game_completed', 'rare_achievement_synced', 'guide_published', 'guide_commented', 'guide_voted', 'session_created', 'session_joined', 'session_commented', 'milestone_reached')`,
+      sql`${table.eventType} IN ('profile_synced', 'game_completed', 'rare_achievement_synced', 'guide_published', 'guide_commented', 'guide_voted', 'session_created', 'session_joined', 'session_commented', 'milestone_reached', 'badge_earned')`,
     ),
     check(
       'activity_events_visibility_check',
@@ -66,7 +66,7 @@ export const activityEvents = pgTable(
     ),
     check(
       'activity_events_entity_type_check',
-      sql`${table.entityType} IN ('steam_profile', 'game', 'achievement', 'guide', 'guide_comment', 'gaming_session', 'session_comment', 'milestone')`,
+      sql`${table.entityType} IN ('steam_profile', 'game', 'achievement', 'guide', 'guide_comment', 'gaming_session', 'session_comment', 'milestone', 'badge')`,
     ),
     check(
       'activity_events_metadata_object_check',

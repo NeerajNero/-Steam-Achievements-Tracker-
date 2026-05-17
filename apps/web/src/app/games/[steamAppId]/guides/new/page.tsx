@@ -4,9 +4,10 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useCreateGuide } from '@/features/guides/api/use-create-guide';
 import {
   GuideForm,
@@ -34,19 +35,22 @@ export default function NewGameGuidePage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link
-          className="text-sm font-medium text-blue-700"
-          href={`/games/${steamAppId}/guides`}
-        >
-          Back to guides
-        </Link>
-        <AuthStatus />
-      </div>
-      <h1 className="mb-4 text-3xl font-semibold tracking-normal text-slate-950">
-        Create guide
-      </h1>
+    <PageShell maxWidth="max-w-4xl">
+      <PageHero
+        actions={
+          <Link
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            href={`/games/${steamAppId}/guides`}
+          >
+            Back to guides
+          </Link>
+        }
+        eyebrow={`Steam App ${steamAppId}`}
+        title="Create guide"
+      >
+        Draft a roadmap for achievements, collectibles, or co-op completion.
+      </PageHero>
+      <div className="mt-6">
       {currentUser.isLoading ? <LoadingState message="Checking sign-in status..." /> : null}
       {currentUser.data === null ? (
         <ErrorState
@@ -64,6 +68,7 @@ export default function NewGameGuidePage() {
           />
         </div>
       ) : null}
-    </main>
+      </div>
+    </PageShell>
   );
 }

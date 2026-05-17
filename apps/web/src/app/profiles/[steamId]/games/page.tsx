@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { use } from 'react';
 
+import { PageShell } from '@/components/layout/page-shell';
+import { EmptyState } from '@/components/ui/panel-state';
+
 export default function ProfileGamesRedirectPage({
   params,
 }: Readonly<{
@@ -9,15 +12,21 @@ export default function ProfileGamesRedirectPage({
   const { steamId } = use(params);
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center justify-center gap-3 px-4 py-10 text-center">
-      <h1 className="text-2xl font-semibold text-slate-950">Game Detail Route</h1>
-      <p className="max-w-xl text-slate-600">
-        Pick a game from the profile library to open a game detail page.
-      </p>
-      <Link className="text-sm font-medium text-blue-700" href={`/profiles/${steamId}`}>
-        Back to profile
-      </Link>
-    </main>
+    <PageShell maxWidth="max-w-3xl">
+      <div className="flex min-h-[60vh] items-center justify-center">
+        <EmptyState
+          action={
+            <Link
+              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+              href={`/profiles/${steamId}`}
+            >
+              Back to profile
+            </Link>
+          }
+          message="Pick a game from the profile library to open a Steam game detail page."
+          title="Choose a game"
+        />
+      </div>
+    </PageShell>
   );
 }
-

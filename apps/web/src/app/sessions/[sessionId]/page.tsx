@@ -3,9 +3,9 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { SessionCommunitySection } from '@/features/community/components/session-community-section';
 import { useSession } from '@/features/sessions/api/use-session';
 import { SessionDetail } from '@/features/sessions/components/session-detail';
@@ -29,12 +29,11 @@ export default function SessionDetailPage() {
     );
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/sessions">
+    <PageShell>
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-lime-200 hover:text-lime-100" href="/sessions">
           Back to sessions
         </Link>
-        <AuthStatus />
       </div>
 
       {session.isLoading ? <LoadingState message="Loading session..." /> : null}
@@ -60,6 +59,6 @@ export default function SessionDetailPage() {
           <SessionCommunitySection sessionId={session.data.id} />
         </div>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

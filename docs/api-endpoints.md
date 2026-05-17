@@ -143,6 +143,44 @@ Returns `404` when the slug is missing, unpublished, or not linked to a Steam
 profile. The response never exposes private account fields, sessions,
 preferences, or token data.
 
+## Badges And Showcase
+
+### `GET /badges`
+
+Returns active product-defined badge definitions. Badge definitions are seeded
+by SQL migrations and are safe for public display.
+
+### `GET /profiles/:steamId/badges`
+
+Returns badges earned by a synced Steam profile.
+
+Response shape:
+- `steamId`
+- `items`: earned badge rows with badge definition, source milestone ID,
+  earned time, and safe public metadata.
+
+### `GET /profiles/:steamId/showcase`
+
+Returns public showcase items selected for a Steam profile. Private showcase
+items are omitted. The response never exposes account-private fields, session
+data, cookies, token hashes, or raw auth state.
+
+### `GET /account/showcase`
+
+Auth required. Returns the signed-in user's showcase items for their linked
+primary Steam profile.
+
+### `PUT /account/showcase`
+
+Auth required. Replaces all showcase items for the signed-in user's linked
+primary Steam profile in one transaction.
+
+Rules:
+- at most six items;
+- positions must be unique;
+- badge items must reference earned `profile_badges`;
+- public endpoints return only public showcase items.
+
 ## Profiles
 
 ### `GET /profiles/:steamId`

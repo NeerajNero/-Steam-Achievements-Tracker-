@@ -2,6 +2,7 @@ import type { ActivityEventResponseDto } from '@steam-achievement/client-sdk';
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { getErrorMessage } from '@/lib/format';
 
 import { ActivityEventCard } from './activity-event-card';
@@ -20,8 +21,7 @@ export function ActivityFeed({
   title?: string;
 }>): ReactNode {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">{title}</h2>
+    <SectionCard title={title}>
       {isLoading ? <LoadingState message="Loading activity..." /> : null}
       {isError ? (
         <ErrorState message={getErrorMessage(error)} title="Activity unavailable" />
@@ -34,6 +34,6 @@ export function ActivityFeed({
           {items?.map((event) => <ActivityEventCard event={event} key={event.id} />)}
         </div>
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

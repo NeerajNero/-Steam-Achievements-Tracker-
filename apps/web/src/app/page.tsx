@@ -1,10 +1,15 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
+import { ResponsiveGrid } from '@/components/ui/responsive-grid';
+import { SectionCard } from '@/components/ui/section-card';
+import { StatusBadge } from '@/components/ui/status-badge';
 
 const DEMO_STEAM_ID = '76561198000000000';
 
@@ -22,81 +27,93 @@ export default function HomePage() {
   }
 
   return (
-    <main className="mx-auto flex min-h-screen w-full max-w-5xl flex-col justify-center gap-4 px-5 py-10">
-      <AuthStatus />
-      <section className="rounded-lg border border-slate-200 bg-white p-6 shadow-sm md:p-8">
-        <p className="text-sm font-semibold uppercase tracking-normal text-slate-500">
-          Local MVP
-        </p>
-        <h1 className="mt-3 text-3xl font-semibold tracking-normal text-slate-950 md:text-4xl">
-          Steam Achievement Tracker
-        </h1>
-        <p className="mt-3 max-w-2xl text-base leading-7 text-slate-600">
-          Open a stored Steam profile dashboard, review seeded progress, and
-          enqueue backend sync jobs through the generated API SDK.
-        </p>
-        <ul className="mt-4 list-disc space-y-1 pl-5 text-sm leading-6 text-slate-600">
-          <li>Real Steam profiles must be public for full sync.</li>
-          <li>
-            Achievement unlock state may be unknown if Steam denies player
-            achievement access.
-          </li>
-          <li>Sync jobs are queued, and status appears in the sync runs.</li>
-        </ul>
+    <PageShell>
+      <div className="grid gap-6">
+        <PageHero
+          actions={<StatusBadge tone="accent">Steam-only</StatusBadge>}
+          eyebrow="Achievement hunting platform"
+          title="Track completions, compare progress, and plan the next 100%."
+        >
+          <p>
+            A local Steam dashboard for synced profiles, tracked games,
+            leaderboards, guides, sessions, activity, milestones, badges, and
+            public showcase pages.
+          </p>
+        </PageHero>
 
-        <form className="mt-8 grid gap-3 md:grid-cols-[1fr_auto]" onSubmit={handleSubmit}>
-          <label className="grid gap-2">
-            <span className="text-sm font-medium text-slate-700">Steam ID</span>
-            <input
-              className="h-11 rounded-md border border-slate-300 px-3 text-base outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
-              inputMode="numeric"
-              name="steamId"
-              onChange={(event) => setSteamId(event.target.value)}
-              placeholder="76561198000000000"
-              value={steamId}
-            />
-          </label>
-          <div className="flex items-end">
-            <button
-              className="h-11 w-full rounded-md bg-blue-600 px-5 text-sm font-semibold text-white hover:bg-blue-700 md:w-auto"
-              type="submit"
+        <section className="grid gap-6 lg:grid-cols-[minmax(0,1.3fr)_minmax(320px,0.7fr)]">
+          <SectionCard
+            description="Open a stored profile by Steam ID or jump into the seeded demo."
+            title="Find a Steam profile"
+          >
+            <form className="grid gap-3 md:grid-cols-[1fr_auto]" onSubmit={handleSubmit}>
+              <label className="grid gap-2">
+                <span className="text-sm font-medium text-slate-300">Steam ID</span>
+                <input
+                  className="h-12 rounded-xl border border-white/10 bg-slate-900 px-3 text-base text-white outline-none placeholder:text-slate-600 focus:border-lime-300 focus:ring-2 focus:ring-lime-300/20"
+                  inputMode="numeric"
+                  name="steamId"
+                  onChange={(event) => setSteamId(event.target.value)}
+                  placeholder="76561198000000000"
+                  value={steamId}
+                />
+              </label>
+              <div className="flex items-end">
+                <button
+                  className="h-12 w-full rounded-xl bg-lime-400 px-5 text-sm font-semibold text-slate-950 hover:bg-lime-300 md:w-auto"
+                  type="submit"
+                >
+                  Open Profile
+                </button>
+              </div>
+            </form>
+            <div className="mt-4 flex flex-wrap gap-3">
+              <button
+                className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+                onClick={() => setSteamId(DEMO_STEAM_ID)}
+                type="button"
+              >
+                Use demo profile
+              </button>
+              <button
+                className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
+                onClick={() => router.push(`/profiles/${DEMO_STEAM_ID}`)}
+                type="button"
+              >
+                Open seeded dashboard
+              </button>
+            </div>
+          </SectionCard>
+
+          <SectionCard title="Data rules">
+            <ul className="space-y-3 text-sm leading-6 text-slate-300">
+              <li>Real Steam profiles must be public for full sync.</li>
+              <li>Unknown unlock state is shown as unknown, never as locked.</li>
+              <li>Sync jobs are queued and tracked through sync runs.</li>
+            </ul>
+          </SectionCard>
+        </section>
+
+        <ResponsiveGrid>
+          {[
+            ['Games', 'Browse tracked Steam games and achievement metadata.', '/games'],
+            ['Leaderboards', 'Rank latest profile snapshots by completion stats.', '/leaderboards'],
+            ['Guides', 'Read community roadmaps for the seeded demo game.', '/games/910001/guides'],
+            ['Sessions', 'Find upcoming co-op and achievement boosting sessions.', '/sessions'],
+            ['Activity', 'Scan public platform events and milestone moments.', '/activity'],
+            ['Badges', 'Review milestone-derived badge definitions.', '/badges'],
+          ].map(([title, description, href]) => (
+            <Link
+              className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20 transition hover:-translate-y-0.5 hover:border-lime-300/40 hover:bg-slate-900"
+              href={href}
+              key={href}
             >
-              Open Profile
-            </button>
-          </div>
-        </form>
-
-        <div className="mt-4 flex flex-wrap gap-3">
-          <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => setSteamId(DEMO_STEAM_ID)}
-            type="button"
-          >
-            Use demo profile
-          </button>
-          <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => router.push(`/profiles/${DEMO_STEAM_ID}`)}
-            type="button"
-          >
-            Open seeded dashboard
-          </button>
-          <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => router.push('/games')}
-            type="button"
-          >
-            Browse tracked games
-          </button>
-          <button
-            className="rounded-md border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-            onClick={() => router.push('/leaderboards')}
-            type="button"
-          >
-            View leaderboards
-          </button>
-        </div>
-      </section>
-    </main>
+              <h2 className="text-lg font-semibold text-white">{title}</h2>
+              <p className="mt-2 text-sm leading-6 text-slate-400">{description}</p>
+            </Link>
+          ))}
+        </ResponsiveGrid>
+      </div>
+    </PageShell>
   );
 }

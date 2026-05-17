@@ -9,7 +9,9 @@ import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigat
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ProgressBar } from '@/components/ui/progress-bar';
 import { SummaryCard } from '@/components/ui/summary-card';
 import { useGameAchievements } from '@/features/profile/api/use-game-achievements';
 import { useProfileGame } from '@/features/profile/api/use-profile-game';
@@ -68,9 +70,9 @@ export default function GameDetailPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl px-4 py-6 md:px-6">
+    <PageShell maxWidth="max-w-6xl">
       <Link
-        className="text-sm font-medium text-blue-700"
+        className="text-sm font-medium text-lime-200 hover:text-lime-100"
         href={`/profiles/${steamId}`}
       >
         Back to profile
@@ -95,26 +97,29 @@ export default function GameDetailPage() {
       ) : null}
 
       {game.data ? (
-        <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+        <section className="mt-4 rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.2),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(2,6,23,0.96))] p-6 shadow-2xl shadow-black/30 md:p-8">
           <div className="flex flex-wrap items-start gap-4">
             {game.data.iconUrl ? (
               <img
                 alt=""
-                className="h-16 w-16 rounded-md border border-slate-200"
+                className="h-20 w-20 rounded-2xl border border-white/10"
                 src={game.data.iconUrl}
               />
             ) : null}
             <div className="min-w-0 flex-1">
-              <p className="text-sm font-medium text-slate-500">Game</p>
-              <h1 className="mt-1 text-3xl font-semibold tracking-normal text-slate-950">
+              <p className="text-sm font-medium text-lime-200">Profile game</p>
+              <h1 className="mt-1 text-3xl font-semibold tracking-normal text-white md:text-5xl">
                 {game.data.name}
               </h1>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-2 text-sm text-slate-300">
                 Steam App {game.data.steamAppId}
               </p>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-400">
                 Last synced {formatDateTime(game.data.lastSyncedAt)}
               </p>
+              <div className="mt-4 max-w-md">
+                <ProgressBar value={game.data.completionPercentage} />
+              </div>
             </div>
             <div className="w-full md:w-auto">
               <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
@@ -157,6 +162,6 @@ export default function GameDetailPage() {
           isLoading={achievements.isLoading}
         />
       )}
-    </main>
+    </PageShell>
   );
 }

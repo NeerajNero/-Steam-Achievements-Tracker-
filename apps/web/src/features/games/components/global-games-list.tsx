@@ -4,6 +4,8 @@ import type { ReactNode } from 'react';
 import type { GlobalGameItemResponseDto } from '@steam-achievement/client-sdk';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { SectionCard } from '@/components/ui/section-card';
 import {
   formatNumber,
   formatPercent,
@@ -25,13 +27,10 @@ export function GlobalGamesList({
   total: number | undefined;
 }>): ReactNode {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-xl font-semibold text-slate-950">Tracked Game Library</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Showing {items?.length ?? 0} of {total ?? 0} games.
-        </p>
-      </div>
+    <SectionCard
+      description={`Showing ${items?.length ?? 0} of ${total ?? 0} games.`}
+      title="Tracked Game Library"
+    >
 
       {isLoading ? <LoadingState message="Loading tracked games..." /> : null}
       {isError ? (
@@ -48,8 +47,8 @@ export function GlobalGamesList({
 
       {items && items.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <table className="min-w-full divide-y divide-white/10 text-left text-sm">
+            <thead className="bg-white/5 text-xs uppercase text-slate-400">
               <tr>
                 <th className="px-4 py-3">Game</th>
                 <th className="px-4 py-3">Achievements</th>
@@ -59,7 +58,7 @@ export function GlobalGamesList({
                 <th className="px-4 py-3">Playtime</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-white/10">
               {items.map((game) => (
                 <tr key={game.steamAppId}>
                   <td className="px-4 py-3">
@@ -67,15 +66,15 @@ export function GlobalGamesList({
                       {game.iconUrl ? (
                         <img
                           alt=""
-                          className="h-10 w-10 rounded-md border border-slate-200"
+                          className="h-10 w-10 rounded-xl border border-white/10"
                           src={game.iconUrl}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-md border border-slate-200 bg-slate-100" />
+                        <div className="h-10 w-10 rounded-xl border border-white/10 bg-white/5" />
                       )}
                       <div>
                         <Link
-                          className="font-medium text-blue-700 hover:text-blue-900"
+                          className="font-medium text-lime-200 hover:text-lime-100"
                           href={`/games/${game.steamAppId}`}
                         >
                           {game.name}
@@ -94,6 +93,9 @@ export function GlobalGamesList({
                   <td className="px-4 py-3">{formatNumber(game.trackedPlayers)}</td>
                   <td className="px-4 py-3">
                     {formatPercent(game.averageCompletionPercentage)}
+                    <div className="mt-2">
+                      <ProgressBar value={game.averageCompletionPercentage} />
+                    </div>
                   </td>
                   <td className="px-4 py-3">{formatNumber(game.completedPlayers)}</td>
                   <td className="px-4 py-3">
@@ -105,6 +107,6 @@ export function GlobalGamesList({
           </table>
         </div>
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

@@ -8,6 +8,7 @@ import type { ReactNode } from 'react';
 import { formatDateTime } from '@/lib/format';
 
 import { getErrorMessage } from '@/lib/format';
+import { SectionCard } from '@/components/ui/section-card';
 import { formatSyncMetadata } from '../utils/sync-metadata';
 import { SyncStatusBadge } from './sync-status-badge';
 
@@ -32,20 +33,18 @@ export function SyncActions({
   latestSync: SyncHistoryItemResponseDto | null;
 }>): ReactNode {
   return (
-    <section className="mt-6 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <div className="border-b border-slate-200 pb-4">
-        <h2 className="text-xl font-semibold text-slate-950">Sync</h2>
-        <p className="mt-1 text-sm leading-6 text-slate-600">
-          Jobs are queued in the backend. Status refreshes through sync runs.
-        </p>
-      </div>
+    <div className="mt-6">
+      <SectionCard
+        description="Jobs are queued in the backend. Status refreshes through sync runs."
+        title="Sync"
+      >
       <div className="mt-4 flex flex-wrap gap-2">
         {actions.map((action) => {
           const isPending = pendingScope === action.scope;
 
           return (
             <button
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
               disabled={isPending}
               key={action.scope}
               onClick={() => onSync(action.scope)}
@@ -58,37 +57,37 @@ export function SyncActions({
       </div>
 
       {latestSync ? (
-        <div className="mt-4 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800">
-          <div className="font-semibold text-slate-900">Latest sync</div>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">
+          <div className="font-semibold text-white">Latest sync</div>
           <div className="mt-1 flex flex-wrap items-center gap-2">
-            <span className="inline-flex font-medium text-slate-600 capitalize">
+            <span className="inline-flex font-medium text-slate-300 capitalize">
               {latestSync.syncType}
             </span>
             <SyncStatusBadge status={latestSync.status} />
             {latestSync.finishedAt ? (
-              <span className="text-xs text-slate-500">
+              <span className="text-xs text-slate-400">
                 Finished {formatDateTime(latestSync.finishedAt)}
               </span>
             ) : null}
           </div>
           {formatSyncMetadata(latestSync.metadata) ? (
-            <p className="mt-1 text-slate-600">{formatSyncMetadata(latestSync.metadata)}</p>
+            <p className="mt-1 text-slate-400">{formatSyncMetadata(latestSync.metadata)}</p>
           ) : null}
           {latestSync.errorMessage ? (
-            <p className="mt-1 rounded bg-red-50 px-2 py-1 text-sm text-red-700">
+            <p className="mt-1 rounded bg-red-500/10 px-2 py-1 text-sm text-red-100">
               {latestSync.errorMessage}
             </p>
           ) : null}
         </div>
       ) : (
-        <div className="mt-4 rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800">
-          <div className="font-semibold text-slate-900">Latest sync</div>
-          <p className="text-slate-600">No sync runs yet.</p>
+        <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-200">
+          <div className="font-semibold text-white">Latest sync</div>
+          <p className="text-slate-400">No sync runs yet.</p>
         </div>
       )}
 
       {queuedSync ? (
-        <div className="mt-4 rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-900">
+        <div className="mt-4 rounded-xl border border-lime-300/20 bg-lime-400/10 px-3 py-2 text-sm text-lime-100">
           <div>
             Queued {queuedSync.scope} sync run{' '}
             <span className="font-mono">{queuedSync.syncRunId}</span>.
@@ -99,10 +98,11 @@ export function SyncActions({
         </div>
       ) : null}
       {error ? (
-        <p className="mt-4 rounded-md bg-red-50 px-3 py-2 text-sm text-red-800">
+        <p className="mt-4 rounded-xl bg-red-500/10 px-3 py-2 text-sm text-red-100">
           {getErrorMessage(error)}
         </p>
       ) : null}
-    </section>
+      </SectionCard>
+    </div>
   );
 }

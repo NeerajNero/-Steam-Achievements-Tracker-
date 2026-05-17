@@ -42,10 +42,10 @@ export function CommentForm({
 
   return (
     <form className="grid gap-3" onSubmit={handleSubmit}>
-      <label className="grid gap-1 text-sm font-medium text-slate-700">
+      <label className="grid gap-1 text-sm font-medium text-slate-300">
         Comment
         <textarea
-          className="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm font-normal text-slate-900"
+          className="min-h-24 rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm font-normal text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400"
           disabled={disabled || isSubmitting}
           maxLength={2000}
           onChange={(event) => setBody(event.target.value)}
@@ -53,9 +53,9 @@ export function CommentForm({
           value={body}
         />
       </label>
-      {error ? <p className="text-sm text-red-700">{error}</p> : null}
+      {error ? <p className="text-sm text-red-300">{error}</p> : null}
       <button
-        className="w-fit rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+        className="w-fit rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
         disabled={disabled || isSubmitting}
         type="submit"
       >

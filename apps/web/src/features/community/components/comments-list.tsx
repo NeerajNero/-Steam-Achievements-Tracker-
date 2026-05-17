@@ -17,19 +17,19 @@ export function CommentsList({
   }
 
   return (
-    <div className="divide-y divide-slate-200">
+    <div className="divide-y divide-white/10">
       {comments.map((comment) => (
         <article className="p-4" key={comment.id}>
           <div className="flex flex-wrap items-center gap-2">
             {comment.author.avatarUrl ? (
               <img
                 alt=""
-                className="h-7 w-7 rounded-full border border-slate-200"
+                className="h-7 w-7 rounded-full border border-white/10"
                 src={comment.author.avatarUrl}
               />
             ) : null}
             <div>
-              <p className="text-sm font-semibold text-slate-950">
+              <p className="text-sm font-semibold text-slate-100">
                 {formatAuthor(comment.author)}
               </p>
               <p className="text-xs text-slate-500">
@@ -37,7 +37,7 @@ export function CommentsList({
               </p>
             </div>
           </div>
-          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-700">
+          <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-slate-300">
             {comment.body}
           </p>
         </article>
@@ -51,7 +51,7 @@ function formatAuthor(author: CommentResponseDto['author']): ReactNode {
 
   if (author.publicSlug) {
     return (
-      <Link className="text-blue-700 hover:underline" href={`/u/${author.publicSlug}`}>
+      <Link className="text-lime-300 hover:text-lime-200" href={`/u/${author.publicSlug}`}>
         {label}
       </Link>
     );
@@ -60,7 +60,7 @@ function formatAuthor(author: CommentResponseDto['author']): ReactNode {
   if (author.steamId) {
     return (
       <Link
-        className="text-blue-700 hover:underline"
+        className="text-lime-300 hover:text-lime-200"
         href={`/profiles/${author.steamId}`}
       >
         {label}

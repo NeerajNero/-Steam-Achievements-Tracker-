@@ -16,11 +16,14 @@
 ## Phase 2: Analytics And Planner
 
 - Advanced library filters and sorts.
+- Coherent dashboard navigation and shared frontend UI primitives across public
+  profile, game, leaderboard, guide, session, and activity pages.
 - Global Steam game browsing.
 - Latest-snapshot leaderboard v1.
 - Basic Steam game guides and achievement roadmaps.
 - Basic Steam gaming sessions for co-op/multiplayer achievement boosting.
 - Public activity feed and snapshot-derived profile milestones.
+- Milestone-derived badges and owner-curated profile showcase items.
 - Backlog optimization based on remaining achievements, rarity, and playtime.
 - Suggested next games to complete.
 - Suggested achievement targets for near-complete games.
@@ -34,6 +37,8 @@
   after the session/community foundations prove useful.
 - Real-time activity, notifications, share cards, and milestone artwork after the
   database-backed activity/milestone foundation proves stable.
+- Badge artwork, drag-and-drop showcase editing, generated share cards, and
+  gamercards after the badge/showcase foundation proves stable.
 
 ## Phase 3: Public Profiles And Sharing
 

@@ -101,10 +101,15 @@ generated-SDK endpoints:
 - `PATCH /account/preferences`
 - `GET /account/public-profile`
 - `PATCH /account/public-profile`
+- `GET /account/showcase`
+- `PUT /account/showcase`
 
 Editable account fields are limited to display name and avatar URL. Role,
 status, Steam ID, ownership links, session rows, and token fields are not
 accepted in account update requests.
+
+Showcase updates are limited to the signed-in user's linked primary Steam
+profile. V1 lets users select earned badges for public profile display.
 
 Preferences are strict JSON settings:
 

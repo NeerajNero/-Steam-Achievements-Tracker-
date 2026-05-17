@@ -55,6 +55,10 @@ The editor is intentionally plain:
 - no image uploads;
 - achievement attachment by UUID for now.
 
+Guide public pages and author pages use the shared dark dashboard shell. Guide
+lists should show status/visibility context clearly and keep auth-required edit
+actions out of public reader flows.
+
 ## Manual Smoke
 
 Use a real signed-in browser session:
