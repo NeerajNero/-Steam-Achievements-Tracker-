@@ -519,6 +519,93 @@
           "sync"
         ]
       }
+    },
+    "/auth/steam/login": {
+      "get": {
+        "description": "Starts the OpenID login flow and redirects the browser to Steam.",
+        "operationId": "startSteamLogin",
+        "parameters": [
+          {
+            "name": "returnTo",
+            "required": false,
+            "in": "query",
+            "description": "Optional frontend path to return to after a successful login. Relative paths only.",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "302": {
+            "description": "Redirects to Steam OpenID login URL."
+          }
+        },
+        "summary": "Start Sign in with Steam",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/steam/callback": {
+      "get": {
+        "description": "Validates the OpenID response and creates/restores an application session.",
+        "operationId": "handleSteamCallback",
+        "parameters": [],
+        "responses": {
+          "302": {
+            "description": "Redirects to frontend after authentication."
+          },
+          "401": {
+            "description": "OpenID state is invalid or expired."
+          }
+        },
+        "summary": "Handle Steam OpenID callback",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "description": "Returns user identity and linked Steam account information for the current session.",
+        "operationId": "getCurrentUser",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthMeResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get current authenticated user/session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "description": "Revokes the current session and clears the auth cookie.",
+        "operationId": "logout",
+        "parameters": [],
+        "responses": {
+          "204": {
+            "description": "Session cleared."
+          }
+        },
+        "summary": "Sign out current user",
+        "tags": [
+          "auth"
+        ]
+      }
     }
   },
   "info": {
@@ -546,6 +633,10 @@
     },
     {
       "name": "sync",
+      "description": ""
+    },
+    {
+      "name": "auth",
       "description": ""
     }
   ],
@@ -1274,6 +1365,126 @@
         "required": [
           "steamId",
           "items"
+        ]
+      },
+      "AuthUserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "c1a4f4d1-2f3d-4a3a-8e6e-8f3a4e7f8b6d"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Steam User",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://avatars.steamstatic.com/...",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "moderator",
+              "admin"
+            ],
+            "example": "user"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "deleted"
+            ],
+            "example": "active"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "status"
+        ]
+      },
+      "AuthSteamAccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "steamProfileId": {
+            "type": "string",
+            "example": "f0a6d95f-8d8c-4e9b-bc11-2f5a5f8c4f0f"
+          },
+          "personaName": {
+            "type": "string",
+            "example": "TestUser",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://avatars.akamai.steamstatic.com/...",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "steamId",
+          "steamProfileId",
+          "isPrimary"
+        ]
+      },
+      "AuthPublicProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "my-steam-profile",
+            "nullable": true
+          },
+          "isPublic": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "isPublic"
+        ]
+      },
+      "AuthMeResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AuthUserResponseDto"
+          },
+          "steamAccount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthSteamAccountResponseDto"
+              }
+            ]
+          },
+          "publicProfile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AuthPublicProfileResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "user"
         ]
       }
     }

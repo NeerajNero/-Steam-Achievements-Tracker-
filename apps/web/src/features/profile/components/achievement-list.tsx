@@ -74,6 +74,11 @@ export function AchievementList({
               </div>
               <div className="md:text-right">
                 <UnlockStateBadge unlockState={achievement.unlockState} />
+                {achievement.unlockState === 'unknown' ? (
+                  <p className="mt-1 text-xs text-amber-800">
+                    Unknown unlock state from Steam API availability.
+                  </p>
+                ) : null}
                 {achievement.unlockedAt ? (
                   <div className="mt-2 text-xs text-slate-500">
                     {formatDateTime(achievement.unlockedAt)}

@@ -1,4 +1,4 @@
--- Steam Achievement Tracker MVP schema.
+-- Steam Achievement Tracker initial platform schema.
 -- Migration-first PostgreSQL schema. Do not replace this with ORM schema sync.
 
 -- ============================================================================
@@ -313,6 +313,212 @@ COMMENT ON COLUMN sync_runs.created_at IS
   'Timestamp when this sync run row was first created.';
 
 -- ============================================================================
+-- App users
+-- ============================================================================
+
+CREATE TABLE app_users (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  display_name TEXT,
+  avatar_url TEXT,
+  role TEXT NOT NULL DEFAULT 'user',
+  status TEXT NOT NULL DEFAULT 'active',
+  last_login_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT app_users_role_check CHECK (
+    role IN ('user', 'moderator', 'admin')
+  ),
+  CONSTRAINT app_users_status_check CHECK (
+    status IN ('active', 'disabled', 'deleted')
+  )
+);
+
+COMMENT ON TABLE app_users IS
+  'Internal application users. Auth runtime is not implemented yet.';
+COMMENT ON COLUMN app_users.id IS
+  'Internal UUID primary key for an application user.';
+COMMENT ON COLUMN app_users.display_name IS
+  'Application display name, initially expected to come from Steam sign-in.';
+COMMENT ON COLUMN app_users.avatar_url IS
+  'Application avatar URL, initially expected to come from Steam sign-in.';
+COMMENT ON COLUMN app_users.role IS
+  'Application authorization role. Runtime authorization is not implemented yet.';
+COMMENT ON COLUMN app_users.status IS
+  'Application account lifecycle status.';
+COMMENT ON COLUMN app_users.last_login_at IS
+  'Timestamp of the latest successful app login when auth runtime is added.';
+COMMENT ON COLUMN app_users.created_at IS
+  'Timestamp when this app user row was first created.';
+COMMENT ON COLUMN app_users.updated_at IS
+  'Timestamp when this app user row was last updated.';
+
+CREATE TRIGGER app_users_set_updated_at
+BEFORE UPDATE ON app_users
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- ============================================================================
+-- User Steam accounts
+-- ============================================================================
+
+CREATE TABLE user_steam_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE RESTRICT,
+  steam_profile_id UUID NOT NULL REFERENCES steam_profiles(id) ON DELETE RESTRICT,
+  steam_id TEXT NOT NULL,
+  is_primary BOOLEAN NOT NULL DEFAULT false,
+  linked_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT user_steam_accounts_user_profile_key UNIQUE (user_id, steam_profile_id),
+  CONSTRAINT user_steam_accounts_steam_id_key UNIQUE (steam_id)
+);
+
+COMMENT ON TABLE user_steam_accounts IS
+  'Links application users to Steam profiles for future Steam sign-in and profile claiming.';
+COMMENT ON COLUMN user_steam_accounts.id IS
+  'Internal UUID primary key for a linked Steam account.';
+COMMENT ON COLUMN user_steam_accounts.user_id IS
+  'Application user who owns this linked Steam account.';
+COMMENT ON COLUMN user_steam_accounts.steam_profile_id IS
+  'Steam profile row claimed by the application user.';
+COMMENT ON COLUMN user_steam_accounts.steam_id IS
+  'Steam 64-bit external profile identifier. Duplicated for lookup and uniqueness.';
+COMMENT ON COLUMN user_steam_accounts.is_primary IS
+  'True when this is the default Steam account for the user. A partial unique index enforces one primary account per user.';
+COMMENT ON COLUMN user_steam_accounts.linked_at IS
+  'Timestamp when this Steam account was linked to the application user.';
+COMMENT ON COLUMN user_steam_accounts.created_at IS
+  'Timestamp when this linked account row was first created.';
+COMMENT ON COLUMN user_steam_accounts.updated_at IS
+  'Timestamp when this linked account row was last updated.';
+
+CREATE TRIGGER user_steam_accounts_set_updated_at
+BEFORE UPDATE ON user_steam_accounts
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- ============================================================================
+-- Auth sessions
+-- ============================================================================
+
+CREATE TABLE auth_sessions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE RESTRICT,
+  session_token_hash TEXT NOT NULL,
+  user_agent TEXT,
+  ip_address INET,
+  expires_at TIMESTAMPTZ NOT NULL,
+  revoked_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT auth_sessions_session_token_hash_key UNIQUE (session_token_hash)
+);
+
+COMMENT ON TABLE auth_sessions IS
+  'Server-managed login sessions. Stores hashed session tokens only, never raw session tokens.';
+COMMENT ON COLUMN auth_sessions.id IS
+  'Internal UUID primary key for a server-managed auth session.';
+COMMENT ON COLUMN auth_sessions.user_id IS
+  'Application user who owns this session.';
+COMMENT ON COLUMN auth_sessions.session_token_hash IS
+  'Hash of the session token. Raw session tokens must never be stored in the database.';
+COMMENT ON COLUMN auth_sessions.user_agent IS
+  'User agent captured when the session is created, when available.';
+COMMENT ON COLUMN auth_sessions.ip_address IS
+  'Client IP address captured when the session is created, when available.';
+COMMENT ON COLUMN auth_sessions.expires_at IS
+  'Timestamp when the session expires.';
+COMMENT ON COLUMN auth_sessions.revoked_at IS
+  'Timestamp when the session was explicitly revoked, if applicable.';
+COMMENT ON COLUMN auth_sessions.created_at IS
+  'Timestamp when this session row was first created.';
+COMMENT ON COLUMN auth_sessions.updated_at IS
+  'Timestamp when this session row was last updated.';
+
+CREATE TRIGGER auth_sessions_set_updated_at
+BEFORE UPDATE ON auth_sessions
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- ============================================================================
+-- User preferences
+-- ============================================================================
+
+CREATE TABLE user_preferences (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE RESTRICT,
+  settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT user_preferences_user_id_key UNIQUE (user_id)
+);
+
+COMMENT ON TABLE user_preferences IS
+  'Authenticated user preference storage for future app settings.';
+COMMENT ON COLUMN user_preferences.id IS
+  'Internal UUID primary key for a user preferences row.';
+COMMENT ON COLUMN user_preferences.user_id IS
+  'Application user who owns these preferences.';
+COMMENT ON COLUMN user_preferences.settings IS
+  'JSON settings owned by the authenticated user.';
+COMMENT ON COLUMN user_preferences.created_at IS
+  'Timestamp when this preferences row was first created.';
+COMMENT ON COLUMN user_preferences.updated_at IS
+  'Timestamp when this preferences row was last updated.';
+
+CREATE TRIGGER user_preferences_set_updated_at
+BEFORE UPDATE ON user_preferences
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- ============================================================================
+-- Public profiles
+-- ============================================================================
+
+CREATE TABLE public_profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES app_users(id) ON DELETE RESTRICT,
+  steam_profile_id UUID NOT NULL REFERENCES steam_profiles(id) ON DELETE RESTRICT,
+  slug TEXT,
+  is_public BOOLEAN NOT NULL DEFAULT true,
+  settings JSONB NOT NULL DEFAULT '{}'::jsonb,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT public_profiles_user_profile_key UNIQUE (user_id, steam_profile_id),
+  CONSTRAINT public_profiles_steam_profile_id_key UNIQUE (steam_profile_id),
+  CONSTRAINT public_profiles_slug_key UNIQUE (slug),
+  CONSTRAINT public_profiles_slug_format_check CHECK (
+    slug IS NULL
+    OR slug ~ '^[a-z0-9-]{3,64}$'
+  )
+);
+
+COMMENT ON TABLE public_profiles IS
+  'Controls public publishing settings and future custom slugs. Raw Steam sync data remains in Steam domain tables.';
+COMMENT ON COLUMN public_profiles.id IS
+  'Internal UUID primary key for public profile settings.';
+COMMENT ON COLUMN public_profiles.user_id IS
+  'Application user who owns these public profile settings.';
+COMMENT ON COLUMN public_profiles.steam_profile_id IS
+  'Steam profile row being published or hidden by these settings.';
+COMMENT ON COLUMN public_profiles.slug IS
+  'Optional future public profile slug. Nullable until custom URLs are implemented.';
+COMMENT ON COLUMN public_profiles.is_public IS
+  'True when the claimed profile should be publishable through future public profile routes.';
+COMMENT ON COLUMN public_profiles.settings IS
+  'JSON publishing preferences for this public profile.';
+COMMENT ON COLUMN public_profiles.created_at IS
+  'Timestamp when this public profile row was first created.';
+COMMENT ON COLUMN public_profiles.updated_at IS
+  'Timestamp when this public profile row was last updated.';
+
+CREATE TRIGGER public_profiles_set_updated_at
+BEFORE UPDATE ON public_profiles
+FOR EACH ROW
+EXECUTE FUNCTION set_updated_at();
+
+-- ============================================================================
 -- Dashboard and sync read indexes
 -- ============================================================================
 
@@ -355,3 +561,112 @@ CREATE INDEX sync_runs_profile_started_at_idx
 
 CREATE INDEX sync_runs_status_idx
   ON sync_runs (status);
+
+CREATE INDEX user_steam_accounts_user_id_idx
+  ON user_steam_accounts (user_id);
+
+CREATE INDEX user_steam_accounts_steam_profile_id_idx
+  ON user_steam_accounts (steam_profile_id);
+
+CREATE INDEX user_steam_accounts_steam_id_idx
+  ON user_steam_accounts (steam_id);
+
+CREATE UNIQUE INDEX user_steam_accounts_one_primary_per_user_idx
+  ON user_steam_accounts (user_id)
+  WHERE is_primary = true;
+
+CREATE INDEX auth_sessions_user_id_idx
+  ON auth_sessions (user_id);
+
+CREATE INDEX auth_sessions_expires_at_idx
+  ON auth_sessions (expires_at);
+
+CREATE INDEX auth_sessions_revoked_at_idx
+  ON auth_sessions (revoked_at);
+
+CREATE INDEX public_profiles_user_id_idx
+  ON public_profiles (user_id);
+
+CREATE INDEX public_profiles_steam_profile_id_idx
+  ON public_profiles (steam_profile_id);
+
+-- ============================================================================
+-- Achievement progress refresh function
+-- ============================================================================
+
+CREATE OR REPLACE FUNCTION refresh_profile_game_achievement_progress(
+  p_profile_id uuid,
+  p_steam_app_id integer
+)
+RETURNS TABLE (
+  total_achievements integer,
+  unlocked_achievements integer,
+  completion_percentage numeric(5, 2)
+)
+LANGUAGE plpgsql
+SECURITY INVOKER
+AS $$
+DECLARE
+  v_game_id uuid;
+  v_total_achievements integer;
+  v_unlocked_achievements integer;
+  v_completion_percentage numeric(5, 2);
+BEGIN
+  SELECT games.id
+  INTO v_game_id
+  FROM games
+  WHERE games.steam_app_id = p_steam_app_id;
+
+  IF v_game_id IS NULL THEN
+    RAISE EXCEPTION 'Steam app % does not exist in games', p_steam_app_id
+      USING ERRCODE = 'foreign_key_violation';
+  END IF;
+
+  SELECT count(*)::integer
+  INTO v_total_achievements
+  FROM achievements
+  WHERE achievements.steam_app_id = p_steam_app_id;
+
+  SELECT count(*)::integer
+  INTO v_unlocked_achievements
+  FROM profile_achievements
+  INNER JOIN achievements
+    ON achievements.id = profile_achievements.achievement_id
+  WHERE profile_achievements.profile_id = p_profile_id
+    AND achievements.steam_app_id = p_steam_app_id
+    AND profile_achievements.achieved = true;
+
+  v_completion_percentage := CASE
+    WHEN v_total_achievements = 0 THEN 0
+    ELSE round(
+      (v_unlocked_achievements::numeric / v_total_achievements::numeric) * 100,
+      2
+    )
+  END;
+
+  UPDATE games
+  SET
+    has_achievements = v_total_achievements > 0,
+    updated_at = now()
+  WHERE games.id = v_game_id;
+
+  UPDATE profile_games
+  SET
+    total_achievements = v_total_achievements,
+    unlocked_achievements = v_unlocked_achievements,
+    completion_percentage = v_completion_percentage,
+    last_synced_at = now(),
+    updated_at = now()
+  WHERE profile_games.profile_id = p_profile_id
+    AND profile_games.game_id = v_game_id;
+
+  total_achievements := v_total_achievements;
+  unlocked_achievements := v_unlocked_achievements;
+  completion_percentage := v_completion_percentage;
+
+  RETURN NEXT;
+END;
+$$;
+
+COMMENT ON FUNCTION refresh_profile_game_achievement_progress(uuid, integer)
+IS 'Recalculates one profile/game achievement progress row from achievements and profile_achievements. Called explicitly by achievement sync after per-game upserts when unlock state is authoritative or schema confirms zero achievements.';

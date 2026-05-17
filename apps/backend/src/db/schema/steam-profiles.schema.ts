@@ -11,7 +11,9 @@ import {
 
 import { profileAchievements } from './profile-achievements.schema';
 import { profileGames } from './profile-games.schema';
+import { publicProfiles } from './public-profiles.schema';
 import { syncRuns } from './sync-runs.schema';
+import { userSteamAccounts } from './user-steam-accounts.schema';
 
 export const steamProfiles = pgTable(
   'steam_profiles',
@@ -34,4 +36,6 @@ export const steamProfilesRelations = relations(steamProfiles, ({ many }) => ({
   profileGames: many(profileGames),
   profileAchievements: many(profileAchievements),
   syncRuns: many(syncRuns),
+  userSteamAccounts: many(userSteamAccounts),
+  publicProfiles: many(publicProfiles),
 }));

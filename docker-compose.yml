@@ -45,6 +45,13 @@ services:
       PORT: 3000
       OPENAPI_ENABLED: ${OPENAPI_ENABLED:-true}
       CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3001}
+      BACKEND_PUBLIC_URL: ${BACKEND_PUBLIC_URL:-http://localhost:3000}
+      FRONTEND_PUBLIC_URL: ${FRONTEND_PUBLIC_URL:-http://localhost:3001}
+      AUTH_SESSION_COOKIE_NAME: ${AUTH_SESSION_COOKIE_NAME:-steam_auth_session}
+      AUTH_STATE_COOKIE_NAME: ${AUTH_STATE_COOKIE_NAME:-steam_auth_state}
+      AUTH_SESSION_TTL_DAYS: ${AUTH_SESSION_TTL_DAYS:-14}
+      AUTH_STATE_TTL_SECONDS: ${AUTH_STATE_TTL_SECONDS:-300}
+      AUTH_COOKIE_SECURE: ${AUTH_COOKIE_SECURE:-false}
       DATABASE_URL: ${DATABASE_URL:-postgresql://postgres:postgres@postgres:5432/steam_tracker}
       STEAM_API_KEY: ${STEAM_API_KEY:-}
       STEAM_API_BASE_URL: ${STEAM_API_BASE_URL:-https://api.steampowered.com}
@@ -83,7 +90,16 @@ services:
       NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:3000}
       WATCHPACK_POLLING: "true"
     ports:
-      - "${WEB_PORT:-3001}:3001"
+      - "${WEB_PORT:-3001}:3000"
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >
+          fetch('http://127.0.0.1:3000/')
+            .then((response) => process.exit(response.ok ? 0 : 1))
+            .catch(() => process.exit(1))
     volumes:
       - .:/workspace
       - root-node-modules:/workspace/node_modules

@@ -3,16 +3,16 @@
 import {
   ListProfileGamesOrderEnum,
   ListProfileGamesSortEnum,
+  ListProfileGamesStatusEnum,
   type QueuedSyncResponseDto,
   SyncRequestDtoScopeEnum,
 } from '@steam-achievement/client-sdk';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
-import type { ReactNode } from 'react';
-import { useEffect, useState } from 'react';
+import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useMemo, useState } from 'react';
 
-import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { SummaryCard } from '@/components/ui/summary-card';
+import { EmptyState, ErrorState } from '@/components/ui/panel-state';
+import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useEnqueueSync } from '@/features/profile/api/use-enqueue-sync';
 import { useNearestCompletions } from '@/features/profile/api/use-nearest-completions';
 import { useProfile } from '@/features/profile/api/use-profile';
@@ -20,16 +20,24 @@ import { useProfileGames } from '@/features/profile/api/use-profile-games';
 import { useProfileSummary } from '@/features/profile/api/use-profile-summary';
 import { useRarestAchievements } from '@/features/profile/api/use-rarest-achievements';
 import { useSyncRuns } from '@/features/profile/api/use-sync-runs';
-import { GamesTable } from '@/features/profile/components/games-table';
+import {
+  type ProfileLibraryFilters,
+  DEFAULT_LIBRARY_LIMIT,
+  DEFAULT_LIBRARY_OFFSET,
+  parseProfileLibraryFilters,
+  toProfileLibrarySearchParams,
+  normalizeProfileLibraryFilters,
+} from '@/features/profile/utils/profile-library-filters';
+import { shouldPollSyncRuns } from '@/features/profile/utils/sync-status';
+import { ProfileHeader } from '@/features/profile/components/profile-header';
+import { ProfileSummaryGrid } from '@/features/profile/components/profile-summary-grid';
 import { SyncActions } from '@/features/profile/components/sync-actions';
 import { SyncRunsList } from '@/features/profile/components/sync-runs-list';
-import { shouldPollSyncRuns } from '@/features/profile/utils/sync-status';
-import {
-  formatNumber,
-  formatPercent,
-  getErrorMessage,
-  getHttpStatus,
-} from '@/lib/format';
+import { GameLibrary } from '@/features/profile/components/game-library';
+import { GameLibraryFilters } from '@/features/profile/components/game-library-filters';
+import { NearestCompletions } from '@/features/profile/components/nearest-completions';
+import { RarestAchievements } from '@/features/profile/components/rarest-achievements';
+import { getErrorMessage, getHttpStatus } from '@/lib/format';
 
 const SYNC_RUNS_LIMIT = 8;
 const SYNC_POLL_INTERVAL_MS = 3_000;
@@ -43,18 +51,43 @@ const syncActions = [
 export default function ProfilePage() {
   const params = useParams<{ steamId: string }>();
   const steamId = params.steamId;
-  const [queuedSync, setQueuedSync] = useState<QueuedSyncResponseDto | null>(
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const parsedSearchParams = useMemo(
+    () => parseProfileLibraryFilters(new URLSearchParams(searchParams.toString())),
+    [searchParams],
+  );
+
+  const [filters, setFilters] = useState<ProfileLibraryFilters>(() =>
+    normalizeProfileLibraryFilters(parsedSearchParams),
+  );
+  const [searchInput, setSearchInput] = useState(filters.search);
+  const [queuedSync, setQueuedSync] = useState<QueuedSyncResponseDto | null>(null);
+  const [pendingScope, setPendingScope] = useState<SyncRequestDtoScopeEnum | null>(
     null,
   );
-  const [pendingScope, setPendingScope] =
-    useState<SyncRequestDtoScopeEnum | null>(null);
+
+  useEffect(() => {
+    const nextFilters = normalizeProfileLibraryFilters(parsedSearchParams);
+    const hasFiltersChanged =
+      JSON.stringify(nextFilters) !== JSON.stringify(filters);
+
+    if (hasFiltersChanged) {
+      setFilters(nextFilters);
+      setSearchInput(nextFilters.search);
+    }
+  }, [parsedSearchParams, filters]);
 
   const profile = useProfile(steamId);
   const summary = useProfileSummary(steamId);
   const games = useProfileGames(steamId, {
-    limit: 25,
-    sort: ListProfileGamesSortEnum.Completion,
-    order: ListProfileGamesOrderEnum.Desc,
+    limit: filters.limit,
+    offset: filters.offset,
+    search: filters.search || undefined,
+    status: filters.status,
+    sort: filters.sort,
+    order: filters.order,
   });
   const nearestCompletions = useNearestCompletions(steamId, 5);
   const rarestAchievements = useRarestAchievements(steamId, 5);
@@ -63,9 +96,12 @@ export default function ProfilePage() {
   const refetchSyncRuns = syncRuns.refetch;
 
   const runs = syncRuns.data?.items ?? [];
+  const latestSyncRun = runs[0] ?? null;
   const isPollingSyncRuns = shouldPollSyncRuns(runs, queuedSync);
   const profileMissing =
-    getHttpStatus(profile.error) === 404 || getHttpStatus(summary.error) === 404;
+    getHttpStatus(profile.error) === 404 ||
+    getHttpStatus(summary.error) === 404;
+  const totalGames = games.data?.total ?? 0;
 
   useEffect(() => {
     if (!isPollingSyncRuns) {
@@ -79,13 +115,46 @@ export default function ProfilePage() {
     return () => window.clearInterval(intervalId);
   }, [isPollingSyncRuns, refetchSyncRuns]);
 
+  function updateFilters(nextFilters: Partial<ProfileLibraryFilters>): void {
+    const normalizedFilters = normalizeProfileLibraryFilters(nextFilters);
+    setFilters(normalizedFilters);
+
+    const params = toProfileLibrarySearchParams(normalizedFilters);
+    const href = params.length > 0 ? `${pathname}?${params}` : pathname;
+
+    void router.replace(href, { scroll: false });
+  }
+
+  function onSubmitSearch(): void {
+    const clampedOffset =
+      filters.search.trim() === searchInput.trim() ? filters.offset : DEFAULT_LIBRARY_OFFSET;
+
+    updateFilters({
+      ...filters,
+      search: searchInput.trim(),
+      offset: clampedOffset,
+    });
+  }
+
+  function onPageChange(newOffset: number): void {
+    const nextOffset = Math.max(DEFAULT_LIBRARY_OFFSET, newOffset);
+
+    const clampedOffset = Number.isNaN(totalGames)
+      ? nextOffset
+      : Math.min(nextOffset, Math.max(0, Math.max(totalGames - 1, 0)));
+
+    updateFilters({
+      ...filters,
+      offset: clampedOffset,
+    });
+  }
+
   async function enqueue(scope: SyncRequestDtoScopeEnum): Promise<void> {
     setPendingScope(scope);
 
     try {
       const response = await enqueueSync.mutateAsync({
         scope,
-        appIds: undefined,
       });
       setQueuedSync(response);
       await refetchSyncRuns();
@@ -94,87 +163,51 @@ export default function ProfilePage() {
     }
   }
 
+  const headerProfile = profile.data ?? summary.data;
+  const errorMessage = getErrorMessage(profile.error ?? summary.error);
+
   return (
     <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link className="text-sm font-medium text-blue-700" href="/">
-            Back to search
-          </Link>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">
-            {summary.data?.personaName ?? profile.data?.personaName ?? steamId}
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">Steam ID: {steamId}</p>
-        </div>
-        {profile.data?.avatarUrl ? (
-          <img
-            alt=""
-            className="h-16 w-16 rounded-md border border-slate-200"
-            src={profile.data.avatarUrl}
-          />
-        ) : null}
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-blue-700" href="/">
+          Back to home
+        </Link>
+      </div>
+
+      <div className="mb-4">
+        <AuthStatus />
+      </div>
+
+      <div className="mb-6">
+        <ProfileHeader profile={headerProfile} />
       </div>
 
       {profileMissing ? (
+        <EmptyState
+          action={
+            <button
+              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              disabled={pendingScope === SyncRequestDtoScopeEnum.Profile}
+              onClick={() => void enqueue(SyncRequestDtoScopeEnum.Profile)}
+              type="button"
+            >
+              {pendingScope === SyncRequestDtoScopeEnum.Profile
+                ? 'Queueing...'
+                : 'Sync Profile'}
+            </button>
+          }
+          message="Profile not synced yet. This Steam ID is not in the local database."
+          title="Profile not synced yet"
+        />
+      ) : null}
+
+      {(profile.error || summary.error) && !profileMissing ? (
         <div className="mb-6">
-          <EmptyState
-            action={
-              <button
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
-                disabled={pendingScope === SyncRequestDtoScopeEnum.Profile}
-                onClick={() => void enqueue(SyncRequestDtoScopeEnum.Profile)}
-                type="button"
-              >
-                {pendingScope === SyncRequestDtoScopeEnum.Profile
-                  ? 'Queueing...'
-                  : 'Sync Profile'}
-              </button>
-            }
-            message="This Steam ID is not in the local database yet. Queue a profile sync to create it."
-            title="Profile not synced yet"
-          />
+          <ErrorState message={errorMessage} title="Profile data is unavailable" />
         </div>
       ) : null}
 
-      {!profileMissing && (summary.isError || profile.isError) ? (
-        <div className="mb-6">
-          <ErrorState
-            message={getErrorMessage(summary.error ?? profile.error)}
-            title="Profile data is unavailable"
-          />
-        </div>
-      ) : null}
-
-      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <SummaryCard
-          label="Games"
-          loading={summary.isLoading}
-          value={summary.data ? formatNumber(summary.data.totalGames) : '-'}
-        />
-        <SummaryCard
-          label="Completed"
-          loading={summary.isLoading}
-          value={summary.data ? formatNumber(summary.data.completedGames) : '-'}
-        />
-        <SummaryCard
-          label="Achievements"
-          loading={summary.isLoading}
-          value={
-            summary.data
-              ? `${formatNumber(summary.data.unlockedAchievements)} / ${formatNumber(summary.data.totalAchievements)}`
-              : '-'
-          }
-        />
-        <SummaryCard
-          label="Average Completion"
-          loading={summary.isLoading}
-          value={
-            summary.data
-              ? formatPercent(summary.data.averageCompletionPercentage)
-              : '-'
-          }
-        />
-      </section>
+      <ProfileSummaryGrid isLoading={summary.isLoading} summary={summary.data} />
 
       <SyncActions
         actions={syncActions}
@@ -182,69 +215,61 @@ export default function ProfilePage() {
         onSync={(scope) => void enqueue(scope)}
         pendingScope={pendingScope}
         queuedSync={queuedSync}
+        latestSync={latestSyncRun}
       />
 
-      <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
-        <GamesTable
-          error={games.error}
-          isError={games.isError}
-          isLoading={games.isLoading}
-          items={games.data?.items}
-          onSyncGames={() => void enqueue(SyncRequestDtoScopeEnum.Games)}
-          steamId={steamId}
-          total={games.data?.total}
-        />
+      <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+        <div className="grid gap-6">
+          <GameLibraryFilters
+            filters={filters}
+            onSubmitSearch={onSubmitSearch}
+            onSearchChange={setSearchInput}
+            onStatusChange={(status: ListProfileGamesStatusEnum) =>
+              updateFilters({ ...filters, status, offset: DEFAULT_LIBRARY_OFFSET })
+            }
+            onSortChange={(sort: ListProfileGamesSortEnum) =>
+              updateFilters({ ...filters, sort, offset: DEFAULT_LIBRARY_OFFSET })
+            }
+            onOrderChange={(order: ListProfileGamesOrderEnum) =>
+              updateFilters({ ...filters, order })
+            }
+            onLimitChange={(limit) =>
+              updateFilters({
+                ...filters,
+                limit,
+                offset: DEFAULT_LIBRARY_OFFSET,
+              })
+            }
+            onPageChange={onPageChange}
+            totalGames={totalGames}
+            searchInput={searchInput}
+          />
+          <GameLibrary
+            error={games.error}
+            isError={games.isError}
+            isLoading={games.isLoading}
+            items={games.data?.items}
+            onSyncGames={() => void enqueue(SyncRequestDtoScopeEnum.Games)}
+            steamId={steamId}
+            total={games.data?.total}
+          />
+        </div>
 
         <aside className="grid content-start gap-6">
-          <SmallListPanel
-            emptyMessage="No near-completion games yet."
+          <NearestCompletions
             error={nearestCompletions.error}
             isError={nearestCompletions.isError}
             isLoading={nearestCompletions.isLoading}
-            title="Nearest 100%"
-          >
-            {nearestCompletions.data?.items.map((game) => (
-              <li
-                className="rounded-md border border-slate-200 p-3"
-                key={game.steamAppId}
-              >
-                <Link
-                  className="font-medium text-blue-700"
-                  href={`/profiles/${steamId}/games/${game.steamAppId}`}
-                >
-                  {game.name}
-                </Link>
-                <div className="mt-1 text-sm text-slate-600">
-                  {formatPercent(game.completionPercentage)} complete,{' '}
-                  {formatNumber(game.remainingAchievements)} remaining
-                </div>
-              </li>
-            ))}
-          </SmallListPanel>
-
-          <SmallListPanel
-            emptyMessage="No rare unlocked achievements yet."
+            items={nearestCompletions.data?.items}
+            steamId={steamId}
+          />
+          <RarestAchievements
             error={rarestAchievements.error}
             isError={rarestAchievements.isError}
             isLoading={rarestAchievements.isLoading}
-            title="Rarest Achievements"
-          >
-            {rarestAchievements.data?.items.map((achievement) => (
-              <li
-                className="rounded-md border border-slate-200 p-3"
-                key={`${achievement.steamAppId}-${achievement.apiName}`}
-              >
-                <div className="font-medium text-slate-900">
-                  {achievement.displayName ?? achievement.apiName}
-                </div>
-                <div className="mt-1 text-sm text-slate-600">
-                  App {achievement.steamAppId} ·{' '}
-                  {formatPercent(achievement.globalPercentage)}
-                </div>
-              </li>
-            ))}
-          </SmallListPanel>
-
+            items={rarestAchievements.data?.items}
+            steamId={steamId}
+          />
           <SyncRunsList
             error={syncRuns.error}
             isError={syncRuns.isError}
@@ -253,45 +278,7 @@ export default function ProfilePage() {
             runs={syncRuns.data?.items}
           />
         </aside>
-      </div>
+      </section>
     </main>
-  );
-}
-
-function SmallListPanel({
-  children,
-  emptyMessage,
-  error,
-  isError,
-  isLoading,
-  title,
-}: Readonly<{
-  children: ReactNode;
-  emptyMessage: string;
-  error: unknown;
-  isError: boolean;
-  isLoading: boolean;
-  title: string;
-}>) {
-  const hasItems = Array.isArray(children)
-    ? children.length > 0
-    : Boolean(children);
-
-  return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-xl font-semibold text-slate-950">{title}</h2>
-      </div>
-      {isLoading ? <LoadingState message="Loading..." /> : null}
-      {isError ? (
-        <div className="p-4">
-          <ErrorState message={getErrorMessage(error)} />
-        </div>
-      ) : null}
-      {!isLoading && !isError && !hasItems ? (
-        <EmptyState message={emptyMessage} />
-      ) : null}
-      {hasItems ? <ul className="grid gap-3 p-4">{children}</ul> : null}
-    </section>
   );
 }

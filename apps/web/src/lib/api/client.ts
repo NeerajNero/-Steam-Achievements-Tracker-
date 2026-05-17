@@ -1,4 +1,5 @@
 import {
+  AuthApi,
   AchievementsApi,
   Configuration,
   GamesApi,
@@ -13,6 +14,7 @@ const apiBaseUrl =
 
 const sdkConfiguration = new Configuration({
   basePath: apiBaseUrl,
+  credentials: 'include',
 });
 
 export const profilesApi = new ProfilesApi(sdkConfiguration);
@@ -20,5 +22,6 @@ export const gamesApi = new GamesApi(sdkConfiguration);
 export const achievementsApi = new AchievementsApi(sdkConfiguration);
 export const syncApi = new SyncApi(sdkConfiguration);
 export const healthApi = new HealthApi(sdkConfiguration);
+export const authApi = new AuthApi(sdkConfiguration);
 
 export { apiBaseUrl };

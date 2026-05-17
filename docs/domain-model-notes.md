@@ -38,6 +38,34 @@
 - Used to explain freshness and failures.
 - Should support partial failure reporting later.
 
+### `app_users`
+
+- Stores internal application users.
+- Created or reused by the backend Sign in with Steam flow.
+- Auth is Steam-only; email/password auth is not implemented.
+
+### `user_steam_accounts`
+
+- Links application users to Steam profile rows.
+- Supports Steam sign-in and automatic profile claiming.
+- Enforces one claimed owner per Steam ID and one primary Steam account per user.
+
+### `auth_sessions`
+
+- Stores server-managed login sessions.
+- Stores hashed session tokens only, never raw session tokens.
+- Supports expiry and revocation.
+
+### `user_preferences`
+
+- Stores authenticated user settings as JSON.
+- Kept separate from Steam sync data.
+
+### `public_profiles`
+
+- Stores public profile publishing preferences and future custom slug support.
+- Keeps public profile behavior separate from raw Steam profile sync.
+
 ### Future: `achievement_goals`
 
 - Stores user-selected achievement or game completion goals.
@@ -52,11 +80,6 @@
 
 - Stores friend relationships or imported friend references.
 - Supports social comparison once privacy rules are defined.
-
-### Future: `public_profiles`
-
-- Stores public profile publishing preferences and share settings.
-- Keeps public profile behavior separate from raw Steam profile sync.
 
 ## Important Decisions
 
@@ -116,6 +139,17 @@ Why:
 - Repository code, database-facing service code, and feature service code should
   target an applied schema.
 
+### Decision: Auth ownership is separate from Steam sync data.
+
+Why:
+
+- Steam sync can exist before a user signs in or claims a profile.
+- Sign in with Steam should link an app user to an existing or newly synced
+  `steam_profiles` row.
+- Public publishing settings should not mutate raw Steam metadata or progress
+  tables.
+- Auth runtime can be added later without changing existing public read APIs.
+
 ### Decision: Profile visibility and private data must be handled gracefully.
 
 Why:
@@ -135,4 +169,5 @@ Why:
 ## TODO
 
 - Decide whether future public profile URLs use Steam IDs, internal slugs, or both.
+- Decide auth session lifetime and rotation policy.
 - Decide retention policy for long-term `sync_runs` and `profile_snapshots`.

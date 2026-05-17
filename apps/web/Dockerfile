@@ -29,6 +29,6 @@ COPY . .
 
 WORKDIR /workspace/apps/web
 
-EXPOSE 3001
+EXPOSE 3000
 
 CMD ["pnpm", "dev"]

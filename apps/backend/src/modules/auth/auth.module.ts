@@ -1,0 +1,22 @@
+import { Module } from '@nestjs/common';
+
+import { DatabaseModule } from '../../db/database.module';
+import { SteamModule } from '../steam/steam.module';
+import { AuthCookieService } from './auth-cookie.service';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { SessionService } from './session.service';
+import { SteamOpenIdService } from './steam-openid.service';
+
+@Module({
+  imports: [DatabaseModule, SteamModule],
+  controllers: [AuthController],
+  providers: [
+    AuthCookieService,
+    SessionService,
+    SteamOpenIdService,
+    AuthService,
+  ],
+  exports: [AuthService],
+})
+export class AuthModule {}
