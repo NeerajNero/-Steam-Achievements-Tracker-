@@ -2,11 +2,25 @@ import { Global, Module } from '@nestjs/common';
 
 import { AchievementsRepository } from './repositories/achievements.repository';
 import { AchievementSyncRepository } from './repositories/achievement-sync.repository';
+import { ActivityEventsRepository } from './repositories/activity-events.repository';
 import { AppUsersRepository } from './repositories/app-users.repository';
 import { AuthCallbackRepository } from './repositories/auth-callback.repository';
+import { ContentReportsRepository } from './repositories/content-reports.repository';
 import { GamesRepository } from './repositories/games.repository';
+import { GuideCommentsRepository } from './repositories/guide-comments.repository';
+import { GuideAchievementsRepository } from './repositories/guide-achievements.repository';
+import { GuideSectionsRepository } from './repositories/guide-sections.repository';
+import { GuideVotesRepository } from './repositories/guide-votes.repository';
+import { GuidesRepository } from './repositories/guides.repository';
+import { GamingSessionAchievementsRepository } from './repositories/gaming-session-achievements.repository';
+import { GamingSessionParticipantsRepository } from './repositories/gaming-session-participants.repository';
+import { GamingSessionsRepository } from './repositories/gaming-sessions.repository';
+import { SessionCommentsRepository } from './repositories/session-comments.repository';
+import { LeaderboardsRepository } from './repositories/leaderboards.repository';
 import { ProfileAchievementsRepository } from './repositories/profile-achievements.repository';
 import { ProfileGamesRepository } from './repositories/profile-games.repository';
+import { ProfileMilestonesRepository } from './repositories/profile-milestones.repository';
+import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.repository';
 import { PublicProfilesRepository } from './repositories/public-profiles.repository';
 import { SteamProfilesRepository } from './repositories/steam-profiles.repository';
 import { AuthSessionsRepository } from './repositories/auth-sessions.repository';
@@ -15,11 +29,26 @@ import { UserPreferencesRepository } from './repositories/user-preferences.repos
 import { UserSteamAccountsRepository } from './repositories/user-steam-accounts.repository';
 import { AchievementsDataService } from './services/achievements-data.service';
 import { AchievementSyncDataService } from './services/achievement-sync-data.service';
+import { ActivityEventsDataService } from './services/activity-events-data.service';
 import { AppUsersDataService } from './services/app-users-data.service';
 import { AuthCallbackDataService } from './services/auth-callback-data.service';
+import { ContentReportsDataService } from './services/content-reports-data.service';
 import { GamesDataService } from './services/games-data.service';
+import { GuideCommentsDataService } from './services/guide-comments-data.service';
+import { GuideAchievementsDataService } from './services/guide-achievements-data.service';
+import { GuideSectionsDataService } from './services/guide-sections-data.service';
+import { GuideVotesDataService } from './services/guide-votes-data.service';
+import { GuidesDataService } from './services/guides-data.service';
+import { GamingSessionAchievementsDataService } from './services/gaming-session-achievements-data.service';
+import { GamingSessionParticipantsDataService } from './services/gaming-session-participants-data.service';
+import { GamingSessionsDataService } from './services/gaming-sessions-data.service';
+import { SessionCommentsDataService } from './services/session-comments-data.service';
+import { LeaderboardsDataService } from './services/leaderboards-data.service';
 import { ProfileAchievementsDataService } from './services/profile-achievements-data.service';
 import { ProfileGamesDataService } from './services/profile-games-data.service';
+import { ProfileMilestoneBackfillDataService } from './services/profile-milestone-backfill-data.service';
+import { ProfileMilestonesDataService } from './services/profile-milestones-data.service';
+import { ProfileSnapshotsDataService } from './services/profile-snapshots-data.service';
 import { PublicProfilesDataService } from './services/public-profiles-data.service';
 import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
@@ -32,21 +61,37 @@ import { DatabaseService } from './database.service';
 @Module({
   providers: [
     DatabaseService,
+    ActivityEventsRepository,
     AchievementSyncRepository,
     AuthCallbackRepository,
     AuthSessionsRepository,
+    ContentReportsRepository,
     SteamProfilesRepository,
     AppUsersRepository,
     UserSteamAccountsRepository,
     UserPreferencesRepository,
     PublicProfilesRepository,
     GamesRepository,
+    GuidesRepository,
+    GuideCommentsRepository,
+    GuideVotesRepository,
+    GamingSessionsRepository,
+    SessionCommentsRepository,
+    GamingSessionParticipantsRepository,
+    GamingSessionAchievementsRepository,
+    GuideSectionsRepository,
+    GuideAchievementsRepository,
+    LeaderboardsRepository,
     ProfileGamesRepository,
+    ProfileMilestonesRepository,
+    ProfileSnapshotsRepository,
     AchievementsRepository,
     ProfileAchievementsRepository,
     SyncRunsRepository,
+    ActivityEventsDataService,
     AchievementSyncDataService,
     AuthCallbackDataService,
+    ContentReportsDataService,
     AppUsersDataService,
     SteamProfilesDataService,
     UserSteamAccountsDataService,
@@ -54,19 +99,47 @@ import { DatabaseService } from './database.service';
     PublicProfilesDataService,
     AuthSessionsDataService,
     GamesDataService,
+    GuidesDataService,
+    GuideCommentsDataService,
+    GuideVotesDataService,
+    GamingSessionsDataService,
+    SessionCommentsDataService,
+    GamingSessionParticipantsDataService,
+    GamingSessionAchievementsDataService,
+    GuideSectionsDataService,
+    GuideAchievementsDataService,
+    LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileMilestoneBackfillDataService,
+    ProfileMilestonesDataService,
+    ProfileSnapshotsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,
   ],
   exports: [
     DatabaseService,
+    ActivityEventsDataService,
     AchievementSyncDataService,
     AuthCallbackDataService,
+    ContentReportsDataService,
     AppUsersDataService,
     SteamProfilesDataService,
     GamesDataService,
+    GuidesDataService,
+    GuideCommentsDataService,
+    GuideVotesDataService,
+    GamingSessionsDataService,
+    SessionCommentsDataService,
+    GamingSessionParticipantsDataService,
+    GamingSessionAchievementsDataService,
+    GuideSectionsDataService,
+    GuideAchievementsDataService,
+    LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileMilestoneBackfillDataService,
+    ProfileMilestonesDataService,
+    ProfileSnapshotsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,

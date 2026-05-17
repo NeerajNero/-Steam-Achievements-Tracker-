@@ -17,6 +17,10 @@ import * as runtime from '../runtime';
 import type {
   GameDetailResponseDto,
   GameLibraryResponseDto,
+  GlobalGameAchievementsResponseDto,
+  GlobalGameDetailResponseDto,
+  GlobalGamePlayersResponseDto,
+  GlobalGamesResponseDto,
   NearestCompletionsResponseDto,
 } from '../models/index';
 import {
@@ -24,13 +28,53 @@ import {
     GameDetailResponseDtoToJSON,
     GameLibraryResponseDtoFromJSON,
     GameLibraryResponseDtoToJSON,
+    GlobalGameAchievementsResponseDtoFromJSON,
+    GlobalGameAchievementsResponseDtoToJSON,
+    GlobalGameDetailResponseDtoFromJSON,
+    GlobalGameDetailResponseDtoToJSON,
+    GlobalGamePlayersResponseDtoFromJSON,
+    GlobalGamePlayersResponseDtoToJSON,
+    GlobalGamesResponseDtoFromJSON,
+    GlobalGamesResponseDtoToJSON,
     NearestCompletionsResponseDtoFromJSON,
     NearestCompletionsResponseDtoToJSON,
 } from '../models/index';
 
+export interface GetGlobalGameRequest {
+    steamAppId: number;
+}
+
 export interface GetProfileGameRequest {
     steamAppId: number;
     steamId: string;
+}
+
+export interface ListGlobalGameAchievementsRequest {
+    steamAppId: number;
+    offset?: number;
+    limit?: number;
+    order?: ListGlobalGameAchievementsOrderEnum;
+    sort?: ListGlobalGameAchievementsSortEnum;
+    hidden?: ListGlobalGameAchievementsHiddenEnum;
+    search?: string;
+}
+
+export interface ListGlobalGamePlayersRequest {
+    steamAppId: number;
+    offset?: number;
+    limit?: number;
+    order?: ListGlobalGamePlayersOrderEnum;
+    sort?: ListGlobalGamePlayersSortEnum;
+    status?: ListGlobalGamePlayersStatusEnum;
+}
+
+export interface ListGlobalGamesRequest {
+    offset?: number;
+    limit?: number;
+    order?: ListGlobalGamesOrderEnum;
+    sort?: ListGlobalGamesSortEnum;
+    hasAchievements?: boolean;
+    search?: string;
 }
 
 export interface ListNearestCompletionsRequest {
@@ -52,6 +96,41 @@ export interface ListProfileGamesRequest {
  * 
  */
 export class GamesApi extends runtime.BaseAPI {
+
+    /**
+     * Returns canonical game metadata and aggregate tracked-player stats from PostgreSQL only.
+     * Get global Steam game detail
+     */
+    async getGlobalGameRaw(requestParameters: GetGlobalGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalGameDetailResponseDto>> {
+        if (requestParameters['steamAppId'] == null) {
+            throw new runtime.RequiredError(
+                'steamAppId',
+                'Required parameter "steamAppId" was null or undefined when calling getGlobalGame().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/games/{steamAppId}`.replace(`{${"steamAppId"}}`, encodeURIComponent(String(requestParameters['steamAppId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalGameDetailResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns canonical game metadata and aggregate tracked-player stats from PostgreSQL only.
+     * Get global Steam game detail
+     */
+    async getGlobalGame(requestParameters: GetGlobalGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalGameDetailResponseDto> {
+        const response = await this.getGlobalGameRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
 
     /**
      * Returns game metadata, profile progress, and summary counts.
@@ -92,6 +171,172 @@ export class GamesApi extends runtime.BaseAPI {
      */
     async getProfileGame(requestParameters: GetProfileGameRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GameDetailResponseDto> {
         const response = await this.getProfileGameRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns canonical achievement metadata for one tracked game from PostgreSQL only.
+     * List global game achievement metadata
+     */
+    async listGlobalGameAchievementsRaw(requestParameters: ListGlobalGameAchievementsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalGameAchievementsResponseDto>> {
+        if (requestParameters['steamAppId'] == null) {
+            throw new runtime.RequiredError(
+                'steamAppId',
+                'Required parameter "steamAppId" was null or undefined when calling listGlobalGameAchievements().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['order'] != null) {
+            queryParameters['order'] = requestParameters['order'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
+        if (requestParameters['hidden'] != null) {
+            queryParameters['hidden'] = requestParameters['hidden'];
+        }
+
+        if (requestParameters['search'] != null) {
+            queryParameters['search'] = requestParameters['search'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/games/{steamAppId}/achievements`.replace(`{${"steamAppId"}}`, encodeURIComponent(String(requestParameters['steamAppId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalGameAchievementsResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns canonical achievement metadata for one tracked game from PostgreSQL only.
+     * List global game achievement metadata
+     */
+    async listGlobalGameAchievements(requestParameters: ListGlobalGameAchievementsRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalGameAchievementsResponseDto> {
+        const response = await this.listGlobalGameAchievementsRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns public Steam profile metadata and progress for tracked players from PostgreSQL only.
+     * List tracked players for a game
+     */
+    async listGlobalGamePlayersRaw(requestParameters: ListGlobalGamePlayersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalGamePlayersResponseDto>> {
+        if (requestParameters['steamAppId'] == null) {
+            throw new runtime.RequiredError(
+                'steamAppId',
+                'Required parameter "steamAppId" was null or undefined when calling listGlobalGamePlayers().'
+            );
+        }
+
+        const queryParameters: any = {};
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['order'] != null) {
+            queryParameters['order'] = requestParameters['order'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
+        if (requestParameters['status'] != null) {
+            queryParameters['status'] = requestParameters['status'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/games/{steamAppId}/players`.replace(`{${"steamAppId"}}`, encodeURIComponent(String(requestParameters['steamAppId']))),
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalGamePlayersResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns public Steam profile metadata and progress for tracked players from PostgreSQL only.
+     * List tracked players for a game
+     */
+    async listGlobalGamePlayers(requestParameters: ListGlobalGamePlayersRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalGamePlayersResponseDto> {
+        const response = await this.listGlobalGamePlayersRaw(requestParameters, initOverrides);
+        return await response.value();
+    }
+
+    /**
+     * Returns global game rows and aggregate tracked-player stats from PostgreSQL only.
+     * List tracked Steam games
+     */
+    async listGlobalGamesRaw(requestParameters: ListGlobalGamesRequest, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<runtime.ApiResponse<GlobalGamesResponseDto>> {
+        const queryParameters: any = {};
+
+        if (requestParameters['offset'] != null) {
+            queryParameters['offset'] = requestParameters['offset'];
+        }
+
+        if (requestParameters['limit'] != null) {
+            queryParameters['limit'] = requestParameters['limit'];
+        }
+
+        if (requestParameters['order'] != null) {
+            queryParameters['order'] = requestParameters['order'];
+        }
+
+        if (requestParameters['sort'] != null) {
+            queryParameters['sort'] = requestParameters['sort'];
+        }
+
+        if (requestParameters['hasAchievements'] != null) {
+            queryParameters['hasAchievements'] = requestParameters['hasAchievements'];
+        }
+
+        if (requestParameters['search'] != null) {
+            queryParameters['search'] = requestParameters['search'];
+        }
+
+        const headerParameters: runtime.HTTPHeaders = {};
+
+        const response = await this.request({
+            path: `/games`,
+            method: 'GET',
+            headers: headerParameters,
+            query: queryParameters,
+        }, initOverrides);
+
+        return new runtime.JSONApiResponse(response, (jsonValue) => GlobalGamesResponseDtoFromJSON(jsonValue));
+    }
+
+    /**
+     * Returns global game rows and aggregate tracked-player stats from PostgreSQL only.
+     * List tracked Steam games
+     */
+    async listGlobalGames(requestParameters: ListGlobalGamesRequest = {}, initOverrides?: RequestInit | runtime.InitOverrideFunction): Promise<GlobalGamesResponseDto> {
+        const response = await this.listGlobalGamesRaw(requestParameters, initOverrides);
         return await response.value();
     }
 
@@ -195,6 +440,76 @@ export class GamesApi extends runtime.BaseAPI {
 
 }
 
+/**
+ * @export
+ */
+export const ListGlobalGameAchievementsOrderEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type ListGlobalGameAchievementsOrderEnum = typeof ListGlobalGameAchievementsOrderEnum[keyof typeof ListGlobalGameAchievementsOrderEnum];
+/**
+ * @export
+ */
+export const ListGlobalGameAchievementsSortEnum = {
+    Rarity: 'rarity',
+    Name: 'name'
+} as const;
+export type ListGlobalGameAchievementsSortEnum = typeof ListGlobalGameAchievementsSortEnum[keyof typeof ListGlobalGameAchievementsSortEnum];
+/**
+ * @export
+ */
+export const ListGlobalGameAchievementsHiddenEnum = {
+    All: 'all',
+    Visible: 'visible',
+    Hidden: 'hidden'
+} as const;
+export type ListGlobalGameAchievementsHiddenEnum = typeof ListGlobalGameAchievementsHiddenEnum[keyof typeof ListGlobalGameAchievementsHiddenEnum];
+/**
+ * @export
+ */
+export const ListGlobalGamePlayersOrderEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type ListGlobalGamePlayersOrderEnum = typeof ListGlobalGamePlayersOrderEnum[keyof typeof ListGlobalGamePlayersOrderEnum];
+/**
+ * @export
+ */
+export const ListGlobalGamePlayersSortEnum = {
+    Completion: 'completion',
+    Playtime: 'playtime',
+    RecentlyPlayed: 'recently_played'
+} as const;
+export type ListGlobalGamePlayersSortEnum = typeof ListGlobalGamePlayersSortEnum[keyof typeof ListGlobalGamePlayersSortEnum];
+/**
+ * @export
+ */
+export const ListGlobalGamePlayersStatusEnum = {
+    All: 'all',
+    Completed: 'completed',
+    Incomplete: 'incomplete'
+} as const;
+export type ListGlobalGamePlayersStatusEnum = typeof ListGlobalGamePlayersStatusEnum[keyof typeof ListGlobalGamePlayersStatusEnum];
+/**
+ * @export
+ */
+export const ListGlobalGamesOrderEnum = {
+    Asc: 'asc',
+    Desc: 'desc'
+} as const;
+export type ListGlobalGamesOrderEnum = typeof ListGlobalGamesOrderEnum[keyof typeof ListGlobalGamesOrderEnum];
+/**
+ * @export
+ */
+export const ListGlobalGamesSortEnum = {
+    Name: 'name',
+    TrackedPlayers: 'tracked_players',
+    CompletionRate: 'completion_rate',
+    Achievements: 'achievements',
+    Playtime: 'playtime'
+} as const;
+export type ListGlobalGamesSortEnum = typeof ListGlobalGamesSortEnum[keyof typeof ListGlobalGamesSortEnum];
 /**
  * @export
  */

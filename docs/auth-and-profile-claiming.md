@@ -145,6 +145,40 @@ summary stats, nearest completions, and rarest achievements when enabled. It
 does not expose private account fields, user preferences, sessions, token
 hashes, cookies, or internal auth details.
 
+## Snapshot Ownership
+
+Profile snapshot reads are public, but manual snapshot creation is ownership
+protected.
+
+```http
+POST /profiles/:steamId/snapshots
+```
+
+The backend requires an active session and allows manual snapshot creation only
+when:
+
+- the signed-in user has claimed/linked that Steam profile in
+  `user_steam_accounts`;
+- or the signed-in app user role is `admin` or `moderator`.
+
+The endpoint returns `401` for no active session and `403` when the signed-in
+user does not own the requested Steam profile. It never exposes session tokens
+or token hashes. Sync-created snapshots are internal workflow writes and do not
+depend on an HTTP session.
+
+## Guide Authoring Permissions
+
+Guides and achievement roadmaps are authored by authenticated app users. The
+backend uses the active Sign in with Steam session to identify the author.
+
+- signed-in users can create draft guides for tracked Steam games;
+- authors can edit their own guides and sections;
+- `admin` and `moderator` users can edit all guides;
+- public readers see only `published` + `public` guides.
+
+Guide responses never expose session rows, cookie values, token hashes, or
+private account fields.
+
 Post-auth Steam sync still depends on backend Steam API runtime config. For
 local Docker, `STEAM_API_KEY` belongs in `apps/backend/.env`, and the backend
 container should pass:

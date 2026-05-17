@@ -31,4 +31,4 @@ WORKDIR /workspace/apps/web
 
 EXPOSE 3000
 
-CMD ["pnpm", "dev"]
+CMD ["sh", "-c", "pnpm --filter @steam-achievement/client-sdk build && pnpm dev"]

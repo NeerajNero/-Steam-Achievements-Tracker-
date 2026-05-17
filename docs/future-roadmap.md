@@ -16,13 +16,24 @@
 ## Phase 2: Analytics And Planner
 
 - Advanced library filters and sorts.
+- Global Steam game browsing.
+- Latest-snapshot leaderboard v1.
+- Basic Steam game guides and achievement roadmaps.
+- Basic Steam gaming sessions for co-op/multiplayer achievement boosting.
+- Public activity feed and snapshot-derived profile milestones.
 - Backlog optimization based on remaining achievements, rarity, and playtime.
 - Suggested next games to complete.
 - Suggested achievement targets for near-complete games.
 - Completion distribution views.
 - Rarity distribution views.
-- Profile snapshots for historical tracking.
+- Profile snapshots as the historical tracking foundation.
 - Achievement goals.
+- Richer guide editing, comment moderation, nested threads, and voting analytics
+  after the community foundation proves useful.
+- Session chat, reminders, notifications, calendar export, and no-show tracking
+  after the session/community foundations prove useful.
+- Real-time activity, notifications, share cards, and milestone artwork after the
+  database-backed activity/milestone foundation proves stable.
 
 ## Phase 3: Public Profiles And Sharing
 
@@ -39,6 +50,8 @@
 - Compare completion percentage, completed games, rare unlocks, and backlog shape.
 - Similar-player recommendations.
 - Group or friend leaderboards.
+- Materialized leaderboard batches if ranking costs or fairness rules require
+  them.
 - Privacy controls for comparison visibility.
 
 ## Phase 5: AI And Backlog Intelligence
@@ -49,12 +62,14 @@
 - AI discovery for rare or interesting achievements.
 - Recommendation explanations grounded in synced data.
 
-## Phase 6: Multi-Platform Support
+## Phase 6: Steam Ecosystem Expansion
 
-- Evaluate support for non-Steam platforms.
-- Add platform-aware domain models only after Steam flows are stable.
-- Normalize achievements, games, and profiles across platforms where practical.
-- Keep platform-specific API payloads isolated from internal models.
+- Keep the product Steam-first and avoid platform-neutral abstractions until
+  there is a concrete reviewed need.
+- Add Steam guide images, share cards, and generated gamercards through the
+  future media asset flow.
+- Add Steam-focused community surfaces such as guide moderation and group
+  leaderboards.
 
 ## Decision
 

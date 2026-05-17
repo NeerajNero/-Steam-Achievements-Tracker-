@@ -3,10 +3,12 @@ import { Injectable } from '@nestjs/common';
 import {
   ProfileGamesRepository,
   type GameLibraryFilters,
+  type GlobalGamePlayerFilters,
   type ProfileGame,
   type ProfileGameFilters,
   type ProfileGameSummary,
   type ProfileGameWithGame,
+  type PublicTrackedPlayerForGame,
   type UpsertOwnedGameProgressInput,
   type UpsertProfileGameInput,
 } from '../repositories/profile-games.repository';
@@ -15,11 +17,15 @@ export type {
   GameLibraryFilters,
   GameLibrarySort,
   GameLibraryStatus,
+  GlobalGamePlayerFilters,
+  GlobalGamePlayerSort,
+  GlobalGamePlayerStatus,
   NewProfileGame,
   ProfileGame,
   ProfileGameFilters,
   ProfileGameSummary,
   ProfileGameWithGame,
+  PublicTrackedPlayerForGame,
   SortOrder,
   UpsertOwnedGameProgressInput,
   UpsertProfileGameInput,
@@ -106,5 +112,25 @@ export class ProfileGamesDataService {
 
   async getAverageCompletionPercentage(profileId: string): Promise<number> {
     return this.profileGamesRepository.getAverageCompletionPercentage(profileId);
+  }
+
+  async findPublicTrackedPlayersForGame(
+    steamAppId: number,
+    filters: GlobalGamePlayerFilters,
+  ): Promise<PublicTrackedPlayerForGame[]> {
+    return this.profileGamesRepository.findPublicTrackedPlayersForGame(
+      steamAppId,
+      filters,
+    );
+  }
+
+  async countPublicTrackedPlayersForGame(
+    steamAppId: number,
+    filters: Pick<GlobalGamePlayerFilters, 'status'>,
+  ): Promise<number> {
+    return this.profileGamesRepository.countPublicTrackedPlayersForGame(
+      steamAppId,
+      filters,
+    );
   }
 }

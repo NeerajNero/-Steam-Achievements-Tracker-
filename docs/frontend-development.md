@@ -109,6 +109,8 @@ Current SDK clients used by the frontend:
 - `PublicProfilesApi`
 - `ProfilesApi`
 - `GamesApi`
+- `LeaderboardsApi`
+- `SnapshotsApi`
 - `AchievementsApi`
 - `SyncApi`
 - `HealthApi`
@@ -126,6 +128,9 @@ or derived view models.
 Reminder: do not add raw `fetch` wrappers or Axios calls for OpenAPI-backed
 backend endpoints.
 Reminder: regenerate SDK packages only if the backend API shape changes.
+After SDK regeneration, run `pnpm sdk:build` and recreate the web container with
+`docker-compose up -d --force-recreate web` so Next.js does not keep a stale SDK
+module graph.
 
 ## Auth UI
 
@@ -211,6 +216,173 @@ The profile page is organized as:
 - nearest completions;
 - rarest achievements;
 - sync history.
+
+## Global Game Browsing
+
+Public game browsing lives at:
+
+```txt
+apps/web/src/app/games/page.tsx
+apps/web/src/app/games/[steamAppId]/page.tsx
+apps/web/src/features/games
+```
+
+The pages use `GamesApi` through feature-scoped hooks only:
+
+- `GET /games`
+- `GET /games/:steamAppId`
+- `GET /games/:steamAppId/achievements`
+- `GET /games/:steamAppId/players`
+
+These endpoints are database-backed read models. The frontend must not call the
+Steam Web API directly.
+
+The `/games` page stores filter state in URL params:
+
+- `search`
+- `hasAchievements=true|false`
+- `sort=name|tracked_players|completion_rate|achievements|playtime`
+- `order=asc|desc`
+- `limit`
+- `offset`
+
+The game detail page keeps achievement and player filters in URL params:
+
+- `achievementSearch`
+- `hidden=all|visible|hidden`
+- `achievementSort=rarity|name`
+- `achievementOrder=asc|desc`
+- `achievementLimit`
+- `achievementOffset`
+- `playerStatus=all|completed|incomplete`
+- `playerSort=completion|playtime|recently_played`
+- `playerOrder=asc|desc`
+- `playerLimit`
+- `playerOffset`
+
+Invalid URL params are normalized to defaults before SDK hooks are called.
+Tracked player links prefer `/u/:slug` when a published public profile slug is
+available and otherwise fall back to `/profiles/:steamId`.
+
+## Leaderboards And Snapshots
+
+Leaderboard browsing lives at:
+
+```txt
+apps/web/src/app/leaderboards/page.tsx
+apps/web/src/app/leaderboards/[type]/page.tsx
+apps/web/src/features/leaderboards
+```
+
+The pages use `LeaderboardsApi` through feature-scoped hooks only:
+
+- `GET /leaderboards`
+- `GET /leaderboards/:type`
+
+Supported leaderboard types are:
+
+- `completion_percentage`
+- `completed_games`
+- `unlocked_achievements`
+- `rarest_unlocks`
+
+Leaderboard rows are based on the latest stored snapshot per Steam profile.
+The frontend renders ranks and summary stats from the API response and does not
+recompute leaderboard scores from profile progress rows.
+
+Profile snapshots are displayed on profile dashboards from:
+
+```txt
+apps/web/src/features/snapshots
+```
+
+The snapshot hook uses `SnapshotsApi` for `GET /profiles/:steamId/snapshots`.
+Snapshots are created by completed syncs and can also be created manually
+through the backend snapshot endpoint by the authenticated owner of the claimed
+Steam profile. There is no manual snapshot button in the frontend yet; profile
+pages currently show the public snapshot history only.
+
+## Guides And Roadmaps
+
+Guide pages live at:
+
+```txt
+apps/web/src/app/games/[steamAppId]/guides/page.tsx
+apps/web/src/app/games/[steamAppId]/guides/[slug]/page.tsx
+apps/web/src/app/games/[steamAppId]/guides/new/page.tsx
+apps/web/src/app/account/guides/page.tsx
+apps/web/src/app/guides/[guideId]/edit/page.tsx
+apps/web/src/features/guides
+```
+
+The pages use generated `GuidesApi` methods through feature-scoped hooks only:
+
+- `GET /games/:steamAppId/guides`
+- `GET /games/:steamAppId/guides/:slug`
+- `POST /games/:steamAppId/guides`
+- `PATCH /guides/:guideId`
+- `GET /account/guides`
+- `POST/PATCH /guides/:guideId/sections`
+- `POST/DELETE /guides/:guideId/achievements`
+
+The current editor is intentionally basic: metadata fields, plain textarea
+sections, and achievement UUID attachment. Do not add rich text, uploads,
+comments, votes, or moderation UI until the backend models for those features
+exist.
+
+Manual guide smoke:
+- sign in with Steam;
+- open `/games/910001/guides/new`;
+- create a draft guide named `Demo Completion Roadmap`;
+- add one section;
+- attach one achievement UUID from Steam App `910001`;
+- publish the guide from `/guides/:guideId/edit`;
+- verify `/games/910001/guides`, `/games/910001/guides/:slug`, and
+  `/account/guides`.
+
+Deterministic guide auth smoke is available when a real browser session is not
+practical:
+
+```sh
+docker-compose exec -T backend pnpm guide:auth-smoke
+```
+
+The script uses the demo Steam ID and app `910001`, stores only a session token
+hash in PostgreSQL, never prints cookie/token values, and reports the created
+guide slug. To smoke the public guide detail page afterward:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 \
+  -e WEB_GUIDE_SLUG=<slug> web node scripts/web-smoke.js
+```
+
+If the web container reports that `GuidesApi` or another generated API export is
+missing, rebuild the SDK and recreate web:
+
+```sh
+pnpm sdk:build
+docker-compose up -d --force-recreate web
+```
+
+The SDK package build normalizes emitted ESM imports in `libs/client-sdk/dist`.
+If this step is skipped, Node may fail to resolve generated SDK entrypoints even
+when the TypeScript source exists.
+
+## Image Rendering
+
+Steam-provided avatars, game icons/logos, and achievement icons are stored as
+external URL fields from Steam sync data and rendered directly from those URLs.
+The frontend currently uses normal `<img>` elements for these small remote
+images.
+
+This is acceptable for the MVP. If these image surfaces are later migrated to
+`next/image`, configure `images.remotePatterns` in `apps/web/next.config.ts` for
+only the trusted Steam image hosts present in synced data. Do not add broad
+wildcard remote image hosts.
+
+Do not upload Steam-provided images to Cloudinary. Cloudinary is deferred for
+user-uploaded or generated media such as profile banners, guide images, share
+cards, and generated gamercards. See `docs/media-assets.md`.
 
 ## Account Settings
 
@@ -409,6 +581,13 @@ Manual browser smoke:
 - open `http://localhost:3001`;
 - open the demo profile `76561198000000000`;
 - open a seeded game such as `910001`;
+- open `http://localhost:3001/games`;
+- open `http://localhost:3001/games/910001`;
+- open `http://localhost:3001/sessions`;
+- open `http://localhost:3001/games/910001/sessions`;
+- verify global game filters update URL params;
+- verify game achievement and tracked-player sections render;
+- verify session status filters update URL params;
 - verify Sync Profile, Sync Games, and Sync Achievements enqueue through the
   SDK;
 - verify sync runs update and stop polling when terminal;
@@ -456,3 +635,71 @@ The only direct browser navigation is the Sign in with Steam redirect to
 The sync buttons enqueue through the generated SDK. After enqueue, the profile
 page refreshes sync runs immediately, polls every few seconds while the relevant
 run is `queued` or `running`, and stops once that run reaches a terminal status.
+
+## Gaming Sessions UI
+
+Gaming session frontend routes:
+
+- `/sessions`: public global session browse page.
+- `/sessions/:sessionId`: public or participant-visible session detail page.
+- `/games/:steamAppId/sessions`: public sessions for one Steam game.
+- `/games/:steamAppId/sessions/new`: authenticated create form.
+- `/sessions/:sessionId/edit`: host/admin/moderator edit form and achievement
+  attachment.
+
+The frontend uses `SessionsApi` from `@steam-achievement/client-sdk`; do not add
+raw fetch or Axios wrappers for these endpoints. Sign-in prompts are client-side
+for now, matching the existing settings/guides pattern.
+
+The session forms intentionally use plain datetime inputs. Calendar integration,
+reminders, real-time chat, uploads, and payment-related features are deferred.
+Flat session comments exist on the session detail page, but they are not a chat
+replacement.
+
+## Community UI
+
+Guide detail pages render:
+
+- guide vote controls through `CommunityApi`;
+- visible guide comments through `CommunityApi`;
+- a comment form for signed-in users;
+- a report form through `ReportsApi`.
+
+Session detail pages render:
+
+- visible session comments through `CommunityApi`;
+- a comment form for signed-in users;
+- a report form through `ReportsApi`.
+
+Keep these interactions SDK-backed. Do not add raw fetch or Axios wrappers for
+community endpoints. Report forms create private moderation-intake rows only;
+there is no moderation dashboard, nested thread UI, or real-time update loop yet.
+
+Run deterministic backend smoke after seed data when changing sessions:
+
+```sh
+docker-compose exec -T backend pnpm session:auth-smoke
+```
+
+Optional web smoke can check a known session detail route when a smoke-created
+session ID is provided:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 -e WEB_SESSION_ID=<session-id> web node scripts/web-smoke.js
+```
+
+## Activity And Milestones UI
+
+Activity and milestone frontend surfaces are SDK-backed:
+
+- `/activity` renders the latest public activity feed using `ActivityApi`.
+- `/profiles/:steamId` renders recent activity and milestones for the profile.
+- `/games/:steamAppId` renders recent game activity.
+- `/u/:slug` renders public profile activity and milestones when the public
+  profile response includes a Steam ID.
+
+The feed is not real-time and does not poll. It reads current public events from
+PostgreSQL through the generated SDK. Do not add raw fetch or Axios wrappers for
+activity or milestone endpoints.
+
+`web-smoke` checks `/activity` with the marker `Steam Activity`.

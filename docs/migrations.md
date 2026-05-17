@@ -34,7 +34,7 @@ schema_migrations (
 
 Status and pending commands do not create the tracking table. If the table does not exist yet, every SQL file is treated as pending.
 
-## Current Initial Migration
+## Current Migrations
 
 The current local/dev baseline is:
 
@@ -52,12 +52,26 @@ that local database before applying the squashed baseline. Do not attempt to run
 the squashed `0001` on top of a database that already has the old tables.
 
 After this reset point, treat applied migrations as immutable again. Future
-schema changes must be new numbered forward migrations such as:
+schema changes must be new numbered forward migrations.
+
+The current forward migration after the baseline is:
 
 ```txt
-0002-add-example-feature.sql
-0003-add-profile-snapshots.sql
+0002-add-profile-snapshots-and-leaderboards.sql
 ```
+
+It adds `profile_snapshots` and `create_profile_snapshot(...)` for snapshot and
+leaderboard v1 reads.
+
+The next forward migration is:
+
+```txt
+0003-add-guides-foundation.sql
+```
+
+It adds Steam game guides, ordered guide sections, and guide-to-achievement
+mappings. The migration uses status/archive lifecycle fields instead of cascade
+deletes or hard-deleting guide documents.
 
 ## Create A Migration
 
@@ -173,8 +187,11 @@ Use clear numbered filenames:
 
 ```txt
 0001-initial-platform-schema.sql
-0002-add-profile-snapshots.sql
-0003-add-achievement-goals.sql
+0002-add-profile-snapshots-and-leaderboards.sql
+0003-add-guides-foundation.sql
+0004-add-gaming-sessions-foundation.sql
+0005-add-community-interactions.sql
+0006-add-activity-feed-and-milestones.sql
 ```
 
 The runner sorts filenames lexicographically, so keep the zero-padded prefix.
@@ -209,3 +226,18 @@ For future rollback support:
 Do not introduce Prisma, TypeORM, or ORM schema sync for this project. The migration runner executes raw SQL only.
 
 Do not use `drizzle-kit push` or any other schema-push workflow. When a migration changes a table, update the matching Drizzle schema file in `apps/backend/src/db/schema` in the same change so repositories and database-facing services remain type-safe.
+
+## Current Forward Migrations
+
+- `0001-initial-platform-schema.sql`: Steam profile/game/achievement sync schema,
+  auth/profile claiming foundation, and profile-game progress function.
+- `0002-add-profile-snapshots-and-leaderboards.sql`: profile snapshots and
+  leaderboard v1 support.
+- `0003-add-guides-foundation.sql`: Steam game guides, guide sections, and guide
+  achievement mapping.
+- `0004-add-gaming-sessions-foundation.sql`: scheduled Steam game sessions,
+  participants, and targeted session achievement mapping.
+- `0005-add-community-interactions.sql`: guide votes, guide comments, session
+  comments, and moderation report intake.
+- `0006-add-activity-feed-and-milestones.sql`: public/private activity events
+  and profile milestone history generated from snapshots.

@@ -98,7 +98,7 @@ services:
       - root-node-modules:/workspace/node_modules
       - web-node-modules:/workspace/apps/web/node_modules
       - client-sdk-node-modules:/workspace/libs/client-sdk/node_modules
-    command: pnpm dev
+    command: sh -c "pnpm --filter @steam-achievement/client-sdk build && pnpm dev"
 
 volumes:
   postgres-data:
