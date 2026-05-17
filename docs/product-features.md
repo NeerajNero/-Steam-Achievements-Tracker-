@@ -121,6 +121,7 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Optional share links for static profile summaries if public profile support is ready.
 - Public leaderboard v1 from latest profile snapshots.
 - Public activity feed for synced profiles, guide/session events, and milestones.
+- Milestone-derived badges and profile showcase customization.
 
 ### V2
 
@@ -150,6 +151,7 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Basic authored roadmaps for game completion.
 - Scheduled Steam game sessions for co-op and multiplayer achievement boosting.
 - Snapshot-derived profile milestones for visible progress moments.
+- Earned badge showcase on public Steam profiles.
 
 ### V2
 
@@ -191,6 +193,11 @@ The product can take inspiration from public profile/stat tracking, completion d
 ## Decision
 
 Prioritize deterministic tracking, analytics, and planner foundations before AI or social features.
+
+The frontend should present these foundations as a coherent Steam achievement
+hunting platform: profile dashboards, global game hubs, leaderboards, guides,
+sessions, activity, milestones, badges, and public showcases should all be
+discoverable from the primary navigation.
 
 ## Why
 

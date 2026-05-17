@@ -180,6 +180,7 @@ export const ListActivityEventTypeEnum = {
     SessionCreated: 'session_created',
     SessionJoined: 'session_joined',
     SessionCommented: 'session_commented',
-    MilestoneReached: 'milestone_reached'
+    MilestoneReached: 'milestone_reached',
+    BadgeEarned: 'badge_earned'
 } as const;
 export type ListActivityEventTypeEnum = typeof ListActivityEventTypeEnum[keyof typeof ListActivityEventTypeEnum];

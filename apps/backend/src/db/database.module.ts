@@ -6,6 +6,7 @@ import { ActivityEventsRepository } from './repositories/activity-events.reposit
 import { AppUsersRepository } from './repositories/app-users.repository';
 import { AuthCallbackRepository } from './repositories/auth-callback.repository';
 import { ContentReportsRepository } from './repositories/content-reports.repository';
+import { BadgesRepository } from './repositories/badges.repository';
 import { GamesRepository } from './repositories/games.repository';
 import { GuideCommentsRepository } from './repositories/guide-comments.repository';
 import { GuideAchievementsRepository } from './repositories/guide-achievements.repository';
@@ -18,9 +19,11 @@ import { GamingSessionsRepository } from './repositories/gaming-sessions.reposit
 import { SessionCommentsRepository } from './repositories/session-comments.repository';
 import { LeaderboardsRepository } from './repositories/leaderboards.repository';
 import { ProfileAchievementsRepository } from './repositories/profile-achievements.repository';
+import { ProfileBadgesRepository } from './repositories/profile-badges.repository';
 import { ProfileGamesRepository } from './repositories/profile-games.repository';
 import { ProfileMilestonesRepository } from './repositories/profile-milestones.repository';
 import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.repository';
+import { ProfileShowcaseItemsRepository } from './repositories/profile-showcase-items.repository';
 import { PublicProfilesRepository } from './repositories/public-profiles.repository';
 import { SteamProfilesRepository } from './repositories/steam-profiles.repository';
 import { AuthSessionsRepository } from './repositories/auth-sessions.repository';
@@ -32,6 +35,7 @@ import { AchievementSyncDataService } from './services/achievement-sync-data.ser
 import { ActivityEventsDataService } from './services/activity-events-data.service';
 import { AppUsersDataService } from './services/app-users-data.service';
 import { AuthCallbackDataService } from './services/auth-callback-data.service';
+import { BadgesDataService } from './services/badges-data.service';
 import { ContentReportsDataService } from './services/content-reports-data.service';
 import { GamesDataService } from './services/games-data.service';
 import { GuideCommentsDataService } from './services/guide-comments-data.service';
@@ -45,10 +49,13 @@ import { GamingSessionsDataService } from './services/gaming-sessions-data.servi
 import { SessionCommentsDataService } from './services/session-comments-data.service';
 import { LeaderboardsDataService } from './services/leaderboards-data.service';
 import { ProfileAchievementsDataService } from './services/profile-achievements-data.service';
+import { ProfileBadgeBackfillDataService } from './services/profile-badge-backfill-data.service';
+import { ProfileBadgesDataService } from './services/profile-badges-data.service';
 import { ProfileGamesDataService } from './services/profile-games-data.service';
 import { ProfileMilestoneBackfillDataService } from './services/profile-milestone-backfill-data.service';
 import { ProfileMilestonesDataService } from './services/profile-milestones-data.service';
 import { ProfileSnapshotsDataService } from './services/profile-snapshots-data.service';
+import { ProfileShowcaseItemsDataService } from './services/profile-showcase-items-data.service';
 import { PublicProfilesDataService } from './services/public-profiles-data.service';
 import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
@@ -65,6 +72,7 @@ import { DatabaseService } from './database.service';
     AchievementSyncRepository,
     AuthCallbackRepository,
     AuthSessionsRepository,
+    BadgesRepository,
     ContentReportsRepository,
     SteamProfilesRepository,
     AppUsersRepository,
@@ -83,14 +91,17 @@ import { DatabaseService } from './database.service';
     GuideAchievementsRepository,
     LeaderboardsRepository,
     ProfileGamesRepository,
+    ProfileBadgesRepository,
     ProfileMilestonesRepository,
     ProfileSnapshotsRepository,
+    ProfileShowcaseItemsRepository,
     AchievementsRepository,
     ProfileAchievementsRepository,
     SyncRunsRepository,
     ActivityEventsDataService,
     AchievementSyncDataService,
     AuthCallbackDataService,
+    BadgesDataService,
     ContentReportsDataService,
     AppUsersDataService,
     SteamProfilesDataService,
@@ -110,9 +121,12 @@ import { DatabaseService } from './database.service';
     GuideAchievementsDataService,
     LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileBadgeBackfillDataService,
+    ProfileBadgesDataService,
     ProfileMilestoneBackfillDataService,
     ProfileMilestonesDataService,
     ProfileSnapshotsDataService,
+    ProfileShowcaseItemsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,
@@ -122,6 +136,7 @@ import { DatabaseService } from './database.service';
     ActivityEventsDataService,
     AchievementSyncDataService,
     AuthCallbackDataService,
+    BadgesDataService,
     ContentReportsDataService,
     AppUsersDataService,
     SteamProfilesDataService,
@@ -137,9 +152,12 @@ import { DatabaseService } from './database.service';
     GuideAchievementsDataService,
     LeaderboardsDataService,
     ProfileGamesDataService,
+    ProfileBadgeBackfillDataService,
+    ProfileBadgesDataService,
     ProfileMilestoneBackfillDataService,
     ProfileMilestonesDataService,
     ProfileSnapshotsDataService,
+    ProfileShowcaseItemsDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,

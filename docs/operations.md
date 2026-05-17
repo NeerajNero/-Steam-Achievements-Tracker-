@@ -526,6 +526,42 @@ order by pm.achieved_at desc
 limit 20;
 ```
 
+## Badge Backfill And Showcase Smoke
+
+Badges are generated from profile milestones. If milestones already exist but
+`profile_badges` is empty, run the local/dev backfill:
+
+```sh
+docker-compose exec -T backend pnpm badges:backfill-dev
+```
+
+Run deterministic authenticated badge/showcase smoke:
+
+```sh
+docker-compose exec -T backend pnpm badges:auth-smoke
+```
+
+The smoke creates an in-memory session token, stores only the hash in
+`auth_sessions`, selects one earned demo badge, updates `/account/showcase`, and
+verifies `/profiles/76561198000000000/showcase`. It prints safe IDs and counts
+only. It does not print cookies, raw session tokens, token hashes, `.env`, or
+Steam API keys.
+
+Safe inspection:
+
+```sql
+select
+  sp.steam_id,
+  b.code,
+  b.name,
+  pb.earned_at
+from profile_badges pb
+join badges b on b.id = pb.badge_id
+join steam_profiles sp on sp.id = pb.steam_profile_id
+order by pb.earned_at desc
+limit 20;
+```
+
 ## Source Of Truth
 
 PostgreSQL stores product state and sync history. Redis stores BullMQ operational

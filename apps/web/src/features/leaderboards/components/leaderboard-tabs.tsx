@@ -24,16 +24,16 @@ export function LeaderboardTabs({
 
         return (
           <Link
-            className={`rounded-lg border p-4 shadow-sm ${
+            className={`rounded-2xl border p-4 shadow-xl shadow-black/20 ${
               isActive
-                ? 'border-blue-300 bg-blue-50 text-blue-950'
-                : 'border-slate-200 bg-white text-slate-900 hover:border-slate-300'
+                ? 'border-lime-300/50 bg-lime-400/10 text-lime-100'
+                : 'border-white/10 bg-slate-950/70 text-white hover:border-lime-300/30 hover:bg-slate-900'
             }`}
             href={`/leaderboards/${item.type}`}
             key={item.type}
           >
             <div className="font-semibold">{getLeaderboardLabel(item.type)}</div>
-            <p className="mt-1 text-sm leading-5 text-slate-600">
+            <p className="mt-1 text-sm leading-5 text-slate-400">
               {getLeaderboardDescription(item.type)}
             </p>
           </Link>

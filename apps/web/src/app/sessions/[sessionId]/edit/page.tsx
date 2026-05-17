@@ -4,9 +4,11 @@ import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useSession } from '@/features/sessions/api/use-session';
 import { useUpdateSession } from '@/features/sessions/api/use-update-session';
 import { SessionAchievementPicker } from '@/features/sessions/components/session-achievement-picker';
@@ -38,18 +40,23 @@ export default function EditSessionPage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href={`/sessions/${sessionId}`}>
-          Back to session
-        </Link>
-        <AuthStatus />
-      </div>
+    <PageShell maxWidth="max-w-5xl">
+      <PageHero
+        actions={
+          <Link
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            href={`/sessions/${sessionId}`}
+          >
+            Back to session
+          </Link>
+        }
+        eyebrow="Host tools"
+        title="Edit session"
+      >
+        Update schedule, visibility, capacity, status, and target achievements.
+      </PageHero>
 
-      <h1 className="mb-4 text-3xl font-semibold tracking-normal text-slate-950">
-        Edit session
-      </h1>
-
+      <div className="mt-6">
       {currentUser.isLoading || session.isLoading ? (
         <LoadingState message="Loading session..." />
       ) : null}
@@ -77,11 +84,11 @@ export default function EditSessionPage() {
             onSubmit={(values) => void submit(values)}
           />
           {errorMessage ? (
-            <p className="text-sm text-red-700">{errorMessage}</p>
+            <p className="text-sm text-red-300">{errorMessage}</p>
           ) : null}
-          <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-            <h2 className="font-semibold text-slate-950">Attach achievements</h2>
-            <p className="mt-1 text-sm text-slate-600">
+          <SectionCard>
+            <h2 className="font-semibold text-white">Attach achievements</h2>
+            <p className="mt-1 text-sm text-slate-400">
               Attach tracked achievement metadata for this Steam game.
             </p>
             <div className="mt-4">
@@ -90,9 +97,10 @@ export default function EditSessionPage() {
                 steamAppId={session.data.steamAppId}
               />
             </div>
-          </section>
+          </SectionCard>
         </div>
       ) : null}
-    </main>
+      </div>
+    </PageShell>
   );
 }

@@ -89,6 +89,10 @@ Session detail pages show:
 There is no real-time chat, nested threading, notification system, upload flow,
 or moderation dashboard yet.
 
+Community sections should use the shared dashboard card, state, and auth prompt
+patterns. Signed-out users can read public content but should see a clear Steam
+sign-in prompt before commenting, voting, or reporting.
+
 ## Smoke Coverage
 
 `guide:auth-smoke` verifies guide creation/publishing and now also verifies a

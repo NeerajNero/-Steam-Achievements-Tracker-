@@ -7,14 +7,15 @@ import {
   type QueuedSyncResponseDto,
   SyncRequestDtoScopeEnum,
 } from '@steam-achievement/client-sdk';
-import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
 
+import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState } from '@/components/ui/panel-state';
 import { useProfileActivity } from '@/features/activity/api/use-profile-activity';
 import { ActivityFeed } from '@/features/activity/components/activity-feed';
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { useProfileBadges } from '@/features/badges/api/use-profile-badges';
+import { BadgeGrid } from '@/features/badges/components/badge-grid';
 import { useProfileMilestones } from '@/features/milestones/api/use-profile-milestones';
 import { MilestonesList } from '@/features/milestones/components/milestones-list';
 import { useEnqueueSync } from '@/features/profile/api/use-enqueue-sync';
@@ -43,6 +44,8 @@ import { NearestCompletions } from '@/features/profile/components/nearest-comple
 import { RarestAchievements } from '@/features/profile/components/rarest-achievements';
 import { useProfileSnapshots } from '@/features/snapshots/api/use-profile-snapshots';
 import { ProfileSnapshotsList } from '@/features/snapshots/components/profile-snapshots-list';
+import { useProfileShowcase } from '@/features/showcase/api/use-profile-showcase';
+import { ProfileShowcase } from '@/features/showcase/components/profile-showcase';
 import { getErrorMessage, getHttpStatus } from '@/lib/format';
 
 const SYNC_RUNS_LIMIT = 8;
@@ -101,6 +104,8 @@ export default function ProfilePage() {
   const snapshots = useProfileSnapshots(steamId, { limit: 5, offset: 0 });
   const activity = useProfileActivity(steamId, { limit: 5, offset: 0 });
   const milestones = useProfileMilestones(steamId, { limit: 5, offset: 0 });
+  const badges = useProfileBadges(steamId);
+  const showcase = useProfileShowcase(steamId);
   const enqueueSync = useEnqueueSync(steamId);
   const refetchSyncRuns = syncRuns.refetch;
 
@@ -176,17 +181,7 @@ export default function ProfilePage() {
   const errorMessage = getErrorMessage(profile.error ?? summary.error);
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-4">
-        <Link className="text-sm font-medium text-blue-700" href="/">
-          Back to home
-        </Link>
-      </div>
-
-      <div className="mb-4">
-        <AuthStatus />
-      </div>
-
+    <PageShell>
       <div className="mb-6">
         <ProfileHeader profile={headerProfile} />
       </div>
@@ -195,7 +190,7 @@ export default function ProfilePage() {
         <EmptyState
           action={
             <button
-              className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:bg-slate-300"
+              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
               disabled={pendingScope === SyncRequestDtoScopeEnum.Profile}
               onClick={() => void enqueue(SyncRequestDtoScopeEnum.Profile)}
               type="button"
@@ -279,6 +274,19 @@ export default function ProfilePage() {
             items={rarestAchievements.data?.items}
             steamId={steamId}
           />
+          <ProfileShowcase
+            error={showcase.error}
+            isError={showcase.isError}
+            isLoading={showcase.isLoading}
+            items={showcase.data?.items}
+          />
+          <BadgeGrid
+            badges={badges.data?.items}
+            error={badges.error}
+            isError={badges.isError}
+            isLoading={badges.isLoading}
+            title="Badges"
+          />
           <SyncRunsList
             error={syncRuns.error}
             isError={syncRuns.isError}
@@ -308,6 +316,6 @@ export default function ProfilePage() {
           />
         </aside>
       </section>
-    </main>
+    </PageShell>
   );
 }

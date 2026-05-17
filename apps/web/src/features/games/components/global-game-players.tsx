@@ -8,6 +8,8 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { SectionCard } from '@/components/ui/section-card';
 import {
   formatDateTime,
   formatNumber,
@@ -44,19 +46,16 @@ export function GlobalGamePlayers({
   const canGoNext = filters.offset + filters.limit < totalItems;
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-xl font-semibold text-slate-950">Tracked Players</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Public Steam profile progress for players tracked by this database.
-        </p>
-
+    <SectionCard
+      description="Public Steam profile progress for players tracked by this database."
+      title="Tracked Players"
+    >
         <div className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-5">
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Status</span>
+            <span className="text-xs font-medium text-slate-400">Status</span>
             <select
               aria-label="Tracked player status"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   status: event.target.value as ListGlobalGamePlayersStatusEnum,
@@ -74,10 +73,10 @@ export function GlobalGamePlayers({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Sort</span>
+            <span className="text-xs font-medium text-slate-400">Sort</span>
             <select
               aria-label="Tracked player sort"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   sort: event.target.value as ListGlobalGamePlayersSortEnum,
@@ -95,10 +94,10 @@ export function GlobalGamePlayers({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Order</span>
+            <span className="text-xs font-medium text-slate-400">Order</span>
             <select
               aria-label="Tracked player sort order"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   order: event.target.value as ListGlobalGamePlayersOrderEnum,
@@ -112,10 +111,10 @@ export function GlobalGamePlayers({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Limit</span>
+            <span className="text-xs font-medium text-slate-400">Limit</span>
             <select
               aria-label="Tracked players per page"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   limit: Number.parseInt(event.target.value, 10),
@@ -133,10 +132,10 @@ export function GlobalGamePlayers({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Page</span>
+            <span className="text-xs font-medium text-slate-400">Page</span>
             <div className="flex gap-2">
               <button
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:text-slate-300"
+                className="h-10 rounded-xl border border-white/10 px-3 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:text-slate-600"
                 disabled={!canGoPrev}
                 onClick={() =>
                   onFiltersChange({
@@ -148,7 +147,7 @@ export function GlobalGamePlayers({
                 Prev
               </button>
               <button
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:text-slate-300"
+                className="h-10 rounded-xl border border-white/10 px-3 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:text-slate-600"
                 disabled={!canGoNext}
                 onClick={() => onFiltersChange({ offset: filters.offset + filters.limit })}
                 type="button"
@@ -158,7 +157,6 @@ export function GlobalGamePlayers({
             </div>
           </label>
         </div>
-      </div>
 
       {isLoading ? <LoadingState message="Loading tracked players..." /> : null}
       {isError ? (
@@ -172,8 +170,8 @@ export function GlobalGamePlayers({
 
       {items && items.length > 0 ? (
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-slate-200 text-left text-sm">
-            <thead className="bg-slate-50 text-xs uppercase text-slate-500">
+          <table className="min-w-full divide-y divide-white/10 text-left text-sm">
+            <thead className="bg-white/5 text-xs uppercase text-slate-400">
               <tr>
                 <th className="px-4 py-3">Player</th>
                 <th className="px-4 py-3">Progress</th>
@@ -181,7 +179,7 @@ export function GlobalGamePlayers({
                 <th className="px-4 py-3">Last Played</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody className="divide-y divide-white/10">
               {items.map((player) => (
                 <tr key={player.steamId}>
                   <td className="px-4 py-3">
@@ -189,15 +187,15 @@ export function GlobalGamePlayers({
                       {player.avatarUrl ? (
                         <img
                           alt=""
-                          className="h-10 w-10 rounded-full border border-slate-200"
+                          className="h-10 w-10 rounded-full border border-white/10"
                           src={player.avatarUrl}
                         />
                       ) : (
-                        <div className="h-10 w-10 rounded-full border border-slate-200 bg-slate-100" />
+                        <div className="h-10 w-10 rounded-full border border-white/10 bg-white/5" />
                       )}
                       <div>
                         <Link
-                          className="font-medium text-blue-700 hover:text-blue-900"
+                          className="font-medium text-lime-200 hover:text-lime-100"
                           href={getGlobalGamePlayerHref(player)}
                         >
                           {player.personaName ?? player.steamId}
@@ -210,6 +208,9 @@ export function GlobalGamePlayers({
                   </td>
                   <td className="px-4 py-3">
                     {formatPercent(player.completionPercentage)}
+                    <div className="mt-2">
+                      <ProgressBar value={player.completionPercentage} />
+                    </div>
                     <div className="text-xs text-slate-500">
                       {formatNumber(player.unlockedAchievements)}/
                       {formatNumber(player.totalAchievements)}
@@ -223,6 +224,6 @@ export function GlobalGamePlayers({
           </table>
         </div>
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

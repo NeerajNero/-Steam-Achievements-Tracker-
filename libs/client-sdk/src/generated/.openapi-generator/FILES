@@ -6,6 +6,7 @@ src/apis/AccountApi.ts
 src/apis/AchievementsApi.ts
 src/apis/ActivityApi.ts
 src/apis/AuthApi.ts
+src/apis/BadgesApi.ts
 src/apis/CommunityApi.ts
 src/apis/GamesApi.ts
 src/apis/GuidesApi.ts
@@ -16,6 +17,7 @@ src/apis/ProfilesApi.ts
 src/apis/PublicProfilesApi.ts
 src/apis/ReportsApi.ts
 src/apis/SessionsApi.ts
+src/apis/ShowcaseApi.ts
 src/apis/SnapshotsApi.ts
 src/apis/SyncApi.ts
 src/apis/index.ts
@@ -24,6 +26,7 @@ src/models/AccountGuidesResponseDto.ts
 src/models/AccountPreferencesResponseDto.ts
 src/models/AccountPublicProfileResponseDto.ts
 src/models/AccountResponseDto.ts
+src/models/AccountShowcaseResponseDto.ts
 src/models/AccountSteamAccountResponseDto.ts
 src/models/AccountUserResponseDto.ts
 src/models/AchievementWithUnlockStateResponseDto.ts
@@ -40,6 +43,8 @@ src/models/AuthMeResponseDto.ts
 src/models/AuthPublicProfileResponseDto.ts
 src/models/AuthSteamAccountResponseDto.ts
 src/models/AuthUserResponseDto.ts
+src/models/BadgeListResponseDto.ts
+src/models/BadgeResponseDto.ts
 src/models/CommentListResponseDto.ts
 src/models/CommentResponseDto.ts
 src/models/CommunityAuthorResponseDto.ts
@@ -82,9 +87,12 @@ src/models/LeaderboardSnapshotResponseDto.ts
 src/models/LeaderboardTypeResponseDto.ts
 src/models/LeaderboardsResponseDto.ts
 src/models/NearestCompletionsResponseDto.ts
+src/models/ProfileBadgeResponseDto.ts
+src/models/ProfileBadgesResponseDto.ts
 src/models/ProfileDetailResponseDto.ts
 src/models/ProfileMilestoneResponseDto.ts
 src/models/ProfileMilestonesResponseDto.ts
+src/models/ProfileShowcaseResponseDto.ts
 src/models/ProfileSnapshotResponseDto.ts
 src/models/ProfileSnapshotsResponseDto.ts
 src/models/ProfileSummaryResponseDto.ts
@@ -95,10 +103,16 @@ src/models/QueuedSyncResponseDto.ts
 src/models/RarestAchievementResponseDto.ts
 src/models/RarestAchievementsResponseDto.ts
 src/models/SessionUserResponseDto.ts
+src/models/ShowcaseAchievementResponseDto.ts
+src/models/ShowcaseGamingSessionResponseDto.ts
+src/models/ShowcaseGuideResponseDto.ts
+src/models/ShowcaseItemResponseDto.ts
 src/models/SyncHistoryItemResponseDto.ts
 src/models/SyncHistoryResponseDto.ts
 src/models/SyncRequestDto.ts
 src/models/UpdateAccountDto.ts
+src/models/UpdateAccountShowcaseDto.ts
+src/models/UpdateAccountShowcaseItemDto.ts
 src/models/UpdateCommentDto.ts
 src/models/UpdateGamingSessionDto.ts
 src/models/UpdateGuideDto.ts

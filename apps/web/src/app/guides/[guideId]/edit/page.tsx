@@ -4,8 +4,10 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { useMemo, useState } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { SectionCard } from '@/components/ui/section-card';
 import { useAccountGuides } from '@/features/guides/api/use-account-guides';
 import { useAddGuideAchievements } from '@/features/guides/api/use-add-guide-achievements';
 import { useCreateGuideSection } from '@/features/guides/api/use-create-guide-section';
@@ -44,18 +46,23 @@ export default function EditGuidePage() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/account/guides">
-          Back to your guides
-        </Link>
-        <AuthStatus />
-      </div>
+    <PageShell maxWidth="max-w-5xl">
+      <PageHero
+        actions={
+          <Link
+            className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+            href="/account/guides"
+          >
+            Back to your guides
+          </Link>
+        }
+        eyebrow="Author tools"
+        title="Edit guide"
+      >
+        Manage guide metadata, publishing status, sections, and attached Steam achievements.
+      </PageHero>
 
-      <h1 className="mb-6 text-3xl font-semibold tracking-normal text-slate-950">
-        Edit guide
-      </h1>
-
+      <div className="mt-6">
       {guides.isLoading ? <LoadingState message="Loading guide..." /> : null}
       {guides.data === null ? (
         <ErrorState message="Sign in with Steam to edit guides." title="Sign in required" />
@@ -72,20 +79,20 @@ export default function EditGuidePage() {
 
       {guide ? (
         <div className="grid gap-5">
-          <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <SectionCard>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-400">
                   {guide.game.name} · Steam App {guide.steamAppId}
                 </p>
-                <h2 className="text-xl font-semibold text-slate-950">
+                <h2 className="text-xl font-semibold text-white">
                   {guide.title}
                 </h2>
               </div>
               <GuideStatusBadge status={guide.status} />
             </div>
-            {message ? <p className="mt-3 text-sm text-slate-700">{message}</p> : null}
-          </section>
+            {message ? <p className="mt-3 text-sm text-slate-300">{message}</p> : null}
+          </SectionCard>
 
           <GuideForm
             initialValues={{
@@ -116,6 +123,7 @@ export default function EditGuidePage() {
           />
         </div>
       ) : null}
-    </main>
+      </div>
+    </PageShell>
   );
 }

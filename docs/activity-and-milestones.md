@@ -73,6 +73,16 @@ runs are idempotent and print safe counts only:
 - `milestonesCreated`
 - `activityEventsCreated`
 
+Badge awards are generated from milestones after snapshot creation. Existing
+milestones can be backfilled into badges with:
+
+```sh
+docker-compose exec -T backend pnpm badges:backfill-dev
+```
+
+New badge rows record `badge_earned` activity events. Repeated badge backfill
+runs are idempotent.
+
 ## Event Recording
 
 Current integrations record:
@@ -85,6 +95,7 @@ Current integrations record:
 - `session_joined` when a participant joins;
 - `session_commented` when a session comment is created;
 - `milestone_reached` when snapshot-derived milestones are created.
+- `badge_earned` when a milestone-derived badge is newly awarded.
 
 `game_completed` and `rare_achievement_synced` are reserved for a future pass
 that can reliably detect newly completed games and newly synced rare unlocks.
@@ -112,7 +123,12 @@ Frontend routes and sections:
   Steam ID is available.
 
 The frontend uses generated `ActivityApi` and `MilestonesApi` SDK clients. Do
-not add raw fetch or Axios wrappers for these endpoints.
+not add raw fetch or Axios wrappers for these endpoints. Badge and showcase
+sections use generated `BadgesApi` and `ShowcaseApi` clients.
+
+Activity and milestone cards should use safe public metadata only. The frontend
+must not render raw internal payloads, private account fields, session data, or
+secrets in feed cards.
 
 ## Smoke Coverage
 

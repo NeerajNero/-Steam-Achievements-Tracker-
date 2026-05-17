@@ -1,9 +1,8 @@
 'use client';
 
-import Link from 'next/link';
-
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useLeaderboards } from '@/features/leaderboards/api/use-leaderboards';
 import { LeaderboardTabs } from '@/features/leaderboards/components/leaderboard-tabs';
 import { getErrorMessage } from '@/lib/format';
@@ -12,23 +11,15 @@ export default function LeaderboardsPage() {
   const leaderboards = useLeaderboards();
 
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/">
-          Back to home
-        </Link>
-        <AuthStatus />
-      </div>
-
-      <section className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-          Steam Leaderboards
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+    <PageShell>
+      <div className="mb-6">
+        <PageHero eyebrow="Snapshot rankings" title="Steam Leaderboards">
+          <p>
           Leaderboards use stored profile snapshots, so ranking pages remain fast
           and stable without recomputing every profile from raw progress rows.
-        </p>
-      </section>
+          </p>
+        </PageHero>
+      </div>
 
       {leaderboards.isLoading ? (
         <LoadingState message="Loading leaderboard types..." />
@@ -48,6 +39,6 @@ export default function LeaderboardsPage() {
           title="No leaderboards"
         />
       ) : null}
-    </main>
+    </PageShell>
   );
 }

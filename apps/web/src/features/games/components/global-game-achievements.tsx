@@ -7,6 +7,8 @@ import {
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { formatPercent, getErrorMessage } from '@/lib/format';
 
 import {
@@ -42,33 +44,30 @@ export function GlobalGameAchievements({
   const canGoNext = filters.offset + filters.limit < totalItems;
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-xl font-semibold text-slate-950">Achievements</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Canonical achievement metadata and global rarity from stored Steam data.
-        </p>
-
+    <SectionCard
+      description="Canonical achievement metadata and global rarity from stored Steam data."
+      title="Achievements"
+    >
         <form
-          className="mt-4 grid gap-3 md:grid-cols-2 lg:grid-cols-[1.5fr_0.7fr_0.7fr_0.7fr_0.6fr_0.7fr]"
+          className="grid gap-3 md:grid-cols-2 lg:grid-cols-[1.5fr_0.7fr_0.7fr_0.7fr_0.6fr_0.7fr]"
           onSubmit={(event) => {
             event.preventDefault();
             onSubmitSearch();
           }}
         >
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Search</span>
+            <span className="text-xs font-medium text-slate-400">Search</span>
             <div className="flex gap-2">
               <input
                 aria-label="Search achievements"
-                className="h-10 flex-1 rounded-md border border-slate-300 px-3 text-sm outline-none focus:border-blue-600 focus:ring-2 focus:ring-blue-100"
+                className="h-10 flex-1 rounded-xl border border-white/10 bg-slate-900 px-3 text-sm text-white outline-none placeholder:text-slate-600 focus:border-lime-300 focus:ring-2 focus:ring-lime-300/20"
                 onChange={(event) => onSearchChange(event.target.value)}
                 placeholder="Name or API name"
                 type="text"
                 value={searchInput}
               />
               <button
-                className="rounded-md bg-slate-900 px-3 text-sm font-semibold text-white hover:bg-slate-800"
+                className="rounded-xl bg-lime-400 px-3 text-sm font-semibold text-slate-950 hover:bg-lime-300"
                 type="submit"
               >
                 Apply
@@ -77,10 +76,10 @@ export function GlobalGameAchievements({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Hidden</span>
+            <span className="text-xs font-medium text-slate-400">Hidden</span>
             <select
               aria-label="Achievement hidden filter"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   hidden: event.target.value as ListGlobalGameAchievementsHiddenEnum,
@@ -98,10 +97,10 @@ export function GlobalGameAchievements({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Sort</span>
+            <span className="text-xs font-medium text-slate-400">Sort</span>
             <select
               aria-label="Achievement sort"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   sort: event.target.value as ListGlobalGameAchievementsSortEnum,
@@ -119,10 +118,10 @@ export function GlobalGameAchievements({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Order</span>
+            <span className="text-xs font-medium text-slate-400">Order</span>
             <select
               aria-label="Achievement sort order"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   order: event.target.value as ListGlobalGameAchievementsOrderEnum,
@@ -136,10 +135,10 @@ export function GlobalGameAchievements({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Limit</span>
+            <span className="text-xs font-medium text-slate-400">Limit</span>
             <select
               aria-label="Achievements per page"
-              className="h-10 rounded-md border border-slate-300 px-2"
+              className="h-10 rounded-xl border border-white/10 bg-slate-900 px-2 text-white"
               onChange={(event) =>
                 onFiltersChange({
                   limit: Number.parseInt(event.target.value, 10),
@@ -157,10 +156,10 @@ export function GlobalGameAchievements({
           </label>
 
           <label className="grid gap-1">
-            <span className="text-xs font-medium text-slate-600">Page</span>
+            <span className="text-xs font-medium text-slate-400">Page</span>
             <div className="flex gap-2">
               <button
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:text-slate-300"
+                className="h-10 rounded-xl border border-white/10 px-3 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:text-slate-600"
                 disabled={!canGoPrev}
                 onClick={(event) => {
                   event.preventDefault();
@@ -173,7 +172,7 @@ export function GlobalGameAchievements({
                 Prev
               </button>
               <button
-                className="h-10 rounded-md border border-slate-300 px-3 text-sm font-medium disabled:cursor-not-allowed disabled:text-slate-300"
+                className="h-10 rounded-xl border border-white/10 px-3 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:text-slate-600"
                 disabled={!canGoNext}
                 onClick={(event) => {
                   event.preventDefault();
@@ -186,7 +185,6 @@ export function GlobalGameAchievements({
             </div>
           </label>
         </form>
-      </div>
 
       {isLoading ? <LoadingState message="Loading achievement metadata..." /> : null}
       {isError ? (
@@ -199,7 +197,7 @@ export function GlobalGameAchievements({
       ) : null}
 
       {items && items.length > 0 ? (
-        <ul className="divide-y divide-slate-100">
+        <ul className="mt-5 divide-y divide-white/10">
           {items.map((achievement) => (
             <li
               className="grid gap-4 p-4 md:grid-cols-[48px_1fr_auto]"
@@ -208,18 +206,18 @@ export function GlobalGameAchievements({
               {achievement.iconUrl || achievement.iconGrayUrl ? (
                 <img
                   alt=""
-                  className="h-12 w-12 rounded-md border border-slate-200"
+                  className="h-12 w-12 rounded-xl border border-white/10"
                   src={achievement.iconUrl ?? achievement.iconGrayUrl ?? ''}
                 />
               ) : (
-                <div className="h-12 w-12 rounded-md border border-slate-200 bg-slate-100" />
+                <div className="h-12 w-12 rounded-xl border border-white/10 bg-white/5" />
               )}
               <div>
-                <div className="font-medium text-slate-950">
+                <div className="font-medium text-white">
                   {achievement.displayName ?? achievement.apiName}
                 </div>
                 {achievement.description ? (
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                  <p className="mt-1 text-sm leading-6 text-slate-400">
                     {achievement.description}
                   </p>
                 ) : null}
@@ -229,17 +227,17 @@ export function GlobalGameAchievements({
                 </div>
               </div>
               <div className="md:text-right">
-                <span className="inline-flex rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-700">
+                <StatusBadge tone="info">
                   {achievement.globalPercentage === undefined ||
                   achievement.globalPercentage === null
                     ? 'Unknown rarity'
                     : formatPercent(achievement.globalPercentage)}
-                </span>
+                </StatusBadge>
               </div>
             </li>
           ))}
         </ul>
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

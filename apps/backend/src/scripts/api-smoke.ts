@@ -64,6 +64,21 @@ const checks: SmokeCheck[] = [
     validate: (body) => expectItems(body),
   },
   {
+    label: 'profile badges',
+    path: `/profiles/${DEMO_STEAM_ID}/badges`,
+    validate: (body) => expectItems(body),
+  },
+  {
+    label: 'profile showcase',
+    path: `/profiles/${DEMO_STEAM_ID}/showcase`,
+    validate: (body) => expectCollection(body),
+  },
+  {
+    label: 'badge definitions',
+    path: '/badges',
+    validate: (body) => expectItems(body),
+  },
+  {
     label: 'profile activity',
     path: `/profiles/${DEMO_STEAM_ID}/activity?limit=5`,
     validate: (body) => expectCollection(body),

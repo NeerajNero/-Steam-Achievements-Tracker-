@@ -1,9 +1,9 @@
 'use client';
 
-import Link from 'next/link';
 import type { ReactNode } from 'react';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { useGlobalActivity } from '@/features/activity/api/use-global-activity';
 import { ActivityFeed } from '@/features/activity/components/activity-feed';
 
@@ -11,23 +11,15 @@ export default function ActivityPage(): ReactNode {
   const activity = useGlobalActivity({ limit: 30, offset: 0 });
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/">
-          Back to home
-        </Link>
-        <AuthStatus />
-      </div>
-
-      <header className="mb-6">
-        <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-          Steam Activity
-        </h1>
-        <p className="mt-2 max-w-3xl text-sm text-slate-600">
+    <PageShell maxWidth="max-w-5xl">
+      <div className="mb-6">
+        <PageHero eyebrow="Public platform feed" title="Steam Activity">
+          <p>
           Public platform events from synced Steam profiles, guides, sessions, and
           milestones.
-        </p>
-      </header>
+          </p>
+        </PageHero>
+      </div>
 
       <ActivityFeed
         error={activity.error}
@@ -36,6 +28,6 @@ export default function ActivityPage(): ReactNode {
         items={activity.data?.items}
         title="Latest activity"
       />
-    </main>
+    </PageShell>
   );
 }

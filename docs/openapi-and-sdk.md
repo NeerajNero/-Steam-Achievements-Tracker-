@@ -204,6 +204,9 @@ docker-compose up -d --force-recreate web
 - `ActivityApi` is generated for global, profile-scoped, and game-scoped public
   activity feed reads.
 - `MilestonesApi` is generated for profile milestone history reads.
+- `BadgesApi` is generated for badge definitions and profile badge reads.
+- `ShowcaseApi` is generated for public profile showcase reads and authenticated
+  account showcase updates.
 - `GuidesApi` is generated for public game guide reads and authenticated guide
   creation/editing.
 - `SessionsApi` is generated for public gaming session reads and authenticated

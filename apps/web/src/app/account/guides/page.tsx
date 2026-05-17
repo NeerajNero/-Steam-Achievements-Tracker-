@@ -2,8 +2,9 @@
 
 import Link from 'next/link';
 
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useAccountGuides } from '@/features/guides/api/use-account-guides';
 import { GuideStatusBadge } from '@/features/guides/components/guide-status-badge';
 import { getErrorMessage, formatDateTime } from '@/lib/format';
@@ -12,17 +13,16 @@ export default function AccountGuidesPage() {
   const guides = useAccountGuides();
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/settings">
+    <PageShell maxWidth="max-w-5xl">
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-lime-200 hover:text-lime-100" href="/settings">
           Back to settings
         </Link>
-        <AuthStatus />
       </div>
 
-      <h1 className="mb-6 text-3xl font-semibold tracking-normal text-slate-950">
-        Your guides
-      </h1>
+      <div className="mb-6">
+        <PageHero eyebrow="Author dashboard" title="Your guides" />
+      </div>
 
       {guides.isLoading ? <LoadingState message="Loading your guides..." /> : null}
       {guides.isError ? (
@@ -41,18 +41,18 @@ export default function AccountGuidesPage() {
         <div className="grid gap-3">
           {guides.data.items.map((guide) => (
             <article
-              className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+              className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-xl shadow-black/20"
               key={guide.id}
             >
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <div>
                   <Link
-                    className="text-lg font-semibold text-slate-950 hover:text-blue-700"
+                    className="text-lg font-semibold text-white hover:text-lime-200"
                     href={`/guides/${guide.id}/edit`}
                   >
                     {guide.title}
                   </Link>
-                  <p className="mt-1 text-sm text-slate-600">
+                  <p className="mt-1 text-sm text-slate-400">
                     {guide.game.name} · Updated {formatDateTime(guide.updatedAt)}
                   </p>
                 </div>
@@ -62,6 +62,6 @@ export default function AccountGuidesPage() {
           ))}
         </div>
       ) : null}
-    </main>
+    </PageShell>
   );
 }

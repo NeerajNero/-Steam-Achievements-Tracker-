@@ -4,7 +4,9 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useMemo } from 'react';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
+import { DataToolbar } from '@/components/ui/data-toolbar';
 import { useGameSessions } from '@/features/sessions/api/use-game-sessions';
 import { SessionList } from '@/features/sessions/components/session-list';
 import {
@@ -15,13 +17,13 @@ import {
 
 export default function GameSessionsPage() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
+    <PageShell>
       <Suspense
-        fallback={<div className="p-6 text-sm text-slate-500">Loading sessions...</div>}
+        fallback={<div className="p-6 text-sm text-slate-400">Loading sessions...</div>}
       >
         <GameSessionsPageContent />
       </Suspense>
-    </main>
+    </PageShell>
   );
 }
 
@@ -45,29 +47,36 @@ function GameSessionsPageContent() {
 
   return (
     <div className="grid gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <Link
-            className="text-sm font-medium text-blue-700"
-            href={`/games/${steamAppId}`}
-          >
-            Back to game
-          </Link>
-          <h1 className="mt-2 text-3xl font-semibold tracking-normal text-slate-950">
-            Game sessions
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Find or create public sessions for app {steamAppId}.
-          </p>
-        </div>
-        <AuthStatus />
+      <div>
+        <Link
+          className="text-sm font-medium text-lime-200 hover:text-lime-100"
+          href={`/games/${steamAppId}`}
+        >
+          Back to game
+        </Link>
       </div>
+      <PageHero
+        actions={
+          <Link
+            className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+            href={`/games/${steamAppId}/sessions/new`}
+          >
+            New session
+          </Link>
+        }
+        eyebrow={`Steam App ${steamAppId}`}
+        title="Game sessions"
+      >
+        <p>
+            Find or create public sessions for app {steamAppId}.
+        </p>
+      </PageHero>
 
-      <section className="flex flex-wrap items-center justify-between gap-3 rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-        <label className="grid gap-1 text-sm font-medium text-slate-700">
+      <DataToolbar>
+        <label className="grid gap-1 text-sm font-medium text-slate-300">
           Status
           <select
-            className="rounded-md border border-slate-300 px-3 py-2"
+            className="rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white"
             onChange={(event) =>
               updateFilters({
                 status: event.target.value as SessionListFilters['status'],
@@ -82,13 +91,7 @@ function GameSessionsPageContent() {
             <option value="cancelled">Cancelled</option>
           </select>
         </label>
-        <Link
-          className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-          href={`/games/${steamAppId}/sessions/new`}
-        >
-          New session
-        </Link>
-      </section>
+      </DataToolbar>
 
       <SessionList
         emptyMessage="No public sessions are scheduled for this Steam game yet."

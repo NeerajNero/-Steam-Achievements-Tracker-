@@ -59,7 +59,8 @@
                 "session_created",
                 "session_joined",
                 "session_commented",
-                "milestone_reached"
+                "milestone_reached",
+                "badge_earned"
               ],
               "type": "string"
             }
@@ -179,6 +180,61 @@
         "summary": "List public activity for a Steam game",
         "tags": [
           "activity"
+        ]
+      }
+    },
+    "/badges": {
+      "get": {
+        "operationId": "listBadges",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BadgeListResponseDto"
+                }
+              }
+            }
+          }
+        },
+        "summary": "List active badge definitions",
+        "tags": [
+          "badges"
+        ]
+      }
+    },
+    "/profiles/{steamId}/badges": {
+      "get": {
+        "operationId": "listProfileBadges",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileBadgesResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile was not found."
+          }
+        },
+        "summary": "List earned profile badges",
+        "tags": [
+          "badges"
         ]
       }
     },
@@ -2895,6 +2951,100 @@
           "public-profiles"
         ]
       }
+    },
+    "/profiles/{steamId}/showcase": {
+      "get": {
+        "operationId": "listProfileShowcase",
+        "parameters": [
+          {
+            "name": "steamId",
+            "required": true,
+            "in": "path",
+            "description": "Steam 64-bit profile id",
+            "schema": {}
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProfileShowcaseResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Profile was not found."
+          }
+        },
+        "summary": "List public profile showcase items",
+        "tags": [
+          "showcase"
+        ]
+      }
+    },
+    "/account/showcase": {
+      "get": {
+        "operationId": "getAccountShowcase",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountShowcaseResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get current account showcase items",
+        "tags": [
+          "showcase"
+        ]
+      },
+      "put": {
+        "operationId": "updateAccountShowcase",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountShowcaseDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountShowcaseResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid or ineligible showcase items."
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Replace current account showcase items",
+        "tags": [
+          "showcase"
+        ]
+      }
     }
   },
   "info": {
@@ -3027,7 +3177,8 @@
               "session_created",
               "session_joined",
               "session_commented",
-              "milestone_reached"
+              "milestone_reached",
+              "badge_earned"
             ],
             "example": "guide_published"
           },
@@ -3109,6 +3260,131 @@
           "total",
           "limit",
           "offset"
+        ]
+      },
+      "BadgeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "7f984118-70f5-40d1-a43a-b721ba0f86b0"
+          },
+          "code": {
+            "type": "string",
+            "example": "first-sync"
+          },
+          "name": {
+            "type": "string",
+            "example": "First Sync"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true
+          },
+          "badgeType": {
+            "type": "string",
+            "enum": [
+              "milestone",
+              "completion",
+              "rarity",
+              "community",
+              "special"
+            ],
+            "example": "milestone"
+          },
+          "tier": {
+            "type": "string",
+            "enum": [
+              "bronze",
+              "silver",
+              "gold",
+              "platinum"
+            ],
+            "nullable": true,
+            "example": "bronze"
+          },
+          "iconKey": {
+            "type": "string",
+            "nullable": true,
+            "example": "spark"
+          },
+          "sortOrder": {
+            "type": "number",
+            "example": 10
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "badgeType",
+          "sortOrder"
+        ]
+      },
+      "BadgeListResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/BadgeResponseDto"
+            }
+          }
+        },
+        "required": [
+          "items"
+        ]
+      },
+      "ProfileBadgeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "03c8f042-f72e-452e-87f1-62c65d1d1f9e"
+          },
+          "badge": {
+            "$ref": "#/components/schemas/BadgeResponseDto"
+          },
+          "sourceMilestoneId": {
+            "type": "string",
+            "nullable": true,
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "earnedAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "badgeCode": "first-sync"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "badge",
+          "earnedAt",
+          "metadata"
+        ]
+      },
+      "ProfileBadgesResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ProfileBadgeResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
         ]
       },
       "ProfileDetailResponseDto": {
@@ -6073,6 +6349,296 @@
           "summary",
           "nearestCompletions",
           "rarestAchievements"
+        ]
+      },
+      "ShowcaseAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "apiName": {
+            "type": "string",
+            "example": "ACH_WIN_ONE_GAME"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Winner"
+          },
+          "globalPercentage": {
+            "type": "number",
+            "nullable": true,
+            "example": 12.3
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "apiName"
+        ]
+      },
+      "ShowcaseGuideResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "title": {
+            "type": "string",
+            "example": "Demo Completion Roadmap"
+          },
+          "slug": {
+            "type": "string",
+            "example": "demo-completion-roadmap"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "title",
+          "slug"
+        ]
+      },
+      "ShowcaseGamingSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "title": {
+            "type": "string",
+            "example": "Co-op cleanup"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          },
+          "scheduledStartAt": {
+            "type": "string",
+            "example": "2026-05-17T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "title",
+          "status",
+          "scheduledStartAt"
+        ]
+      },
+      "ShowcaseItemResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "itemType": {
+            "type": "string",
+            "enum": [
+              "badge",
+              "milestone",
+              "achievement",
+              "guide",
+              "gaming_session"
+            ],
+            "example": "badge"
+          },
+          "itemId": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "position": {
+            "type": "number",
+            "example": 0
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "example": "public"
+          },
+          "titleOverride": {
+            "type": "string",
+            "nullable": true,
+            "example": "Favorite badge"
+          },
+          "badge": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/BadgeResponseDto"
+              }
+            ]
+          },
+          "profileBadge": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileBadgeResponseDto"
+              }
+            ]
+          },
+          "milestone": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ProfileMilestoneResponseDto"
+              }
+            ]
+          },
+          "achievement": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShowcaseAchievementResponseDto"
+              }
+            ]
+          },
+          "guide": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShowcaseGuideResponseDto"
+              }
+            ]
+          },
+          "gamingSession": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ShowcaseGamingSessionResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "itemType",
+          "itemId",
+          "position",
+          "visibility"
+        ]
+      },
+      "ProfileShowcaseResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShowcaseItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
+        ]
+      },
+      "AccountShowcaseResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ShowcaseItemResponseDto"
+            }
+          }
+        },
+        "required": [
+          "steamId",
+          "items"
+        ]
+      },
+      "UpdateAccountShowcaseItemDto": {
+        "type": "object",
+        "properties": {
+          "itemType": {
+            "type": "string",
+            "enum": [
+              "badge",
+              "milestone",
+              "achievement",
+              "guide",
+              "gaming_session"
+            ],
+            "example": "badge"
+          },
+          "itemId": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "position": {
+            "type": "number",
+            "minimum": 0,
+            "example": 0
+          },
+          "visibility": {
+            "type": "string",
+            "enum": [
+              "public",
+              "private"
+            ],
+            "example": "public"
+          },
+          "titleOverride": {
+            "type": "string",
+            "nullable": true,
+            "maxLength": 80
+          }
+        },
+        "required": [
+          "itemType",
+          "itemId",
+          "position",
+          "visibility"
+        ]
+      },
+      "UpdateAccountShowcaseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "maxItems": 6,
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/UpdateAccountShowcaseItemDto"
+            }
+          }
+        },
+        "required": [
+          "items"
         ]
       }
     }

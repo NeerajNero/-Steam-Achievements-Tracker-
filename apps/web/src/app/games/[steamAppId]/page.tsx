@@ -4,10 +4,11 @@ import Link from 'next/link';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { Suspense, useEffect, useMemo, useState } from 'react';
 
+import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { useGameActivity } from '@/features/activity/api/use-game-activity';
 import { ActivityFeed } from '@/features/activity/components/activity-feed';
-import { AuthStatus } from '@/features/auth/components/auth-status';
 import { useGlobalGame } from '@/features/games/api/use-global-game';
 import { useGlobalGameAchievements } from '@/features/games/api/use-global-game-achievements';
 import { useGlobalGamePlayers } from '@/features/games/api/use-global-game-players';
@@ -28,14 +29,14 @@ import { getErrorMessage, getHttpStatus } from '@/lib/format';
 
 export default function GlobalGameDetailPage() {
   return (
-    <main className="mx-auto w-full max-w-7xl px-4 py-6 md:px-6">
+    <PageShell>
       <h1 className="sr-only">Global Steam Game</h1>
       <Suspense
-        fallback={<div className="p-6 text-sm text-slate-500">Loading game...</div>}
+        fallback={<div className="p-6 text-sm text-slate-400">Loading game...</div>}
       >
         <GlobalGameDetailPageContent />
       </Suspense>
-    </main>
+    </PageShell>
   );
 }
 
@@ -144,11 +145,10 @@ function GlobalGameDetailPageContent() {
 
   return (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href="/games">
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-lime-200 hover:text-lime-100" href="/games">
           Back to games
         </Link>
-        <AuthStatus />
       </div>
 
       {game.isLoading ? <LoadingState message="Loading global game..." /> : null}
@@ -165,54 +165,54 @@ function GlobalGameDetailPageContent() {
       {game.data ? (
         <div className="grid gap-6">
           <GlobalGameHeader game={game.data.game} />
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-slate-950">Guides and roadmaps</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  View public guides or create a draft roadmap for this Steam game.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
+          <SectionCard
+            actions={
+              <>
                 <Link
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
                   href={`/games/${steamAppId}/guides`}
                 >
                   View guides
                 </Link>
                 <Link
-                  className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
                   href={`/games/${steamAppId}/guides/new`}
                 >
                   New guide
                 </Link>
-              </div>
-            </div>
-          </section>
-          <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="font-semibold text-slate-950">Gaming sessions</h2>
-                <p className="mt-1 text-sm text-slate-600">
-                  Schedule or join public co-op and achievement boosting sessions.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
+              </>
+            }
+            description="View public guides or create a draft roadmap for this Steam game."
+            title="Guides and roadmaps"
+          >
+            <p className="text-sm text-slate-400">
+              Public guides are published roadmaps attached to this Steam game.
+            </p>
+          </SectionCard>
+          <SectionCard
+            actions={
+              <>
                 <Link
-                  className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
                   href={`/games/${steamAppId}/sessions`}
                 >
                   View sessions
                 </Link>
                 <Link
-                  className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700"
+                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
                   href={`/games/${steamAppId}/sessions/new`}
                 >
                   New session
                 </Link>
-              </div>
-            </div>
-          </section>
+              </>
+            }
+            description="Schedule or join public co-op and achievement boosting sessions."
+            title="Gaming sessions"
+          >
+            <p className="text-sm text-slate-400">
+              Sessions are scheduled community events for co-op and multiplayer achievements.
+            </p>
+          </SectionCard>
           <GlobalGameStats stats={game.data.stats} />
           <GlobalGameAchievements
             error={achievements.error}

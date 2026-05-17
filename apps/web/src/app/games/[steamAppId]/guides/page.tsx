@@ -3,7 +3,8 @@
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 
-import { AuthStatus } from '@/features/auth/components/auth-status';
+import { PageHero } from '@/components/layout/page-hero';
+import { PageShell } from '@/components/layout/page-shell';
 import { useGameGuides } from '@/features/guides/api/use-game-guides';
 import { GuideList } from '@/features/guides/components/guide-list';
 
@@ -13,29 +14,30 @@ export default function GameGuidesPage() {
   const guides = useGameGuides(steamAppId, { limit: 20, offset: 0 });
 
   return (
-    <main className="mx-auto w-full max-w-5xl px-4 py-6 md:px-6">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <Link className="text-sm font-medium text-blue-700" href={`/games/${steamAppId}`}>
+    <PageShell maxWidth="max-w-5xl">
+      <div className="mb-4">
+        <Link className="text-sm font-medium text-lime-200 hover:text-lime-100" href={`/games/${steamAppId}`}>
           Back to game
         </Link>
-        <AuthStatus />
       </div>
 
-      <div className="mb-6 flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h1 className="text-3xl font-semibold tracking-normal text-slate-950">
-            Steam game guides
-          </h1>
-          <p className="mt-2 text-sm text-slate-600">
+      <div className="mb-6">
+        <PageHero
+          actions={
+            <Link
+              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+              href={`/games/${steamAppId}/guides/new`}
+            >
+              New guide
+            </Link>
+          }
+          eyebrow={`Steam App ${steamAppId}`}
+          title="Steam game guides"
+        >
+          <p>
             Published public roadmaps for Steam App {steamAppId}.
           </p>
-        </div>
-        <Link
-          className="rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700"
-          href={`/games/${steamAppId}/guides/new`}
-        >
-          New guide
-        </Link>
+        </PageHero>
       </div>
 
       <GuideList
@@ -44,6 +46,6 @@ export default function GameGuidesPage() {
         isLoading={guides.isLoading}
         items={guides.data?.items}
       />
-    </main>
+    </PageShell>
   );
 }

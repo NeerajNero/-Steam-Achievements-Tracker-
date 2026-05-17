@@ -39,18 +39,18 @@ export function GuideList({
     <div className="grid gap-3">
       {items.map((guide) => (
         <article
-          className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm"
+          className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-xl shadow-black/20"
           key={guide.id}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div className="min-w-0">
               <Link
-                className="text-lg font-semibold text-slate-950 hover:text-blue-700"
+                className="text-lg font-semibold text-white hover:text-lime-200"
                 href={`/games/${guide.steamAppId}/guides/${guide.slug}`}
               >
                 {guide.title}
               </Link>
-              <p className="mt-1 text-sm text-slate-600">
+              <p className="mt-1 text-sm text-slate-400">
                 {guide.summary ?? 'No summary provided.'}
               </p>
               <p className="mt-2 text-xs text-slate-500">

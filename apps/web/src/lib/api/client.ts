@@ -3,6 +3,7 @@ import {
   ActivityApi,
   AuthApi,
   AchievementsApi,
+  BadgesApi,
   CommunityApi,
   Configuration,
   GamesApi,
@@ -15,6 +16,7 @@ import {
   PublicProfilesApi,
   ReportsApi,
   SessionsApi,
+  ShowcaseApi,
   SnapshotsApi,
 } from '@steam-achievement/client-sdk';
 
@@ -35,6 +37,7 @@ export const achievementsApi = new AchievementsApi(sdkConfiguration);
 export const syncApi = new SyncApi(sdkConfiguration);
 export const healthApi = new HealthApi(sdkConfiguration);
 export const authApi = new AuthApi(sdkConfiguration);
+export const badgesApi = new BadgesApi(sdkConfiguration);
 export const communityApi = new CommunityApi(sdkConfiguration);
 export const accountApi = new AccountApi(sdkConfiguration);
 export const publicProfilesApi = new PublicProfilesApi(sdkConfiguration);
@@ -42,6 +45,7 @@ export const reportsApi = new ReportsApi(sdkConfiguration);
 export const leaderboardsApi = new LeaderboardsApi(sdkConfiguration);
 export const milestonesApi = new MilestonesApi(sdkConfiguration);
 export const sessionsApi = new SessionsApi(sdkConfiguration);
+export const showcaseApi = new ShowcaseApi(sdkConfiguration);
 export const snapshotsApi = new SnapshotsApi(sdkConfiguration);
 
 export { apiBaseUrl };

@@ -106,6 +106,7 @@ Current SDK clients used by the frontend:
 
 - `AccountApi`
 - `AuthApi`
+- `BadgesApi`
 - `PublicProfilesApi`
 - `ProfilesApi`
 - `GamesApi`
@@ -114,6 +115,7 @@ Current SDK clients used by the frontend:
 - `AchievementsApi`
 - `SyncApi`
 - `HealthApi`
+- `ShowcaseApi`
 
 SDK clients are configured in:
 
@@ -204,6 +206,25 @@ Avoid page-local duplicates of:
 - achievement rows/cards.
 - state chips and empty/error messaging in reusable UI components.
 
+## Dashboard UI System
+
+The current frontend uses a shared dark dashboard shell:
+
+```txt
+apps/web/src/components/layout
+apps/web/src/components/ui
+```
+
+The information architecture is inspired by Steam achievement hunting and
+profile-tracking platforms: Home, Games, Leaderboards, Guides, Sessions, and
+Activity are first-class navigation items. The visual direction uses a dark
+gaming dashboard foundation with green accent states. Do not copy third-party
+branding, names, assets, or layouts.
+
+Use `PageShell`, `PageHero`, `SectionCard`, `SummaryCard`, `StatusBadge`,
+`ProgressBar`, `DataToolbar`, and the shared loading/empty/error states before
+adding page-local card or table styling.
+
 ## Public Dashboard Sections
 
 The profile page is organized as:
@@ -215,7 +236,22 @@ The profile page is organized as:
 - game library;
 - nearest completions;
 - rarest achievements;
+- badges and profile showcase;
 - sync history.
+
+## Badges And Showcase
+
+Badges and showcase UI lives in:
+
+```txt
+apps/web/src/features/badges
+apps/web/src/features/showcase
+```
+
+The public profile dashboard and `/u/:slug` render earned badges and public
+showcase items through SDK-backed hooks. The settings page includes a simple
+showcase editor for selecting up to six earned badges. The frontend does not
+upload images, call Cloudinary, or generate share cards for badges yet.
 
 ## Global Game Browsing
 

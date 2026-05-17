@@ -4,9 +4,14 @@ import { Pool } from 'pg';
 
 import { DatabaseService } from './database.service';
 import { ActivityEventsRepository } from './repositories/activity-events.repository';
+import { BadgesRepository } from './repositories/badges.repository';
+import { ProfileBadgesRepository } from './repositories/profile-badges.repository';
 import { ProfileMilestonesRepository } from './repositories/profile-milestones.repository';
 import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.repository';
 import { ActivityEventsDataService } from './services/activity-events-data.service';
+import { BadgesDataService } from './services/badges-data.service';
+import { ProfileBadgeBackfillDataService } from './services/profile-badge-backfill-data.service';
+import { ProfileBadgesDataService } from './services/profile-badges-data.service';
 import { ProfileMilestoneBackfillDataService } from './services/profile-milestone-backfill-data.service';
 import { ProfileMilestonesDataService } from './services/profile-milestones-data.service';
 import { ProfileSnapshotsDataService } from './services/profile-snapshots-data.service';
@@ -14,10 +19,12 @@ import {
   achievements,
   activityEvents,
   games,
+  profileBadges,
   profileAchievements,
   profileGames,
   profileMilestones,
   profileSnapshots,
+  profileShowcaseItems,
   steamProfiles,
   syncRuns,
 } from './schema';
@@ -179,6 +186,9 @@ async function main(): Promise<void> {
     const milestoneBackfill = createMilestoneBackfillDataService(db);
     const backfillResult =
       await milestoneBackfill.backfillMilestonesForProfile(profileId);
+    const badgeBackfill = createBadgeBackfillDataService(db);
+    const badgeBackfillResult =
+      await badgeBackfill.backfillBadgesForProfile(profileId);
 
     console.log(`Development seed data ready for Steam ID ${DEMO_STEAM_ID}.`);
     console.log(
@@ -186,6 +196,9 @@ async function main(): Promise<void> {
     );
     console.log(
       `Demo milestones ready: ${backfillResult.milestonesCreated} created, ${backfillResult.activityEventsCreated} activity events created.`,
+    );
+    console.log(
+      `Demo badges ready: ${badgeBackfillResult.badgesAwarded} awarded, ${badgeBackfillResult.activityEventsCreated} activity events created.`,
     );
   } finally {
     await pool.end();
@@ -389,6 +402,12 @@ async function resetDemoData(db: ReturnType<typeof drizzle<typeof schema>>): Pro
       }
 
       await tx
+        .delete(profileShowcaseItems)
+        .where(eq(profileShowcaseItems.steamProfileId, profileId));
+
+      await tx.delete(profileBadges).where(eq(profileBadges.steamProfileId, profileId));
+
+      await tx
         .delete(profileMilestones)
         .where(eq(profileMilestones.steamProfileId, profileId));
 
@@ -470,6 +489,33 @@ function createMilestoneBackfillDataService(
       new ProfileMilestonesRepository(databaseService),
     ),
     new ActivityEventsDataService(new ActivityEventsRepository(databaseService)),
+  );
+}
+
+function createBadgeBackfillDataService(
+  db: ReturnType<typeof drizzle<typeof schema>>,
+): ProfileBadgeBackfillDataService {
+  const databaseService = { db } as unknown as DatabaseService;
+  const activityEventsDataService = new ActivityEventsDataService(
+    new ActivityEventsRepository(databaseService),
+  );
+  const badgesDataService = new BadgesDataService(
+    new BadgesRepository(databaseService),
+  );
+  const profileBadgesDataService = new ProfileBadgesDataService(
+    new ProfileBadgesRepository(databaseService),
+    badgesDataService,
+    activityEventsDataService,
+  );
+
+  return new ProfileBadgeBackfillDataService(
+    new ProfileSnapshotsDataService(
+      new ProfileSnapshotsRepository(databaseService),
+    ),
+    new ProfileMilestonesDataService(
+      new ProfileMilestonesRepository(databaseService),
+    ),
+    profileBadgesDataService,
   );
 }
 

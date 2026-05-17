@@ -4,6 +4,7 @@ import { CreateContentReportDtoTargetTypeEnum } from '@steam-achievement/client-
 import type { ReactNode } from 'react';
 
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { getErrorMessage } from '@/lib/format';
 
@@ -27,18 +28,18 @@ export function GuideCommunitySection({
     <section className="grid gap-6">
       <GuideVoteControls guideId={guideId} />
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-4">
-          <h2 className="font-semibold text-slate-950">Comments</h2>
-          <p className="mt-1 text-sm text-slate-600">
+      <SectionCard>
+        <div className="border-b border-white/10 p-4">
+          <h2 className="font-semibold text-white">Comments</h2>
+          <p className="mt-1 text-sm text-slate-400">
             Keep comments focused on Steam achievement help.
           </p>
         </div>
-        <div className="border-b border-slate-200 p-4">
+        <div className="border-b border-white/10 p-4">
           {currentUser.data ? (
             <CommentForm onSubmit={(body) => createComment.mutateAsync(body)} />
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-400">
               Sign in with Steam to comment.
             </p>
           )}
@@ -51,7 +52,7 @@ export function GuideCommunitySection({
           />
         ) : null}
         {comments.data ? <CommentsList comments={comments.data.items} /> : null}
-      </section>
+      </SectionCard>
 
       <ReportContentButton
         targetId={guideId}

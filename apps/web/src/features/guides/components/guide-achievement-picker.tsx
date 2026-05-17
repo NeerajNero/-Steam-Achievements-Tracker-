@@ -26,19 +26,19 @@ export function GuideAchievementPicker({
   }
 
   return (
-    <form className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4" onSubmit={submit}>
-      <h2 className="font-semibold text-slate-950">Attach achievements</h2>
-      <p className="text-sm text-slate-600">
+    <form className="grid gap-3 rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-xl shadow-black/20" onSubmit={submit}>
+      <h2 className="font-semibold text-white">Attach achievements</h2>
+      <p className="text-sm text-slate-400">
         Paste achievement UUIDs from this game. A richer picker is deferred.
       </p>
       <textarea
-        className="min-h-24 rounded-md border border-slate-300 px-3 py-2 text-sm"
+        className="min-h-24 rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400"
         onChange={(event) => setIds(event.target.value)}
         placeholder="achievement-uuid, achievement-uuid"
         value={ids}
       />
       <button
-        className="w-fit rounded-md bg-blue-600 px-4 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+        className="w-fit rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
         disabled={isSubmitting}
         type="submit"
       >

@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import {
   formatDateTime,
   formatNumber,
@@ -54,10 +55,10 @@ export function LeaderboardTable({
   }
 
   return (
-    <section className="overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+    <SectionCard title="Rankings">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-slate-200 text-sm">
-          <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-normal text-slate-500">
+        <table className="min-w-full divide-y divide-white/10 text-sm">
+          <thead className="bg-white/5 text-left text-xs font-semibold uppercase tracking-normal text-slate-400">
             <tr>
               <th className="px-4 py-3">Rank</th>
               <th className="px-4 py-3">Profile</th>
@@ -67,25 +68,25 @@ export function LeaderboardTable({
               <th className="px-4 py-3">Snapshot</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-white/10">
             {items.map((item) => (
               <tr key={`${item.rank}-${item.steamId}`}>
-                <td className="px-4 py-3 font-semibold text-slate-950">
+                <td className="px-4 py-3 font-semibold text-white">
                   #{item.rank}
                 </td>
                 <td className="px-4 py-3">
                   <Link
-                    className="flex min-w-52 items-center gap-3 text-slate-950 hover:text-blue-700"
+                    className="flex min-w-52 items-center gap-3 text-white hover:text-lime-200"
                     href={getLeaderboardProfileHref(item)}
                   >
                     {item.avatarUrl ? (
                       <img
                         alt=""
-                        className="h-9 w-9 rounded-md"
+                        className="h-9 w-9 rounded-xl"
                         src={item.avatarUrl}
                       />
                     ) : (
-                      <span className="h-9 w-9 rounded-md bg-slate-200" />
+                      <span className="h-9 w-9 rounded-xl bg-white/10" />
                     )}
                     <span>
                       <span className="block font-medium">
@@ -97,18 +98,18 @@ export function LeaderboardTable({
                     </span>
                   </Link>
                 </td>
-                <td className="px-4 py-3 font-semibold text-slate-950">
+                <td className="px-4 py-3 font-semibold text-lime-100">
                   {formatLeaderboardScore(item)}
                 </td>
-                <td className="px-4 py-3 text-slate-700">
+                <td className="px-4 py-3 text-slate-300">
                   {formatNumber(item.snapshot.completedGames)} /{' '}
                   {formatNumber(item.snapshot.totalGames)}
                 </td>
-                <td className="px-4 py-3 text-slate-700">
+                <td className="px-4 py-3 text-slate-300">
                   {formatNumber(item.snapshot.unlockedAchievements)} /{' '}
                   {formatNumber(item.snapshot.totalAchievements)}
                 </td>
-                <td className="px-4 py-3 text-slate-600">
+                <td className="px-4 py-3 text-slate-400">
                   {formatDateTime(item.snapshot.createdAt)}
                 </td>
               </tr>
@@ -116,6 +117,6 @@ export function LeaderboardTable({
           </tbody>
         </table>
       </div>
-    </section>
+    </SectionCard>
   );
 }

@@ -25,7 +25,8 @@ export type ActivityEventType =
   | 'session_created'
   | 'session_joined'
   | 'session_commented'
-  | 'milestone_reached';
+  | 'milestone_reached'
+  | 'badge_earned';
 
 export type ActivityVisibility = 'public' | 'private';
 
@@ -37,7 +38,8 @@ export type ActivityEntityType =
   | 'guide_comment'
   | 'gaming_session'
   | 'session_comment'
-  | 'milestone';
+  | 'milestone'
+  | 'badge';
 
 export interface ActivityEventInput {
   actorUserId?: string | null;

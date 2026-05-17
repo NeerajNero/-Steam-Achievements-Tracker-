@@ -2,6 +2,8 @@ import type { ProfileSnapshotResponseDto } from '@steam-achievement/client-sdk';
 import type { ReactNode } from 'react';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ProgressBar } from '@/components/ui/progress-bar';
+import { SectionCard } from '@/components/ui/section-card';
 import {
   formatDateTime,
   formatNumber,
@@ -43,33 +45,35 @@ export function ProfileSnapshotsList({
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">Progress Snapshots</h2>
+    <SectionCard title="Progress Snapshots">
       <div className="mt-4 grid gap-3">
         {snapshots.map((snapshot) => (
           <article
-            className="rounded-md border border-slate-200 p-4"
+            className="rounded-2xl border border-white/10 bg-white/5 p-4"
             key={snapshot.id}
           >
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="font-medium text-slate-950">
+              <div className="font-medium text-white">
                 {formatPercent(snapshot.averageCompletionPercentage)}
               </div>
               <div className="text-xs uppercase tracking-normal text-slate-500">
                 {snapshot.snapshotReason.replace('_', ' ')}
               </div>
             </div>
+            <div className="mt-3">
+              <ProgressBar value={snapshot.averageCompletionPercentage} />
+            </div>
             <dl className="mt-3 grid grid-cols-2 gap-3 text-sm">
               <div>
                 <dt className="text-slate-500">Games</dt>
-                <dd className="font-medium text-slate-900">
+                <dd className="font-medium text-slate-200">
                   {formatNumber(snapshot.completedGames)} /{' '}
                   {formatNumber(snapshot.totalGames)}
                 </dd>
               </div>
               <div>
                 <dt className="text-slate-500">Achievements</dt>
-                <dd className="font-medium text-slate-900">
+                <dd className="font-medium text-slate-200">
                   {formatNumber(snapshot.unlockedAchievements)} /{' '}
                   {formatNumber(snapshot.totalAchievements)}
                 </dd>
@@ -81,6 +85,6 @@ export function ProfileSnapshotsList({
           </article>
         ))}
       </div>
-    </section>
+    </SectionCard>
   );
 }

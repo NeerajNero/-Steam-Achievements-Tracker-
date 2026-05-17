@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { RarestAchievementResponseDto } from '@steam-achievement/client-sdk';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import {
   formatDateTime,
   formatPercent,
@@ -26,13 +27,10 @@ export function RarestAchievements({
   steamId: string;
 }>): ReactNode {
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-      <div className="border-b border-slate-200 p-5">
-        <h2 className="text-lg font-semibold text-slate-950">Rarest Achievements</h2>
-        <p className="mt-1 text-sm text-slate-600">
-          Lowest global rarity among unlocked achievement rows.
-        </p>
-      </div>
+    <SectionCard
+      description="Lowest global rarity among unlocked achievement rows."
+      title="Rarest Achievements"
+    >
 
       {isLoading ? <LoadingState message="Loading rarest achievements..." /> : null}
       {isError ? (
@@ -42,14 +40,14 @@ export function RarestAchievements({
       ) : null}
 
       {items && items.length > 0 ? (
-        <ul className="divide-y divide-slate-100">
+        <ul className="divide-y divide-white/10">
           {items.map((achievement) => (
             <li className="p-4" key={`${achievement.steamAppId}-${achievement.apiName}`}>
               <div className="flex flex-wrap items-start justify-between gap-2">
                 <div>
-                  <div className="font-medium text-slate-900">
+                  <div className="font-medium text-white">
                     <Link
-                      className="text-blue-700 hover:text-blue-900"
+                      className="text-lime-200 hover:text-lime-100"
                       href={`/profiles/${steamId}/games/${achievement.steamAppId}`}
                     >
                       {achievement.displayName ?? achievement.apiName}
@@ -73,6 +71,6 @@ export function RarestAchievements({
       {items && items.length === 0 ? (
         <EmptyState message="No rare unlocked achievements available yet." />
       ) : null}
-    </section>
+    </SectionCard>
   );
 }

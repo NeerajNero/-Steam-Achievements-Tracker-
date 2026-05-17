@@ -4,6 +4,8 @@ import {
   ListGameAchievementsStatusEnum,
 } from '@steam-achievement/client-sdk';
 
+import { DataToolbar } from '@/components/ui/data-toolbar';
+
 import type { GameAchievementFilters } from '../utils/game-achievement-filters';
 
 export const GAME_ACHIEVEMENT_STATUS_OPTIONS: readonly ListGameAchievementsStatusEnum[] = [
@@ -29,15 +31,18 @@ export function GameAchievementFilters({
   onSortChange: (sort: ListGameAchievementsSortEnum) => void;
   onOrderChange: (order: ListGameAchievementsOrderEnum) => void;
 }>): React.ReactNode {
+  const labelClassName = 'grid gap-1 text-xs font-semibold uppercase text-slate-400';
+  const selectClassName =
+    'h-10 rounded-xl border border-white/10 bg-slate-950/80 px-3 text-sm font-medium text-slate-100 outline-none focus:border-lime-400';
+
   return (
-    <section className="mt-4 rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
-      <h2 className="text-lg font-semibold text-slate-950">Filters</h2>
-      <div className="mt-3 grid gap-3 md:grid-cols-3">
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-slate-600">Status</span>
+    <div className="mt-4">
+      <DataToolbar>
+        <label className={labelClassName}>
+          Status
           <select
             aria-label="Filter achievements by status"
-            className="h-10 rounded-md border border-slate-300 px-2"
+            className={selectClassName}
             onChange={(event) =>
               onStatusChange(event.target.value as ListGameAchievementsStatusEnum)
             }
@@ -50,11 +55,11 @@ export function GameAchievementFilters({
             ))}
           </select>
         </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-slate-600">Sort</span>
+        <label className={labelClassName}>
+          Sort
           <select
             aria-label="Sort achievements by"
-            className="h-10 rounded-md border border-slate-300 px-2"
+            className={selectClassName}
             onChange={(event) =>
               onSortChange(event.target.value as ListGameAchievementsSortEnum)
             }
@@ -67,11 +72,11 @@ export function GameAchievementFilters({
             ))}
           </select>
         </label>
-        <label className="grid gap-1">
-          <span className="text-xs font-medium text-slate-600">Order</span>
+        <label className={labelClassName}>
+          Order
           <select
             aria-label="Sort order"
-            className="h-10 rounded-md border border-slate-300 px-2"
+            className={selectClassName}
             onChange={(event) =>
               onOrderChange(event.target.value as ListGameAchievementsOrderEnum)
             }
@@ -81,7 +86,7 @@ export function GameAchievementFilters({
             <option value={ListGameAchievementsOrderEnum.Desc}>Descending</option>
           </select>
         </label>
-      </div>
-    </section>
+      </DataToolbar>
+    </div>
   );
 }

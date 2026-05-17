@@ -6,7 +6,7 @@ const DEMO_GAME_ID = '910001';
 const checks = [
   {
     path: '/',
-    marker: 'Steam Achievement Tracker',
+    marker: 'Track completions',
     label: 'home page',
   },
   {
@@ -18,6 +18,16 @@ const checks = [
     path: `/profiles/${DEMO_STEAM_ID}`,
     marker: 'Recent milestones',
     label: 'demo profile milestones section',
+  },
+  {
+    path: `/profiles/${DEMO_STEAM_ID}`,
+    marker: 'Badges',
+    label: 'demo profile badges section',
+  },
+  {
+    path: '/badges',
+    marker: 'Steam Badges',
+    label: 'badges page',
   },
   {
     path: `/profiles/${DEMO_STEAM_ID}/games/${DEMO_GAME_ID}`,

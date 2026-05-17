@@ -5,6 +5,7 @@ import {
   type ProfileSnapshot,
 } from '../../db/services/profile-snapshots-data.service';
 import { ActivityEventsDataService } from '../../db/services/activity-events-data.service';
+import { ProfileBadgesDataService } from '../../db/services/profile-badges-data.service';
 import { ProfileMilestonesDataService } from '../../db/services/profile-milestones-data.service';
 import { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
 import { UserSteamAccountsDataService } from '../../db/services/user-steam-accounts-data.service';
@@ -21,6 +22,7 @@ export class SnapshotsService {
     private readonly steamProfilesDataService: SteamProfilesDataService,
     private readonly profileSnapshotsDataService: ProfileSnapshotsDataService,
     private readonly profileMilestonesDataService: ProfileMilestonesDataService,
+    private readonly profileBadgesDataService: ProfileBadgesDataService,
     private readonly activityEventsDataService: ActivityEventsDataService,
     private readonly userSteamAccountsDataService: UserSteamAccountsDataService,
   ) {}
@@ -119,6 +121,8 @@ export class SnapshotsService {
         },
       });
     }
+
+    await this.profileBadgesDataService.awardFromMilestones(milestones);
   }
 }
 

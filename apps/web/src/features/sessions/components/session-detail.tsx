@@ -3,6 +3,7 @@ import Link from 'next/link';
 import type { ReactNode } from 'react';
 
 import { EmptyState } from '@/components/ui/panel-state';
+import { SectionCard } from '@/components/ui/section-card';
 import { useCancelSession } from '@/features/sessions/api/use-cancel-session';
 import { useJoinSession } from '@/features/sessions/api/use-join-session';
 import { useLeaveSession } from '@/features/sessions/api/use-leave-session';
@@ -26,23 +27,23 @@ export function SessionDetail({
 
   return (
     <article className="grid gap-6">
-      <section className="rounded-lg border border-slate-200 bg-white p-5 shadow-sm">
+      <SectionCard>
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
-            <p className="text-sm font-medium text-slate-500">
+            <p className="text-sm font-medium text-lime-300">
               {session.gameName} session
             </p>
-            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-slate-950">
+            <h1 className="mt-1 text-3xl font-semibold tracking-normal text-white">
               {session.title}
             </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-600">
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-slate-300">
               {session.description ?? 'No description provided.'}
             </p>
           </div>
           <SessionStatusBadge status={session.status} />
         </div>
 
-        <dl className="mt-4 grid gap-3 text-sm text-slate-700 sm:grid-cols-4">
+        <dl className="mt-4 grid gap-3 text-sm text-slate-200 sm:grid-cols-4">
           <div>
             <dt className="font-medium text-slate-500">Start</dt>
             <dd>{formatDateTime(session.scheduledStartAt)}</dd>
@@ -67,7 +68,7 @@ export function SessionDetail({
           {isAuthenticated ? (
             <>
               <button
-                className="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-700 disabled:opacity-60"
+                className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
                 disabled={joinSession.isPending || session.status !== 'open'}
                 onClick={() => void joinSession.mutateAsync()}
                 type="button"
@@ -75,7 +76,7 @@ export function SessionDetail({
                 {joinSession.isPending ? 'Joining...' : 'Join session'}
               </button>
               <button
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+                className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10 disabled:opacity-60"
                 disabled={leaveSession.isPending}
                 onClick={() => void leaveSession.mutateAsync()}
                 type="button"
@@ -84,20 +85,20 @@ export function SessionDetail({
               </button>
             </>
           ) : (
-            <p className="text-sm text-slate-600">
+            <p className="text-sm text-slate-400">
               Sign in with Steam to join this session.
             </p>
           )}
           {canManage ? (
             <>
               <Link
-                className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50"
+                className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
                 href={`/sessions/${session.id}/edit`}
               >
                 Edit
               </Link>
               <button
-                className="rounded-md border border-red-300 px-3 py-2 text-sm font-semibold text-red-700 hover:bg-red-50 disabled:opacity-60"
+                className="rounded-xl border border-red-500/30 px-3 py-2 text-sm font-semibold text-red-200 hover:bg-red-500/10 disabled:opacity-60"
                 disabled={cancelSession.isPending || session.status === 'cancelled'}
                 onClick={() => void cancelSession.mutateAsync()}
                 type="button"
@@ -107,26 +108,26 @@ export function SessionDetail({
             </>
           ) : null}
         </div>
-      </section>
+      </SectionCard>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-4">
-          <h2 className="font-semibold text-slate-950">Participants</h2>
+      <SectionCard>
+        <div className="border-b border-white/10 p-4">
+          <h2 className="font-semibold text-white">Participants</h2>
         </div>
         <SessionParticipants participants={session.participants} />
-      </section>
+      </SectionCard>
 
-      <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
-        <div className="border-b border-slate-200 p-4">
-          <h2 className="font-semibold text-slate-950">Target achievements</h2>
+      <SectionCard>
+        <div className="border-b border-white/10 p-4">
+          <h2 className="font-semibold text-white">Target achievements</h2>
         </div>
         {session.achievements.length === 0 ? (
           <EmptyState message="No achievements are attached to this session yet." />
         ) : (
-          <div className="divide-y divide-slate-200">
+          <div className="divide-y divide-white/10">
             {session.achievements.map((achievement) => (
               <div className="p-4" key={achievement.id}>
-                <h3 className="font-medium text-slate-950">
+                <h3 className="font-medium text-slate-100">
                   {achievement.displayName ?? achievement.apiName}
                 </h3>
                 <p className="mt-1 text-xs text-slate-500">
@@ -141,7 +142,7 @@ export function SessionDetail({
             ))}
           </div>
         )}
-      </section>
+      </SectionCard>
     </article>
   );
 }

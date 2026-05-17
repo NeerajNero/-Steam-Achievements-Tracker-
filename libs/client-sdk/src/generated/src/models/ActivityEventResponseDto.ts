@@ -102,7 +102,8 @@ export const ActivityEventResponseDtoEventTypeEnum = {
     SessionCreated: 'session_created',
     SessionJoined: 'session_joined',
     SessionCommented: 'session_commented',
-    MilestoneReached: 'milestone_reached'
+    MilestoneReached: 'milestone_reached',
+    BadgeEarned: 'badge_earned'
 } as const;
 export type ActivityEventResponseDtoEventTypeEnum = typeof ActivityEventResponseDtoEventTypeEnum[keyof typeof ActivityEventResponseDtoEventTypeEnum];
 

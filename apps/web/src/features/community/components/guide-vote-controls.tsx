@@ -42,11 +42,11 @@ export function GuideVoteControls({
   }
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white p-4 shadow-sm">
+    <section className="rounded-2xl border border-white/10 bg-slate-900/70 p-4 shadow-[0_18px_60px_rgba(0,0,0,0.25)]">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 className="font-semibold text-slate-950">Guide votes</h2>
-          <p className="mt-1 text-sm text-slate-600">
+          <h2 className="font-semibold text-white">Guide votes</h2>
+          <p className="mt-1 text-sm text-slate-400">
             Score {data.score} · {data.upvotes} up · {data.downvotes} down
           </p>
         </div>
@@ -75,7 +75,7 @@ export function GuideVoteControls({
               Downvote
             </button>
             <button
-              className="rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60"
+              className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10 disabled:opacity-60"
               disabled={removeVote.isPending || data.currentUserVote === null}
               onClick={() => void removeVote.mutateAsync()}
               type="button"
@@ -84,7 +84,7 @@ export function GuideVoteControls({
             </button>
           </div>
         ) : (
-          <p className="text-sm text-slate-600">Sign in with Steam to vote.</p>
+          <p className="text-sm text-slate-400">Sign in with Steam to vote.</p>
         )}
       </div>
     </section>
@@ -93,6 +93,6 @@ export function GuideVoteControls({
 
 function voteButtonClass(active: boolean): string {
   return active
-    ? 'rounded-md bg-blue-700 px-3 py-2 text-sm font-semibold text-white disabled:opacity-60'
-    : 'rounded-md border border-slate-300 px-3 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50 disabled:opacity-60';
+    ? 'rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 disabled:opacity-60'
+    : 'rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10 disabled:opacity-60';
 }

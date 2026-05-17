@@ -98,6 +98,11 @@ Frontend routes:
 The UI uses the generated SDK `SessionsApi`, React Query hooks, and URL params
 for basic public list filters.
 
+Session pages use the shared dashboard shell. Public session cards should make
+schedule, status, participant count, game, and host scannable. Join/create/edit
+actions should show sign-in prompts instead of broken controls when the user is
+not authenticated.
+
 ## Deterministic Smoke
 
 Run the local authenticated smoke after migrations and seed data:

@@ -45,6 +45,10 @@ Rows include public Steam profile metadata and a `publicSlug` when the linked
 public profile is published. Clients should link to `/u/:slug` when available
 and otherwise fall back to `/profiles/:steamId`.
 
+Frontend leaderboard pages use overview cards and ranking tables in the shared
+dashboard shell. Scores and rank should be easy to scan, with profile links
+preferring public slugs when available.
+
 ## Why Snapshots
 
 Snapshots make leaderboard reads fast and explainable. A row captures the exact
