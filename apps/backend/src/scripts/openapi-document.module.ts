@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 
+import { AccountController } from '../modules/account/account.controller';
+import { AccountService } from '../modules/account/account.service';
 import { AchievementsController } from '../modules/achievements/achievements.controller';
 import { AchievementsService } from '../modules/achievements/achievements.service';
 import { GamesController } from '../modules/games/games.controller';
@@ -10,8 +12,11 @@ import { AuthController } from '../modules/auth/auth.controller';
 import { AuthService } from '../modules/auth/auth.service';
 import { ProfilesController } from '../modules/profiles/profiles.controller';
 import { ProfilesService } from '../modules/profiles/profiles.service';
+import { PublicProfilesController } from '../modules/public-profiles/public-profiles.controller';
+import { PublicProfilesService } from '../modules/public-profiles/public-profiles.service';
 import { SyncController } from '../modules/sync/sync.controller';
 import { SyncService } from '../modules/sync/sync.service';
+import { SessionAuthGuard } from '../modules/auth/session-auth.guard';
 
 const serviceStub = {};
 
@@ -23,6 +28,8 @@ const serviceStub = {};
     AchievementsController,
     SyncController,
     AuthController,
+    AccountController,
+    PublicProfilesController,
   ],
   providers: [
     { provide: ProfilesService, useValue: serviceStub },
@@ -31,6 +38,9 @@ const serviceStub = {};
     { provide: SyncService, useValue: serviceStub },
     { provide: AuthService, useValue: serviceStub },
     { provide: AuthCookieService, useValue: serviceStub },
+    { provide: AccountService, useValue: serviceStub },
+    { provide: PublicProfilesService, useValue: serviceStub },
+    { provide: SessionAuthGuard, useValue: serviceStub },
   ],
 })
 export class OpenApiDocumentModule {}

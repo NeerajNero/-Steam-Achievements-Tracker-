@@ -502,7 +502,7 @@ type GameAchievementSyncResult =
 
 export function toSafeSyncErrorMessage(error: unknown): string {
   if (error instanceof SteamApiConfigError) {
-    return 'Steam API is not configured for this sync operation.';
+    return 'STEAM_API_KEY is not configured in backend runtime environment.';
   }
 
   if (error instanceof SteamApiRateLimitError) {
@@ -669,7 +669,7 @@ function isFailedGameAchievementSync(
 
 function toSafeGameSyncErrorMessage(error: unknown): string {
   if (error instanceof SteamApiConfigError) {
-    return 'Steam API is not configured for achievement sync.';
+    return 'STEAM_API_KEY is not configured in backend runtime environment.';
   }
 
   if (error instanceof SteamApiRateLimitError) {

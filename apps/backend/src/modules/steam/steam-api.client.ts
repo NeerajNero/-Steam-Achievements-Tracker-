@@ -105,7 +105,7 @@ export class SteamApiClient {
   private requireApiKey(methodName: string): string {
     if (this.config.apiKey === null) {
       throw new SteamApiConfigError(
-        `STEAM_API_KEY is required for Steam API method ${methodName}.`,
+        `STEAM_API_KEY is not configured in backend runtime environment for Steam API method ${methodName}.`,
       );
     }
 

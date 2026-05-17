@@ -1,5 +1,10 @@
 /* tslint:disable */
 /* eslint-disable */
+export * from './AccountPreferencesResponseDto';
+export * from './AccountPublicProfileResponseDto';
+export * from './AccountResponseDto';
+export * from './AccountSteamAccountResponseDto';
+export * from './AccountUserResponseDto';
 export * from './AchievementWithUnlockStateResponseDto';
 export * from './AchievementsResponseDto';
 export * from './AuthMeResponseDto';
@@ -14,9 +19,15 @@ export * from './HealthResponseDto';
 export * from './NearestCompletionsResponseDto';
 export * from './ProfileDetailResponseDto';
 export * from './ProfileSummaryResponseDto';
+export * from './PublicProfileInfoResponseDto';
+export * from './PublicProfileResponseDto';
+export * from './PublicSteamProfileResponseDto';
 export * from './QueuedSyncResponseDto';
 export * from './RarestAchievementResponseDto';
 export * from './RarestAchievementsResponseDto';
 export * from './SyncHistoryItemResponseDto';
 export * from './SyncHistoryResponseDto';
 export * from './SyncRequestDto';
+export * from './UpdateAccountDto';
+export * from './UpdatePreferencesDto';
+export * from './UpdatePublicProfileSettingsDto';

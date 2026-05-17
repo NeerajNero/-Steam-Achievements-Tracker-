@@ -53,6 +53,96 @@ Returns `401` when there is no active session.
 
 Revokes the current session and clears the session cookie. Returns `204`.
 
+## Account
+
+Account endpoints require an active Sign in with Steam session cookie. They
+return `401` when unauthenticated and never expose session tokens, token hashes,
+or internal auth session rows.
+
+### `GET /account/me`
+
+Returns the authenticated account, linked primary Steam account, preferences,
+and public profile publishing settings.
+
+Response shape:
+- `user`: id, display name, avatar URL, role, status.
+- `steamAccount`: linked Steam ID/profile data, or `null`.
+- `preferences`: authenticated user settings object.
+- `publicProfile`: slug, publishing flag, and public settings object.
+
+### `PATCH /account/me`
+
+Updates editable account display fields only.
+
+Allowed request fields:
+- `displayName`: optional string, 1 to 80 characters.
+- `avatarUrl`: optional nullable URL string.
+
+The endpoint does not accept role, status, Steam ID, session, or ownership
+changes.
+
+### `GET /account/preferences`
+
+Returns the authenticated user's preference settings.
+
+### `PATCH /account/preferences`
+
+Updates strict preference settings.
+
+Supported settings:
+
+```json
+{
+  "defaultGameSort": "completion",
+  "defaultGameOrder": "desc",
+  "showPrivateHints": true
+}
+```
+
+`defaultGameSort` supports `completion`, `name`, `playtime`,
+`recently_played`, and `remaining`. `defaultGameOrder` supports `asc` and
+`desc`.
+
+### `GET /account/public-profile`
+
+Returns the authenticated user's public profile publishing settings.
+
+### `PATCH /account/public-profile`
+
+Updates the authenticated user's public profile settings.
+
+Allowed request fields:
+- `slug`: nullable string. Values are trimmed, normalized to lowercase, and must
+  be 3 to 64 characters of `a-z`, `0-9`, or hyphen.
+- `isPublic`: boolean.
+- `settings`: object with `showRarestAchievements`, `showRecentSyncs`, and
+  `showSteamId` booleans.
+
+Reserved slugs are rejected: `admin`, `api`, `auth`, `account`, `profiles`,
+`games`, `settings`, `docs`, and `health`.
+
+Slug conflicts return `409 Conflict`.
+
+## Public Profiles
+
+### `GET /public-profiles/:slug`
+
+Returns public Steam profile data for a published slug. This endpoint does not
+require auth.
+
+Response shape:
+- `publicProfile`: slug, publishing flag, and public settings.
+- `steamProfile`: public Steam metadata. `steamId` may be `null` when the owner
+  disables Steam ID display.
+- `summary`: public achievement summary stats.
+- `nearestCompletions`: public nearest-completion games.
+- `rarestAchievements`: public rarest unlocked achievements, omitted as an
+  empty list when the owner disables that section.
+
+Returns `404` when the slug is missing, unpublished, or not linked to a Steam
+profile. The response never exposes private account fields, sessions,
+preferences, or token data.
+
 ## Profiles
 
 ### `GET /profiles/:steamId`

@@ -1,16 +1,21 @@
 import { randomBytes } from 'node:crypto';
 
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, Logger, UnauthorizedException } from '@nestjs/common';
 import { SteamApiClient } from '../steam/steam-api.client';
 
+import { AuthCallbackDataService } from '../../db/services/auth-callback-data.service';
 import { AppUsersDataService } from '../../db/services/app-users-data.service';
 import { PublicProfilesDataService } from '../../db/services/public-profiles-data.service';
 import { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
-import { UserPreferencesDataService } from '../../db/services/user-preferences-data.service';
 import { UserSteamAccountsDataService } from '../../db/services/user-steam-accounts-data.service';
 import { getAuthConfig, type AuthConfig } from './auth.config';
 import {
+  AUTH_CALLBACK_REASON_CODES,
+  AuthCallbackError,
+} from './auth-callback-error';
+import {
   type OpenIdCallbackData,
+  hasRequiredOpenIdFields,
   SteamOpenIdService,
 } from './steam-openid.service';
 import { SessionService } from './session.service';
@@ -37,6 +42,10 @@ export interface SessionTokenResult {
   expiresAt: Date;
 }
 
+export interface AuthCallbackSessionResult extends AuthSessionInfo {
+  session: SessionTokenResult;
+}
+
 export interface AuthenticatedSessionUser {
   user: {
     id: string;
@@ -60,12 +69,13 @@ export interface AuthenticatedSessionUser {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
   private readonly config = getAuthConfig();
 
   constructor(
+    private readonly authCallbackDataService: AuthCallbackDataService,
     private readonly appUsersDataService: AppUsersDataService,
     private readonly userSteamAccountsDataService: UserSteamAccountsDataService,
-    private readonly userPreferencesDataService: UserPreferencesDataService,
     private readonly publicProfilesDataService: PublicProfilesDataService,
     private readonly steamProfilesDataService: SteamProfilesDataService,
     private readonly steamApiClient: SteamApiClient,
@@ -91,6 +101,32 @@ export class AuthService {
     query: OpenIdCallbackData & Record<string, string>,
     statePayload: AuthLoginPayload,
   ): Promise<AuthSessionInfo> {
+    const result = await this.handleOpenIdCallbackAndCreateSession(
+      query,
+      statePayload,
+    );
+
+    return {
+      userId: result.userId,
+      steamProfileId: result.steamProfileId,
+      steamId: result.steamId,
+      personaName: result.personaName,
+      avatarUrl: result.avatarUrl,
+      steamProfileUrl: result.steamProfileUrl,
+      visibilityState: result.visibilityState,
+    };
+  }
+
+  async handleOpenIdCallbackAndCreateSession(
+    query: OpenIdCallbackData & Record<string, string>,
+    statePayload: AuthLoginPayload,
+    req?: {
+      ip?: string;
+      headers?: {
+        'user-agent'?: string | string[] | undefined;
+      };
+    },
+  ): Promise<AuthCallbackSessionResult> {
     const queryRecord: Record<string, string> = {};
 
     for (const [key, value] of Object.entries(query)) {
@@ -102,57 +138,72 @@ export class AuthService {
     const callbackState = this.steamOpenIdService.getCallbackState(queryRecord);
 
     if (callbackState === undefined || callbackState !== statePayload.state) {
-      throw new UnauthorizedException('Steam callback state is invalid.');
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.AuthStateInvalid,
+        'Steam callback state is invalid.',
+      );
     }
 
-    const verified = await this.steamOpenIdService.verifyCallback(queryRecord);
-    const profile = await this.claimProfile(verified.steamId);
-
-    const steamProfileId = await this.resolveSteamProfile(verified.steamId, profile);
-    let account = await this.userSteamAccountsDataService.findBySteamId(
-      verified.steamId,
+    this.logger.log('event=state_verified');
+    this.logger.log(
+      `event=openid_fields_present required=${hasRequiredOpenIdFields(queryRecord)}`,
     );
+    const verified = await this.steamOpenIdService.verifyCallback(queryRecord);
+    this.logger.log('event=openid_verified');
+    this.logger.log(`event=steam_id_extracted steamId=${verified.steamId}`);
+    const profile = await this.claimProfile(verified.steamId);
+    const userAgentValue =
+      req?.headers?.['user-agent'] === undefined
+        ? undefined
+        : Array.isArray(req.headers['user-agent'])
+          ? req.headers['user-agent'][0]
+          : req.headers['user-agent'];
+    const preparedSession = this.sessionService.prepareSession({
+      ip: req?.ip,
+      headers: userAgentValue === undefined ? {} : { 'user-agent': userAgentValue },
+    });
 
-    if (account === null) {
-      const user = await this.appUsersDataService.create({
-        displayName: profile.personaName,
-        avatarUrl: profile.avatarUrl,
-      });
-      account = await this.userSteamAccountsDataService.createOrRefreshPrimaryAccount({
-        userId: user.id,
-        steamProfileId,
+    try {
+      const persisted = await this.authCallbackDataService.persistSteamLogin({
         steamId: verified.steamId,
+        profile,
+        session: {
+          sessionTokenHash: preparedSession.sessionTokenHash,
+          userAgent: preparedSession.userAgent,
+          ipAddress: preparedSession.ipAddress,
+          expiresAt: preparedSession.expiresAt,
+        },
       });
 
-      await this.ensureUserPreferences(user.id);
-      await this.ensurePublicProfile(user.id, steamProfileId);
-      await this.appUsersDataService.touchLastLogin(user.id);
+      this.logger.log(
+        `event=profile_claimed steamId=${verified.steamId} steamProfileId=${persisted.steamProfileId}`,
+      );
 
       return {
-        userId: user.id,
-        steamProfileId,
-        steamId: verified.steamId,
-        personaName: profile.personaName,
-        avatarUrl: profile.avatarUrl,
-        steamProfileUrl: profile.profileUrl,
-        visibilityState: profile.visibilityState,
+        userId: persisted.userId,
+        steamProfileId: persisted.steamProfileId,
+        steamId: persisted.steamId,
+        personaName: persisted.personaName,
+        avatarUrl: persisted.avatarUrl,
+        steamProfileUrl: persisted.steamProfileUrl,
+        visibilityState: persisted.visibilityState,
+        session: {
+          token: preparedSession.token,
+          userId: persisted.userId,
+          expiresAt: preparedSession.expiresAt,
+        },
       };
+    } catch (error: unknown) {
+      if (error instanceof AuthCallbackError) {
+        throw error;
+      }
+
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.AppUserLinkFailed,
+        'Unable to persist Steam auth callback state.',
+        { cause: error },
+      );
     }
-
-    await this.userSteamAccountsDataService.setPrimary(account.userId, steamProfileId);
-    await this.ensureUserPreferences(account.userId);
-    await this.ensurePublicProfile(account.userId, steamProfileId);
-    await this.appUsersDataService.touchLastLogin(account.userId);
-
-    return {
-      userId: account.userId,
-      steamProfileId,
-      steamId: verified.steamId,
-      personaName: profile.personaName,
-      avatarUrl: profile.avatarUrl,
-      steamProfileUrl: profile.profileUrl,
-      visibilityState: profile.visibilityState,
-    };
   }
 
   async createSessionForUser(
@@ -264,51 +315,6 @@ export class AuthService {
   async isSessionExpired(token: string): Promise<boolean> {
     const session = await this.sessionService.findSessionByToken(token);
     return session === null;
-  }
-
-  private async ensureUserPreferences(userId: string): Promise<void> {
-    const existing = await this.userPreferencesDataService.findByUserId(userId);
-
-    if (existing === null) {
-      await this.userPreferencesDataService.create(userId);
-    }
-  }
-
-  private async ensurePublicProfile(
-    userId: string,
-    steamProfileId: string,
-  ): Promise<void> {
-    const existing = await this.publicProfilesDataService.findByUserAndProfileId(
-      userId,
-      steamProfileId,
-    );
-
-    if (existing === null) {
-      await this.publicProfilesDataService.create({
-        userId,
-        steamProfileId,
-      });
-    }
-  }
-
-  private async resolveSteamProfile(
-    steamId: string,
-    fallbackSummary: {
-      personaName: string | null;
-      avatarUrl: string | null;
-      profileUrl: string | null;
-      visibilityState: number | null;
-    },
-  ): Promise<string> {
-    const profile = await this.steamProfilesDataService.upsertProfile({
-      steamId,
-      personaName: fallbackSummary.personaName,
-      avatarUrl: fallbackSummary.avatarUrl,
-      profileUrl: fallbackSummary.profileUrl,
-      visibilityState: fallbackSummary.visibilityState,
-    });
-
-    return profile.id;
   }
 
   private async claimProfile(steamId: string): Promise<{

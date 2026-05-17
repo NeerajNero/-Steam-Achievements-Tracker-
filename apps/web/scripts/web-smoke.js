@@ -19,6 +19,16 @@ const checks = [
     marker: 'Back to profile',
     label: 'demo game detail page',
   },
+  {
+    path: '/settings',
+    marker: 'Manage your Steam-only account',
+    label: 'settings page',
+  },
+  {
+    path: '/u/local-smoke-missing',
+    marker: 'Loading public profile',
+    label: 'public profile slug page',
+  },
 ];
 
 async function checkPage(path, marker, label) {

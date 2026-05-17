@@ -12,6 +12,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Logger,
   Post,
   Query,
   Redirect,
@@ -23,15 +24,18 @@ import {
 import type { Request, Response } from 'express';
 
 import { AuthCookieService } from './auth-cookie.service';
+import {
+  AUTH_CALLBACK_REASON_CODES,
+  getAuthCallbackReasonCode,
+} from './auth-callback-error';
 import { AuthMeResponseDto, StartSteamLoginQueryDto } from './dto/auth-me-response.dto';
 import { AuthService } from './auth.service';
-
-const OPENID_CALLBACK_ERROR = 'steam_auth_callback_error';
-const OPENID_BAD_STATE_ERROR = 'steam_auth_invalid_state';
 
 @Controller('auth')
 @ApiTags('auth')
 export class AuthController {
+  private readonly logger = new Logger(AuthController.name);
+
   constructor(
     private readonly authService: AuthService,
     private readonly authCookieService: AuthCookieService,
@@ -78,17 +82,23 @@ export class AuthController {
     @Req() request: Request,
     @Res({ passthrough: true }) response: Response,
   ): Promise<void> {
+    this.logger.log('event=callback_started');
     const statePayload = this.authCookieService.consumeStateCookie(request);
 
     if (statePayload === null) {
       this.authCookieService.clearStateCookie(response);
+      this.logCallbackFailure(
+        AUTH_CALLBACK_REASON_CODES.AuthStateMissing,
+        'OpenID state cookie is missing or expired.',
+        { requiredFieldsPresent: hasMinimumOpenIdCallbackFields(request.query) },
+      );
       response.redirect(
         HttpStatus.FOUND,
         this.buildFrontendRedirectUrl(
           '/',
           undefined,
           false,
-          OPENID_BAD_STATE_ERROR,
+          AUTH_CALLBACK_REASON_CODES.AuthStateMissing,
         ),
       );
 
@@ -98,30 +108,38 @@ export class AuthController {
     try {
       const callbackQuery = collectQueryParams(request.query);
 
-      const sessionInfo = await this.authService.handleOpenIdCallback(
+      const sessionInfo = await this.authService.handleOpenIdCallbackAndCreateSession(
         callbackQuery,
         statePayload,
-      );
-      const session = await this.authService.createSessionForUser(
-        sessionInfo.userId,
         request,
       );
-      this.authCookieService.setSessionCookie(response, session.token);
-      this.authCookieService.clearStateCookie(response);
 
+      this.authCookieService.setSessionCookie(response, sessionInfo.session.token);
+      this.authCookieService.clearStateCookie(response);
+      this.logger.log(
+        `event=session_created userId=${sessionInfo.userId} steamId=${sessionInfo.steamId} steamProfileId=${sessionInfo.steamProfileId}`,
+      );
+
+      this.logger.log(
+        `event=callback_redirecting status=success steamId=${sessionInfo.steamId}`,
+      );
       response.redirect(
         HttpStatus.FOUND,
         this.buildFrontendRedirectUrl(statePayload.returnTo, sessionInfo.steamId, true),
       );
     } catch (error: unknown) {
       this.authCookieService.clearStateCookie(response);
+      const reasonCode = getAuthCallbackReasonCode(error);
+      this.logCallbackFailure(reasonCode, 'Steam auth callback failed.', {
+        requiredFieldsPresent: hasMinimumOpenIdCallbackFields(request.query),
+      });
       response.redirect(
         HttpStatus.FOUND,
         this.buildFrontendRedirectUrl(
           statePayload.returnTo,
           undefined,
           false,
-          OPENID_CALLBACK_ERROR,
+          reasonCode,
         ),
       );
       return;
@@ -179,10 +197,11 @@ export class AuthController {
   ): string {
     const config = this.authService.getAuthCookieConfig();
     const frontendBaseUrl = config.frontendPublicUrl.replace(/\/+$/, '');
+    const normalizedReturnTo = this.authService.normalizeReturnTo(returnTo);
     const safePath =
-      isSuccess && steamId !== undefined && returnTo === '/'
+      isSuccess && steamId !== undefined && normalizedReturnTo === '/'
         ? `/profiles/${steamId}`
-        : returnTo;
+        : normalizedReturnTo;
 
     if (errorCode === undefined) {
       return `${frontendBaseUrl}${safePath}`;
@@ -190,6 +209,16 @@ export class AuthController {
 
     const joiner = safePath.includes('?') ? '&' : '?';
     return `${frontendBaseUrl}${safePath}${joiner}auth_error=${encodeURIComponent(errorCode)}`;
+  }
+
+  private logCallbackFailure(
+    reasonCode: string,
+    safeMessage: string,
+    context: { requiredFieldsPresent: boolean },
+  ): void {
+    this.logger.warn(
+      `event=callback_failed reasonCode=${reasonCode} message="${safeMessage}" requiredFieldsPresent=${context.requiredFieldsPresent}`,
+    );
   }
 }
 
@@ -207,4 +236,12 @@ function collectQueryParams(query: Record<string, unknown>): Record<string, stri
   }
 
   return result;
+}
+
+function hasMinimumOpenIdCallbackFields(query: Record<string, unknown>): boolean {
+  return (
+    typeof query['openid.mode'] === 'string' &&
+    typeof query['openid.claimed_id'] === 'string' &&
+    typeof query['openid.identity'] === 'string'
+  );
 }

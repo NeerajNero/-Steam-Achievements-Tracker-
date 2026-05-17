@@ -103,6 +103,47 @@ NEXT_PUBLIC_API_BASE_URL=http://localhost:3000
 
 Do not use the Docker hostname `backend` for browser-side SDK calls.
 
+## Backend Environment
+
+Backend runtime environment for local Docker development lives in:
+
+```txt
+apps/backend/.env
+```
+
+Create it from:
+
+```txt
+apps/backend/.env.example
+```
+
+The file is intentionally ignored by Git and must never be committed. Put
+local-only backend secrets there, including `STEAM_API_KEY`. Docker Compose
+loads this file into the `backend` service with `env_file`.
+
+Do not paste `.env` contents, `STEAM_API_KEY`, or rendered Compose config that
+includes secrets into logs, docs, or tickets. Prefer:
+
+```sh
+docker-compose config --quiet
+docker-compose exec -T backend pnpm steam:config-check
+```
+
+The config check prints only safe booleans, such as whether `STEAM_API_KEY` is
+configured. It does not call Steam and does not print env values.
+
+After changing `apps/backend/.env`, recreate the backend container:
+
+```sh
+docker-compose up -d --force-recreate backend
+```
+
+Or recreate the full local stack:
+
+```sh
+docker-compose up -d postgres redis backend web
+```
+
 ## Database URL Inside Docker
 
 Inside Docker, the backend must connect to PostgreSQL through the Compose service name:

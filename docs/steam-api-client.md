@@ -34,6 +34,8 @@ The backend isolates Steam Web API calls behind `SteamApiClient` in
 - `STEAM_API_KEY`
   - Required for methods that use keyed Steam Web API endpoints.
   - Never logged or included unredacted in error messages.
+  - For local Docker development, set it in `apps/backend/.env`. Docker
+    Compose loads that file into the `backend` service.
 
 - `STEAM_API_BASE_URL`
   - Defaults to `https://api.steampowered.com`.
@@ -50,6 +52,21 @@ The backend isolates Steam Web API calls behind `SteamApiClient` in
 - `STEAM_API_CACHE_ENABLED`
   - Enables cache-aside Redis reads for normalized Steam API responses.
   - Defaults to `true`.
+
+Safe local config check:
+
+```sh
+docker-compose exec -T backend pnpm steam:config-check
+```
+
+The check reports only booleans such as `STEAM_API_KEY configured: true`.
+It does not print env values and does not call Steam.
+
+After changing `apps/backend/.env`, recreate the backend container:
+
+```sh
+docker-compose up -d --force-recreate backend
+```
 
 ## Public Host vs Partner Host
 

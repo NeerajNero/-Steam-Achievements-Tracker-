@@ -1,5 +1,6 @@
 'use client';
 
+import Link from 'next/link';
 import { useCallback } from 'react';
 import type { ReactNode } from 'react';
 
@@ -72,6 +73,12 @@ export function AuthStatus(): ReactNode {
         </p>
         <p className="text-xs text-emerald-700">Steam ID: {steamId}</p>
       </div>
+      <Link
+        className="rounded-md border border-emerald-300 px-3 py-2 text-sm font-semibold text-emerald-900 hover:bg-emerald-100"
+        href="/settings"
+      >
+        Settings
+      </Link>
       <button
         className="rounded-md bg-emerald-700 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60"
         disabled={logout.isPending}
