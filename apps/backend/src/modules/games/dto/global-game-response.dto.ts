@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+import {
+  ACHIEVEMENT_DATA_STATES,
+  type AchievementDataState,
+} from './achievement-data-state.dto';
+
 export class GlobalGameItemResponseDto {
   @ApiProperty({ type: String, example: '3dd0928a-28f6-4e9b-a5ad-164d536b8d95' })
   id!: string;
@@ -24,6 +29,15 @@ export class GlobalGameItemResponseDto {
 
   @ApiProperty({ type: Number, example: 50 })
   totalAchievements!: number;
+
+  @ApiProperty({ type: Number, example: 50 })
+  achievementMetadataCount!: number;
+
+  @ApiProperty({
+    enum: ACHIEVEMENT_DATA_STATES,
+    example: 'unlock_state_synced',
+  })
+  achievementDataState!: AchievementDataState;
 
   @ApiProperty({ type: Number, example: 42.34 })
   averageCompletionPercentage!: number;
@@ -59,6 +73,9 @@ export class GlobalGameStatsResponseDto {
   @ApiProperty({ type: Number, example: 50 })
   totalAchievements!: number;
 
+  @ApiProperty({ type: Number, example: 50 })
+  achievementMetadataCount!: number;
+
   @ApiProperty({ type: Number, example: 42.34 })
   averageCompletionPercentage!: number;
 
@@ -87,6 +104,15 @@ export class GlobalGameMetadataResponseDto {
 
   @ApiProperty({ type: Boolean, example: true })
   hasAchievements!: boolean;
+
+  @ApiProperty({ type: Number, example: 50 })
+  achievementMetadataCount!: number;
+
+  @ApiProperty({
+    enum: ACHIEVEMENT_DATA_STATES,
+    example: 'unlock_state_synced',
+  })
+  achievementDataState!: AchievementDataState;
 }
 
 export class GlobalGameDetailResponseDto {
@@ -156,6 +182,9 @@ export class GlobalGamePlayerResponseDto {
 
   @ApiProperty({ type: Number, example: 1234 })
   playtimeMinutes!: number;
+
+  @ApiProperty({ type: Number, example: 45 })
+  playtimeTwoWeeksMinutes!: number;
 
   @ApiProperty({ type: Number, example: 50 })
   totalAchievements!: number;

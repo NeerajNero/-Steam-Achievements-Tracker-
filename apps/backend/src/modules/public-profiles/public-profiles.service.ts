@@ -122,7 +122,28 @@ function mapProfileGameWithGame(row: {
     logoUrl: string | null;
     hasAchievements: boolean;
   };
+  achievementMetadataCount?: number;
+  knownUnlockStateCount?: number;
 }): GameLibraryItemResponseDto {
+  const achievementMetadataCount =
+    row.achievementMetadataCount ?? row.profileGame.totalAchievements;
+  const knownUnlockStateCount =
+    row.knownUnlockStateCount ?? row.profileGame.totalAchievements;
+  const achievementDataState =
+    achievementMetadataCount > 0 && knownUnlockStateCount > 0
+      ? 'unlock_state_synced'
+      : achievementMetadataCount > 0
+        ? 'metadata_only'
+        : 'not_synced';
+  const totalAchievements =
+    achievementMetadataCount > 0
+      ? achievementMetadataCount
+      : row.profileGame.totalAchievements;
+  const remainingAchievements =
+    achievementDataState === 'metadata_only'
+      ? 0
+      : Math.max(totalAchievements - row.profileGame.unlockedAchievements, 0);
+
   return {
     steamAppId: row.game.steamAppId,
     name: row.game.name,
@@ -131,10 +152,12 @@ function mapProfileGameWithGame(row: {
     hasAchievements: row.game.hasAchievements,
     playtimeMinutes: row.profileGame.playtimeMinutes,
     playtimeTwoWeeksMinutes: row.profileGame.playtimeTwoWeeksMinutes,
-    totalAchievements: row.profileGame.totalAchievements,
+    totalAchievements,
+    achievementMetadataCount,
+    knownUnlockStateCount,
+    achievementDataState,
     unlockedAchievements: row.profileGame.unlockedAchievements,
-    remainingAchievements:
-      row.profileGame.totalAchievements - row.profileGame.unlockedAchievements,
+    remainingAchievements,
     completionPercentage: row.profileGame.completionPercentage,
     lastPlayedAt: toIsoOrNull(row.profileGame.lastPlayedAt),
     lastSyncedAt: toIsoOrNull(row.profileGame.lastSyncedAt),

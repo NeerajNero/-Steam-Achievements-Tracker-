@@ -9,9 +9,20 @@ export interface SteamPlayerSummary {
 export interface SteamOwnedGame {
   appId: number;
   gameName: string;
+  iconUrl: string | null;
+  logoUrl: string | null;
   playtimeMinutes: number;
   playtimeTwoWeeksMinutes: number;
   lastPlayedAt: Date | null;
+}
+
+export interface SteamRecentlyPlayedGame {
+  appId: number;
+  gameName: string;
+  iconUrl: string | null;
+  logoUrl: string | null;
+  playtimeMinutes: number;
+  playtimeTwoWeeksMinutes: number;
 }
 
 export interface SteamPlayerAchievement {
@@ -71,9 +82,27 @@ export interface SteamOwnedGamesRawResponse {
 export interface SteamOwnedGameRaw {
   appid?: unknown;
   name?: unknown;
+  img_icon_url?: unknown;
+  img_logo_url?: unknown;
   playtime_forever?: unknown;
   playtime_2weeks?: unknown;
   rtime_last_played?: unknown;
+}
+
+export interface SteamRecentlyPlayedGamesRawResponse {
+  response?: {
+    total_count?: unknown;
+    games?: SteamRecentlyPlayedGameRaw[];
+  };
+}
+
+export interface SteamRecentlyPlayedGameRaw {
+  appid?: unknown;
+  name?: unknown;
+  img_icon_url?: unknown;
+  img_logo_url?: unknown;
+  playtime_forever?: unknown;
+  playtime_2weeks?: unknown;
 }
 
 export interface SteamPlayerAchievementsRawResponse {

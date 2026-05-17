@@ -134,6 +134,17 @@ After SDK regeneration, run `pnpm sdk:build` and recreate the web container with
 `docker-compose up -d --force-recreate web` so Next.js does not keep a stale SDK
 module graph.
 
+If the web container returns unexplained `404` or module resolution errors for
+files that exist on the host, clear the local Next cache and recreate web:
+
+```sh
+pnpm web:clean
+pnpm web:recreate
+```
+
+This removes only `apps/web/.next`; it does not delete source files, generated
+SDK sources, or SDK `dist` output.
+
 ## Auth UI
 
 Auth is Steam-only. The frontend does not implement email/password auth,
@@ -233,6 +244,7 @@ The profile page is organized as:
 - summary cards (total games, completed games, totals/unlocked/remaining, average
   completion);
 - sync action panel;
+- recently played section from stored recent/two-week playtime;
 - game library;
 - nearest completions;
 - rarest achievements;
@@ -503,6 +515,22 @@ Defaults are normalized on the client:
 - `limit=25`
 - `offset=0`
 
+Rows render lifetime playtime, two-week playtime, and last played timestamps
+when the backend has them. Recent empty states should explain that Steam may not
+expose recent games, the profile may be private, or no games were played
+recently.
+Achievement display state comes from backend fields:
+
+- `achievementMetadataCount`
+- `knownUnlockStateCount`
+- `achievementDataState`
+
+When a game has canonical achievement metadata but no player unlock-state rows,
+the library shows a metadata-available state and the game detail page labels
+completion as unknown rather than treating every achievement as locked. When
+metadata has not been synced, the UI must say “Metadata not synced,” not “No
+achievements.” Only use “No achievements” for confirmed zero-achievement data.
+
 Invalid values fall back to defaults instead of rendering errors.
 
 Game detail filters (optional) use:
@@ -542,14 +570,17 @@ Polling should be scoped and temporary:
 - show safe `errorMessage` values for failed sync runs;
 - show `syncRunId` and `jobId` from the queued response.
 
-The MVP Sync Achievements button should send:
+The profile-level Sync Achievements button sends:
 
 ```json
 { "scope": "achievements" }
 ```
 
-Do not require app IDs in the frontend until selected-app sync has a dedicated
-UI.
+The profile game detail page may send selected-app sync for the signed-in owner:
+
+```json
+{ "scope": "achievements", "appIds": [2669320] }
+```
 
 ## Achievement Unlock State
 
@@ -596,6 +627,15 @@ Run the frontend smoke check:
 
 ```sh
 pnpm web:smoke
+```
+
+The root `web:smoke` script targets `http://127.0.0.1:3001` to avoid local
+`localhost` resolution differences in Node-based smoke runs.
+
+When running smoke inside Docker against the web container directly:
+
+```sh
+docker-compose exec -T -e WEB_URL=http://localhost:3000 web node scripts/web-smoke.js
 ```
 
 If `localhost:3001` is not reachable, inspect:

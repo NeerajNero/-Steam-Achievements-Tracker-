@@ -65,12 +65,16 @@ components unless an existing feature hook does not yet exist.
 - `/games`
 - `/games/910001`
 - `/games/910001/guides`
+- `/games/910001/guides/new`
 - `/games/910001/sessions`
+- `/games/910001/sessions/new`
 - `/leaderboards`
 - `/leaderboards/completion_percentage`
 - `/activity`
 - `/settings`
 - `/sessions`
+- `/account/guides`
+- `/badges`
 
 Optional environment checks:
 
@@ -78,3 +82,10 @@ Optional environment checks:
 - `WEB_GUIDE_SLUG`
 - `WEB_SESSION_ID`
 
+If stable route checks fail after file moves or shared component additions,
+clear the Next cache and recreate the web container:
+
+```sh
+pnpm web:clean
+pnpm web:recreate
+```

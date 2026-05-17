@@ -116,17 +116,24 @@ message.
 1. Ensure the Steam profile exists. If it does not, fetch and upsert profile
    metadata first.
 2. Call cached Steam API wrapper for `getOwnedGames(steamId)`.
+3. Call cached Steam API wrapper for `getRecentlyPlayedGames({ steamId })`.
 3. Upsert canonical `games` rows by `steam_app_id`.
-4. Upsert `profile_games` playtime fields.
-5. Update `steam_profiles.last_synced_at`.
-6. Mark the run `success` with:
+4. Upsert `profile_games` playtime fields from owned games.
+5. Upsert recent playtime fields from recently played games. Recent Steam data
+   does not include an exact last played timestamp, so the sync preserves any
+   existing `last_played_at` value instead of fabricating one.
+6. Update `steam_profiles.last_synced_at`.
+7. Mark the run `success` with:
 
    ```json
-   {
-     "gamesSynced": 0,
-     "profileGamesSynced": 0
-   }
-   ```
+  {
+    "gamesSynced": 0,
+    "profileGamesSynced": 0,
+    "recentGamesSynced": 0,
+    "ownedGamesWithPlaytime": 0,
+    "ownedGamesWithRecentPlaytime": 0
+  }
+  ```
 
 ## Achievement Progress Preservation
 
@@ -144,6 +151,10 @@ It does not overwrite:
 - `completion_percentage`
 
 This preserves future achievement sync results and development seed data.
+
+The `recently_played` sort uses two-week playtime first and then last-played
+timestamps. This keeps profiles useful even when `GetRecentlyPlayedGames`
+returns recent playtime but no timestamp.
 
 ## Achievement Sync
 
@@ -189,6 +200,17 @@ Steam games with confirmed zero achievements are treated as successful syncs
 with zero progress. Missing or private player achievement state does not delete
 existing achievement data, does not create fake locked rows, and does not reset
 profile progress.
+
+Read endpoints derive display state from PostgreSQL rows:
+- canonical `achievements` rows drive `achievementMetadataCount`;
+- profile `profile_achievements` rows drive `knownUnlockStateCount`;
+- metadata with no profile unlock rows is returned as `metadata_only`;
+- no metadata rows are returned as `not_synced` unless a future schema records a
+  stronger confirmed zero-achievement signal.
+
+This is intentionally conservative. Owned-game sync defaults cannot prove that a
+game truly has no achievements, so the UI must not label unsynced metadata as
+“No achievements.”
 
 `refresh_profile_game_achievement_progress` derives total achievements,
 unlocked achievements, completion percentage, `profile_games.last_synced_at`,

@@ -85,6 +85,24 @@ export interface GameDetailResponseDto {
      * @type {number}
      * @memberof GameDetailResponseDto
      */
+    achievementMetadataCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GameDetailResponseDto
+     */
+    knownUnlockStateCount: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof GameDetailResponseDto
+     */
+    achievementDataState: GameDetailResponseDtoAchievementDataStateEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof GameDetailResponseDto
+     */
     unlockedAchievements: number;
     /**
      * 
@@ -118,6 +136,19 @@ export interface GameDetailResponseDto {
     achievementsSummary: GameAchievementsSummaryResponseDto;
 }
 
+
+/**
+ * @export
+ */
+export const GameDetailResponseDtoAchievementDataStateEnum = {
+    NotSynced: 'not_synced',
+    NoAchievements: 'no_achievements',
+    MetadataOnly: 'metadata_only',
+    UnlockStateSynced: 'unlock_state_synced'
+} as const;
+export type GameDetailResponseDtoAchievementDataStateEnum = typeof GameDetailResponseDtoAchievementDataStateEnum[keyof typeof GameDetailResponseDtoAchievementDataStateEnum];
+
+
 /**
  * Check if a given object implements the GameDetailResponseDto interface.
  */
@@ -129,6 +160,9 @@ export function instanceOfGameDetailResponseDto(value: object): value is GameDet
     if (!('playtimeMinutes' in value) || value['playtimeMinutes'] === undefined) return false;
     if (!('playtimeTwoWeeksMinutes' in value) || value['playtimeTwoWeeksMinutes'] === undefined) return false;
     if (!('totalAchievements' in value) || value['totalAchievements'] === undefined) return false;
+    if (!('achievementMetadataCount' in value) || value['achievementMetadataCount'] === undefined) return false;
+    if (!('knownUnlockStateCount' in value) || value['knownUnlockStateCount'] === undefined) return false;
+    if (!('achievementDataState' in value) || value['achievementDataState'] === undefined) return false;
     if (!('unlockedAchievements' in value) || value['unlockedAchievements'] === undefined) return false;
     if (!('remainingAchievements' in value) || value['remainingAchievements'] === undefined) return false;
     if (!('completionPercentage' in value) || value['completionPercentage'] === undefined) return false;
@@ -155,6 +189,9 @@ export function GameDetailResponseDtoFromJSONTyped(json: any, ignoreDiscriminato
         'playtimeMinutes': json['playtimeMinutes'],
         'playtimeTwoWeeksMinutes': json['playtimeTwoWeeksMinutes'],
         'totalAchievements': json['totalAchievements'],
+        'achievementMetadataCount': json['achievementMetadataCount'],
+        'knownUnlockStateCount': json['knownUnlockStateCount'],
+        'achievementDataState': json['achievementDataState'],
         'unlockedAchievements': json['unlockedAchievements'],
         'remainingAchievements': json['remainingAchievements'],
         'completionPercentage': json['completionPercentage'],
@@ -179,6 +216,9 @@ export function GameDetailResponseDtoToJSON(value?: GameDetailResponseDto | null
         'playtimeMinutes': value['playtimeMinutes'],
         'playtimeTwoWeeksMinutes': value['playtimeTwoWeeksMinutes'],
         'totalAchievements': value['totalAchievements'],
+        'achievementMetadataCount': value['achievementMetadataCount'],
+        'knownUnlockStateCount': value['knownUnlockStateCount'],
+        'achievementDataState': value['achievementDataState'],
         'unlockedAchievements': value['unlockedAchievements'],
         'remainingAchievements': value['remainingAchievements'],
         'completionPercentage': value['completionPercentage'],

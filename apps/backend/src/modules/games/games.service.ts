@@ -16,6 +16,7 @@ import {
 } from '../../db/services/profile-games-data.service';
 import { AchievementsDataService } from '../../db/services/achievements-data.service';
 import type { GameDetailResponseDto } from './dto/game-detail-response.dto';
+import type { AchievementDataState } from './dto/achievement-data-state.dto';
 import type {
   GlobalGameAchievementResponseDto,
   GlobalGameAchievementsResponseDto,
@@ -84,11 +85,16 @@ export class GamesService {
         iconUrl: row.game.iconUrl,
         logoUrl: row.game.logoUrl,
         hasAchievements: row.game.hasAchievements,
+        achievementMetadataCount: row.achievementMetadataCount,
+        achievementDataState: getGlobalAchievementDataState(
+          row.achievementMetadataCount,
+        ),
       },
       stats: {
         trackedPlayers: row.trackedPlayers,
         completedPlayers: row.completedPlayers,
         totalAchievements: row.totalAchievements,
+        achievementMetadataCount: row.achievementMetadataCount,
         averageCompletionPercentage: roundTwo(row.averageCompletionPercentage),
         totalPlaytimeMinutes: row.totalPlaytimeMinutes,
         averagePlaytimeMinutes: Math.round(row.averagePlaytimeMinutes),
@@ -225,6 +231,9 @@ export class GamesService {
       playtimeMinutes: item.playtimeMinutes,
       playtimeTwoWeeksMinutes: item.playtimeTwoWeeksMinutes,
       totalAchievements: item.totalAchievements,
+      achievementMetadataCount: item.achievementMetadataCount,
+      knownUnlockStateCount: item.knownUnlockStateCount,
+      achievementDataState: item.achievementDataState,
       unlockedAchievements: item.unlockedAchievements,
       remainingAchievements: item.remainingAchievements,
       completionPercentage: item.completionPercentage,
@@ -258,6 +267,10 @@ function mapGlobalGameItem(row: GlobalGameListRow): GlobalGameItemResponseDto {
     hasAchievements: row.game.hasAchievements,
     trackedPlayers: row.trackedPlayers,
     totalAchievements: row.totalAchievements,
+    achievementMetadataCount: row.achievementMetadataCount,
+    achievementDataState: getGlobalAchievementDataState(
+      row.achievementMetadataCount,
+    ),
     averageCompletionPercentage: roundTwo(row.averageCompletionPercentage),
     completedPlayers: row.completedPlayers,
     totalPlaytimeMinutes: row.totalPlaytimeMinutes,
@@ -295,6 +308,7 @@ function mapGlobalPlayer(
     avatarUrl: row.avatarUrl,
     profileUrl: row.profileUrl,
     playtimeMinutes: row.playtimeMinutes,
+    playtimeTwoWeeksMinutes: row.playtimeTwoWeeksMinutes,
     totalAchievements: row.totalAchievements,
     unlockedAchievements: row.unlockedAchievements,
     completionPercentage: row.completionPercentage,
@@ -306,6 +320,23 @@ function mapGlobalPlayer(
 function mapProfileGameWithGame(
   row: ProfileGameWithGame,
 ): GameLibraryItemResponseDto {
+  const achievementMetadataCount =
+    row.achievementMetadataCount ?? row.profileGame.totalAchievements;
+  const knownUnlockStateCount =
+    row.knownUnlockStateCount ?? row.profileGame.totalAchievements;
+  const totalAchievements =
+    achievementMetadataCount > 0
+      ? achievementMetadataCount
+      : row.profileGame.totalAchievements;
+  const achievementDataState = getProfileAchievementDataState(
+    achievementMetadataCount,
+    knownUnlockStateCount,
+  );
+  const remainingAchievements =
+    achievementDataState === 'metadata_only'
+      ? 0
+      : Math.max(totalAchievements - row.profileGame.unlockedAchievements, 0);
+
   return {
     steamAppId: row.game.steamAppId,
     name: row.game.name,
@@ -314,10 +345,12 @@ function mapProfileGameWithGame(
     hasAchievements: row.game.hasAchievements,
     playtimeMinutes: row.profileGame.playtimeMinutes,
     playtimeTwoWeeksMinutes: row.profileGame.playtimeTwoWeeksMinutes,
-    totalAchievements: row.profileGame.totalAchievements,
+    totalAchievements,
+    achievementMetadataCount,
+    knownUnlockStateCount,
+    achievementDataState,
     unlockedAchievements: row.profileGame.unlockedAchievements,
-    remainingAchievements:
-      row.profileGame.totalAchievements - row.profileGame.unlockedAchievements,
+    remainingAchievements,
     completionPercentage: row.profileGame.completionPercentage,
     lastPlayedAt: toIsoOrNull(row.profileGame.lastPlayedAt),
     lastSyncedAt: toIsoOrNull(row.profileGame.lastSyncedAt),
@@ -330,6 +363,27 @@ function toIsoOrNull(value: Date | null): string | null {
 
 function roundTwo(value: number): number {
   return Math.round(value * 100) / 100;
+}
+
+function getProfileAchievementDataState(
+  achievementMetadataCount: number,
+  knownUnlockStateCount: number,
+): AchievementDataState {
+  if (achievementMetadataCount > 0 && knownUnlockStateCount > 0) {
+    return 'unlock_state_synced';
+  }
+
+  if (achievementMetadataCount > 0) {
+    return 'metadata_only';
+  }
+
+  return 'not_synced';
+}
+
+function getGlobalAchievementDataState(
+  achievementMetadataCount: number,
+): AchievementDataState {
+  return achievementMetadataCount > 0 ? 'metadata_only' : 'not_synced';
 }
 
 function assertPositiveSteamAppId(steamAppId: number): void {

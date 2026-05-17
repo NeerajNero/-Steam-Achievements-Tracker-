@@ -3,7 +3,7 @@ import { and, asc, desc, eq, ilike, sql } from 'drizzle-orm';
 import type { InferInsertModel, InferSelectModel, SQL } from 'drizzle-orm';
 
 import { DatabaseService } from '../database.service';
-import { games, profileGames } from '../schema';
+import { achievements, games, profileGames } from '../schema';
 
 export type Game = InferSelectModel<typeof games>;
 export type NewGame = InferInsertModel<typeof games>;
@@ -37,6 +37,7 @@ export interface GlobalGameStats {
   trackedPlayers: number;
   completedPlayers: number;
   totalAchievements: number;
+  achievementMetadataCount: number;
   averageCompletionPercentage: number;
   totalPlaytimeMinutes: number;
   averagePlaytimeMinutes: number;
@@ -100,8 +101,8 @@ export class GamesRepository {
         target: games.steamAppId,
         set: {
           name: input.name,
-          iconUrl: input.iconUrl,
-          logoUrl: input.logoUrl,
+          iconUrl: input.iconUrl ?? games.iconUrl,
+          logoUrl: input.logoUrl ?? games.logoUrl,
           hasAchievements: games.hasAchievements,
           updatedAt: sql`now()`,
         },
@@ -222,7 +223,16 @@ export class GamesRepository {
 const globalGameStatsSql = {
   trackedPlayers: sql<number>`cast(count(${profileGames.id}) as int)`,
   completedPlayers: sql<number>`cast(count(${profileGames.id}) filter (where ${profileGames.completionPercentage} = 100) as int)`,
-  totalAchievements: sql<number>`cast(coalesce(max(${profileGames.totalAchievements}), 0) as int)`,
+  totalAchievements: sql<number>`(
+    select cast(count(*) as int)
+    from ${achievements}
+    where ${achievements.steamAppId} = ${games.steamAppId}
+  )`,
+  achievementMetadataCount: sql<number>`(
+    select cast(count(*) as int)
+    from ${achievements}
+    where ${achievements.steamAppId} = ${games.steamAppId}
+  )`,
   averageCompletionPercentage: sql<number>`cast(coalesce(avg(${profileGames.completionPercentage}), 0) as float)`,
   totalPlaytimeMinutes: sql<number>`cast(coalesce(sum(${profileGames.playtimeMinutes}), 0) as int)`,
   averagePlaytimeMinutes: sql<number>`cast(coalesce(avg(${profileGames.playtimeMinutes}), 0) as float)`,
@@ -232,6 +242,7 @@ const globalGameStatsSelect = {
   trackedPlayers: globalGameStatsSql.trackedPlayers,
   completedPlayers: globalGameStatsSql.completedPlayers,
   totalAchievements: globalGameStatsSql.totalAchievements,
+  achievementMetadataCount: globalGameStatsSql.achievementMetadataCount,
   averageCompletionPercentage: globalGameStatsSql.averageCompletionPercentage,
   totalPlaytimeMinutes: globalGameStatsSql.totalPlaytimeMinutes,
   averagePlaytimeMinutes: globalGameStatsSql.averagePlaytimeMinutes,

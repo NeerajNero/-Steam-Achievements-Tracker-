@@ -1,6 +1,7 @@
 export interface SteamApiCacheTtlConfig {
   profileSeconds: number;
   ownedGamesSeconds: number;
+  recentGamesSeconds: number;
   schemaSeconds: number;
   globalPercentagesSeconds: number;
   playerAchievementsSeconds: number;
@@ -15,6 +16,10 @@ export function getSteamApiCacheTtlConfigFromEnv(): SteamApiCacheTtlConfig {
     ownedGamesSeconds: parsePositiveInteger(
       process.env.STEAM_API_CACHE_OWNED_GAMES_TTL_SECONDS,
       1_800,
+    ),
+    recentGamesSeconds: parsePositiveInteger(
+      process.env.STEAM_API_CACHE_RECENT_GAMES_TTL_SECONDS,
+      600,
     ),
     schemaSeconds: parsePositiveInteger(
       process.env.STEAM_API_CACHE_SCHEMA_TTL_SECONDS,

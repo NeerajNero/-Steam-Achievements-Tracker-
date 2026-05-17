@@ -54,6 +54,12 @@ export interface GlobalGamePlayerResponseDto {
      * @type {number}
      * @memberof GlobalGamePlayerResponseDto
      */
+    playtimeTwoWeeksMinutes: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GlobalGamePlayerResponseDto
+     */
     totalAchievements: number;
     /**
      * 
@@ -87,6 +93,7 @@ export interface GlobalGamePlayerResponseDto {
 export function instanceOfGlobalGamePlayerResponseDto(value: object): value is GlobalGamePlayerResponseDto {
     if (!('steamId' in value) || value['steamId'] === undefined) return false;
     if (!('playtimeMinutes' in value) || value['playtimeMinutes'] === undefined) return false;
+    if (!('playtimeTwoWeeksMinutes' in value) || value['playtimeTwoWeeksMinutes'] === undefined) return false;
     if (!('totalAchievements' in value) || value['totalAchievements'] === undefined) return false;
     if (!('unlockedAchievements' in value) || value['unlockedAchievements'] === undefined) return false;
     if (!('completionPercentage' in value) || value['completionPercentage'] === undefined) return false;
@@ -108,6 +115,7 @@ export function GlobalGamePlayerResponseDtoFromJSONTyped(json: any, ignoreDiscri
         'avatarUrl': json['avatarUrl'] == null ? undefined : json['avatarUrl'],
         'profileUrl': json['profileUrl'] == null ? undefined : json['profileUrl'],
         'playtimeMinutes': json['playtimeMinutes'],
+        'playtimeTwoWeeksMinutes': json['playtimeTwoWeeksMinutes'],
         'totalAchievements': json['totalAchievements'],
         'unlockedAchievements': json['unlockedAchievements'],
         'completionPercentage': json['completionPercentage'],
@@ -127,6 +135,7 @@ export function GlobalGamePlayerResponseDtoToJSON(value?: GlobalGamePlayerRespon
         'avatarUrl': value['avatarUrl'],
         'profileUrl': value['profileUrl'],
         'playtimeMinutes': value['playtimeMinutes'],
+        'playtimeTwoWeeksMinutes': value['playtimeTwoWeeksMinutes'],
         'totalAchievements': value['totalAchievements'],
         'unlockedAchievements': value['unlockedAchievements'],
         'completionPercentage': value['completionPercentage'],

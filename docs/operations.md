@@ -17,6 +17,21 @@ Backend health:
 curl http://localhost:3000/health
 ```
 
+Default local ports:
+
+- backend API: `3000`
+- web app: `3001`
+- PostgreSQL: `5432` by default, or `POSTGRES_PORT=55432` when avoiding a local
+  Postgres conflict
+- Redis: `6379`
+
+Compose healthchecks:
+
+- PostgreSQL uses `pg_isready`.
+- Redis uses `redis-cli ping`.
+- Backend checks `http://127.0.0.1:3000/health` inside the container.
+- Web checks `http://127.0.0.1:3000/` inside the container.
+
 Swagger and OpenAPI:
 
 ```sh
@@ -89,6 +104,16 @@ docker-compose up -d --force-recreate backend
 Use `docker-compose config --quiet` for Compose validation. Do not paste full
 rendered Compose config if it includes interpolated secrets.
 
+When real sync returns only partial data, run the safe Steam data diagnostics:
+
+```sh
+docker-compose exec -T backend pnpm steam:data-diagnostics -- <STEAM64_ID> --app-ids=550,203160
+```
+
+The diagnostics report normalized Steam counts, PostgreSQL row counts, and Redis
+cache key presence only. They do not print `STEAM_API_KEY`, raw Steam URLs,
+cookies, session tokens, or cache values.
+
 ## Queue Health
 
 Sync jobs use BullMQ on Redis. The default queue name is `steam-sync`.
@@ -135,6 +160,43 @@ docker-compose exec -T redis sh -lc "for key in $(redis-cli --scan --pattern 'st
 
 Do not run `FLUSHDB` or `FLUSHALL` while BullMQ jobs are running. Redis also
 contains operational queue state.
+
+Before deleting Steam cache keys, check that BullMQ is not actively processing:
+
+```sh
+docker-compose exec -T redis redis-cli --scan --pattern 'bull:steam-sync:*'
+```
+
+Use Bull Board at `http://localhost:3000/queues` for a safer queue-state view
+before cache cleanup.
+
+## Frontend Cache And Container Freshness
+
+If the web app returns `404` for a route that exists on disk, or reports missing
+imports for newly added files, clear the Next dev cache and recreate web:
+
+```sh
+pnpm web:clean
+pnpm web:recreate
+```
+
+Equivalent manual commands:
+
+```sh
+rm -rf apps/web/.next
+docker-compose up -d --force-recreate web
+```
+
+This is safe for local development because it deletes only Next build/cache
+output. Do not delete `libs/client-sdk/src/generated`, `libs/client-sdk/dist`,
+or source files unless the SDK regeneration workflow explicitly calls for it.
+
+After OpenAPI/SDK changes, also rebuild the SDK before recreating web:
+
+```sh
+pnpm sdk:build
+pnpm web:recreate
+```
 
 ## Logging Review
 
@@ -261,6 +323,25 @@ limit 10;
 
 Do not select auth cookie values, raw session tokens, or
 `auth_sessions.session_token_hash` while inspecting reports.
+
+### Guide, Session, Community Smoke Data
+
+Deterministic auth smoke scripts create or reuse local smoke-owned records only:
+
+```sh
+docker-compose exec -T backend pnpm guide:auth-smoke
+docker-compose exec -T backend pnpm session:auth-smoke
+docker-compose exec -T backend pnpm community:auth-smoke
+```
+
+Use counts and public identifiers for inspection. Do not select session token
+hashes:
+
+```sql
+select status, visibility, count(*) from guides group by status, visibility;
+select status, visibility, count(*) from gaming_sessions group by status, visibility;
+select target_type, reason, status, count(*) from content_reports group by target_type, reason, status;
+```
 
 ### Account Settings Smoke
 
@@ -475,6 +556,9 @@ select
   pg.total_achievements,
   pg.unlocked_achievements,
   pg.completion_percentage,
+  pg.playtime_minutes,
+  pg.playtime_two_weeks_minutes,
+  pg.last_played_at,
   g.has_achievements
 from profile_games pg
 join games g on g.id = pg.game_id

@@ -4,6 +4,7 @@ import {
   ListGameAchievementsOrderEnum,
   ListGameAchievementsSortEnum,
   ListGameAchievementsStatusEnum,
+  SyncRequestDtoScopeEnum,
 } from '@steam-achievement/client-sdk';
 import { useParams, usePathname, useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
@@ -14,6 +15,8 @@ import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { SummaryCard } from '@/components/ui/summary-card';
 import { useGameAchievements } from '@/features/profile/api/use-game-achievements';
+import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { useEnqueueSync } from '@/features/profile/api/use-enqueue-sync';
 import { useProfileGame } from '@/features/profile/api/use-profile-game';
 import { AchievementList } from '@/features/profile/components/achievement-list';
 import { GameAchievementFilters } from '@/features/profile/components/game-achievement-filters';
@@ -44,6 +47,8 @@ export default function GameDetailPage() {
   }, [parsedSearchParams]);
 
   const game = useProfileGame(steamId, steamAppId);
+  const currentUser = useCurrentUser();
+  const enqueueSync = useEnqueueSync(steamId);
   const achievements = useGameAchievements(steamId, steamAppId, {
     status: filters.status,
     sort: filters.sort,
@@ -51,6 +56,35 @@ export default function GameDetailPage() {
   });
 
   const isMissing = getHttpStatus(game.error) === 404;
+  const achievementItems = achievements.data?.items;
+  const isMetadataOnly =
+    game.data?.achievementDataState === 'metadata_only' ||
+    achievementItems !== undefined &&
+    achievementItems.length > 0 &&
+    achievementItems.every((achievement) => achievement.unlockState === 'unknown');
+  const isAchievementMetadataNotSynced =
+    game.data?.achievementDataState === 'not_synced';
+  const isOwner =
+    currentUser.data?.steamAccount?.steamId !== undefined &&
+    currentUser.data.steamAccount.steamId === steamId;
+  const displayedTotalAchievements =
+    game.data && game.data.achievementMetadataCount > 0
+      ? game.data.achievementMetadataCount
+      : game.data && game.data.totalAchievements > 0
+      ? game.data.totalAchievements
+      : achievements.data?.total ?? game.data?.totalAchievements ?? 0;
+  const displayedAchievementValue =
+    isMetadataOnly
+      ? `Unknown / ${formatNumber(displayedTotalAchievements)}`
+      : isAchievementMetadataNotSynced
+        ? 'Metadata not synced'
+      : `${formatNumber(game.data?.unlockedAchievements ?? 0)} / ${formatNumber(displayedTotalAchievements)}`;
+  const displayedCompletionValue = isMetadataOnly || isAchievementMetadataNotSynced
+    ? 'Unknown'
+    : formatPercent(game.data?.completionPercentage ?? 0);
+  const displayedRemainingValue = isMetadataOnly || isAchievementMetadataNotSynced
+    ? 'Unknown'
+    : formatNumber(game.data?.remainingAchievements ?? 0);
 
   useEffect(() => {
     const normalizedParams = toGameAchievementSearchParams({
@@ -117,29 +151,77 @@ export default function GameDetailPage() {
               <p className="mt-1 text-sm text-slate-400">
                 Last synced {formatDateTime(game.data.lastSyncedAt)}
               </p>
+              {isMetadataOnly ? (
+                <div className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                  Achievement metadata is available, but Steam did not provide player
+                  unlock state. These achievements are shown as unknown, not locked.
+                </div>
+              ) : null}
+              {isAchievementMetadataNotSynced ? (
+                <div className="mt-4 rounded-2xl border border-amber-300/30 bg-amber-500/10 p-4 text-sm text-amber-100">
+                  Achievement metadata has not been synced for this game yet.
+                </div>
+              ) : null}
+              {isOwner ? (
+                <button
+                  className="mt-4 rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-60"
+                  disabled={enqueueSync.isPending}
+                  onClick={() =>
+                    void enqueueSync.mutateAsync({
+                      scope: SyncRequestDtoScopeEnum.Achievements,
+                      appIds: [game.data.steamAppId],
+                    })
+                  }
+                  type="button"
+                >
+                  {enqueueSync.isPending ? 'Queueing sync...' : 'Sync this game achievements'}
+                </button>
+              ) : null}
               <div className="mt-4 max-w-md">
-                <ProgressBar value={game.data.completionPercentage} />
+                {isMetadataOnly || isAchievementMetadataNotSynced ? (
+                  <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300">
+                    Completion progress is unknown until Steam provides player
+                    unlock state.
+                  </p>
+                ) : (
+                  <ProgressBar value={game.data.completionPercentage} />
+                )}
               </div>
             </div>
             <div className="w-full md:w-auto">
               <div className="grid grid-cols-2 gap-3 md:grid-cols-1">
                 <SummaryCard
                   label="Achievements"
-                  value={
-                    `${formatNumber(game.data.unlockedAchievements)} / ${formatNumber(game.data.totalAchievements)}`
+                  hint={
+                    isMetadataOnly
+                      ? 'Steam returned metadata, but not player unlock state.'
+                      : undefined
                   }
+                  value={displayedAchievementValue}
                 />
                 <SummaryCard
                   label="Completion"
-                  value={formatPercent(game.data.completionPercentage)}
+                  value={displayedCompletionValue}
                 />
                 <SummaryCard
                   label="Remaining"
-                  value={formatNumber(game.data.remainingAchievements)}
+                  value={displayedRemainingValue}
                 />
                 <SummaryCard
                   label="Playtime"
                   value={formatPlaytime(game.data.playtimeMinutes)}
+                />
+                <SummaryCard
+                  label="Past 2 weeks"
+                  value={
+                    game.data.playtimeTwoWeeksMinutes > 0
+                      ? formatPlaytime(game.data.playtimeTwoWeeksMinutes)
+                      : 'No recent play'
+                  }
+                />
+                <SummaryCard
+                  label="Last played"
+                  value={formatDateTime(game.data.lastPlayedAt)}
                 />
               </div>
             </div>

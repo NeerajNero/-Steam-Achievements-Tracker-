@@ -13,6 +13,14 @@ The backend isolates Steam Web API calls behind `SteamApiClient` in
   - Client method: `getOwnedGames(steamId)`
   - Fetches owned games with `include_appinfo=true` and
     `include_played_free_games=true`.
+  - Normalizes lifetime playtime, two-week playtime, last played timestamp when
+    present, and Steam-hosted icon/logo URLs.
+
+- `IPlayerService/GetRecentlyPlayedGames/v1`
+  - Client method: `getRecentlyPlayedGames({ steamId, count })`
+  - Fetches recently played games and two-week playtime when Steam exposes it.
+    This endpoint does not provide an exact last-played timestamp, so sync does
+    not invent one.
 
 - `ISteamUserStats/GetPlayerAchievements/v1`
   - Client method: `getPlayerAchievements({ steamId, appId, language })`
@@ -117,6 +125,7 @@ delegates misses to `SteamApiClient`. Current queued sync workflows use the
 cached wrapper for:
 - profile metadata;
 - owned games;
+- recently played games;
 - achievement schema metadata;
 - global achievement rarity percentages;
 - profile achievement unlock state.
@@ -133,6 +142,7 @@ to `SteamApiClient`.
 Default TTLs:
 - profile summaries: 10 minutes;
 - owned games: 30 minutes;
+- recently played games: 10 minutes;
 - game schema: 14 days;
 - global achievement percentages: 12 hours;
 - player achievements: 120 seconds.

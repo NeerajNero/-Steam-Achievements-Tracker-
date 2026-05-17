@@ -61,6 +61,7 @@ Default namespace: `steam:v1`.
 | --- | --- | --- |
 | Profile summary | `steam:v1:profile:{steamId}` | 600 seconds |
 | Owned games | `steam:v1:owned-games:{steamId}` | 1800 seconds |
+| Recently played games | `steam:v1:recent-games:{steamId}:{count}` | 600 seconds |
 | Game schema | `steam:v1:schema:{appId}:english` | 1209600 seconds |
 | Global percentages | `steam:v1:global-achievements:{appId}` | 43200 seconds |
 | Player achievements | `steam:v1:player-achievements:{steamId}:{appId}:english` | 120 seconds |

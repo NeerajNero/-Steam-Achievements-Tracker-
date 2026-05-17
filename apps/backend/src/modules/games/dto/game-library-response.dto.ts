@@ -1,5 +1,10 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
+import {
+  ACHIEVEMENT_DATA_STATES,
+  type AchievementDataState,
+} from './achievement-data-state.dto';
+
 export class GameLibraryItemResponseDto {
   @ApiProperty({ type: Number, example: 910002 })
   steamAppId!: number;
@@ -24,6 +29,18 @@ export class GameLibraryItemResponseDto {
 
   @ApiProperty({ type: Number, example: 8 })
   totalAchievements!: number;
+
+  @ApiProperty({ type: Number, example: 39 })
+  achievementMetadataCount!: number;
+
+  @ApiProperty({ type: Number, example: 0 })
+  knownUnlockStateCount!: number;
+
+  @ApiProperty({
+    enum: ACHIEVEMENT_DATA_STATES,
+    example: 'metadata_only',
+  })
+  achievementDataState!: AchievementDataState;
 
   @ApiProperty({ type: Number, example: 7 })
   unlockedAchievements!: number;
