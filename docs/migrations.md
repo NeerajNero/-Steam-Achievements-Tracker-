@@ -34,6 +34,31 @@ schema_migrations (
 
 Status and pending commands do not create the tracking table. If the table does not exist yet, every SQL file is treated as pending.
 
+## Current Initial Migration
+
+The current local/dev baseline is:
+
+```txt
+0001-initial-platform-schema.sql
+```
+
+This file intentionally squashes the original MVP schema and achievement
+progress function into one initial platform schema because the project is still
+local/dev only and the local PostgreSQL volume can be reset. It also includes
+the auth/profile-claiming foundation tables.
+
+If you have a database that previously applied the old local migrations, reset
+that local database before applying the squashed baseline. Do not attempt to run
+the squashed `0001` on top of a database that already has the old tables.
+
+After this reset point, treat applied migrations as immutable again. Future
+schema changes must be new numbered forward migrations such as:
+
+```txt
+0002-add-example-feature.sql
+0003-add-profile-snapshots.sql
+```
+
 ## Create A Migration
 
 ```sh
@@ -147,10 +172,9 @@ Do not use `localhost` inside the backend container.
 Use clear numbered filenames:
 
 ```txt
-0001-create-mvp-schema.sql
-0002-add-achievement-progress-refresh-function.sql
-0003-add-profile-snapshots.sql
-0004-add-achievement-goals.sql
+0001-initial-platform-schema.sql
+0002-add-profile-snapshots.sql
+0003-add-achievement-goals.sql
 ```
 
 The runner sorts filenames lexicographically, so keep the zero-padded prefix.
@@ -159,9 +183,9 @@ The runner sorts filenames lexicographically, so keep the zero-padded prefix.
 
 Do not edit a migration after it has been applied to any shared or persistent database.
 
-The applied `0001-create-mvp-schema.sql` migration must not be edited.
-Achievement progress recalculation is added by
-`0002-add-achievement-progress-refresh-function.sql`.
+The only exception so far was the intentional local/dev squash to
+`0001-initial-platform-schema.sql`. That required deleting the local PostgreSQL
+volume and reapplying the new baseline from an empty database.
 
 If a change is needed:
 

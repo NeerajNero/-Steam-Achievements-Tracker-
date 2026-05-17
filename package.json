@@ -10,6 +10,7 @@
     "web:dev": "pnpm --filter @steam-achievement/web dev",
     "web:build": "pnpm --filter @steam-achievement/web build",
     "web:type-check": "pnpm --filter @steam-achievement/web type-check",
+    "web:smoke": "pnpm --filter @steam-achievement/web smoke",
     "seed:dev": "pnpm --filter @steam-achievement/backend seed:dev",
     "seed:reset-dev": "pnpm --filter @steam-achievement/backend seed:reset-dev",
     "api:smoke": "pnpm --filter @steam-achievement/backend api:smoke",

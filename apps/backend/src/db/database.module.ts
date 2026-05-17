@@ -2,18 +2,28 @@ import { Global, Module } from '@nestjs/common';
 
 import { AchievementsRepository } from './repositories/achievements.repository';
 import { AchievementSyncRepository } from './repositories/achievement-sync.repository';
+import { AppUsersRepository } from './repositories/app-users.repository';
 import { GamesRepository } from './repositories/games.repository';
 import { ProfileAchievementsRepository } from './repositories/profile-achievements.repository';
 import { ProfileGamesRepository } from './repositories/profile-games.repository';
+import { PublicProfilesRepository } from './repositories/public-profiles.repository';
 import { SteamProfilesRepository } from './repositories/steam-profiles.repository';
+import { AuthSessionsRepository } from './repositories/auth-sessions.repository';
 import { SyncRunsRepository } from './repositories/sync-runs.repository';
+import { UserPreferencesRepository } from './repositories/user-preferences.repository';
+import { UserSteamAccountsRepository } from './repositories/user-steam-accounts.repository';
 import { AchievementsDataService } from './services/achievements-data.service';
 import { AchievementSyncDataService } from './services/achievement-sync-data.service';
+import { AppUsersDataService } from './services/app-users-data.service';
 import { GamesDataService } from './services/games-data.service';
 import { ProfileAchievementsDataService } from './services/profile-achievements-data.service';
 import { ProfileGamesDataService } from './services/profile-games-data.service';
+import { PublicProfilesDataService } from './services/public-profiles-data.service';
+import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
 import { SyncRunsDataService } from './services/sync-runs-data.service';
+import { UserPreferencesDataService } from './services/user-preferences-data.service';
+import { UserSteamAccountsDataService } from './services/user-steam-accounts-data.service';
 import { DatabaseService } from './database.service';
 
 @Global()
@@ -21,14 +31,24 @@ import { DatabaseService } from './database.service';
   providers: [
     DatabaseService,
     AchievementSyncRepository,
+    AuthSessionsRepository,
     SteamProfilesRepository,
+    AppUsersRepository,
+    UserSteamAccountsRepository,
+    UserPreferencesRepository,
+    PublicProfilesRepository,
     GamesRepository,
     ProfileGamesRepository,
     AchievementsRepository,
     ProfileAchievementsRepository,
     SyncRunsRepository,
     AchievementSyncDataService,
+    AppUsersDataService,
     SteamProfilesDataService,
+    UserSteamAccountsDataService,
+    UserPreferencesDataService,
+    PublicProfilesDataService,
+    AuthSessionsDataService,
     GamesDataService,
     ProfileGamesDataService,
     AchievementsDataService,
@@ -38,12 +58,17 @@ import { DatabaseService } from './database.service';
   exports: [
     DatabaseService,
     AchievementSyncDataService,
+    AppUsersDataService,
     SteamProfilesDataService,
     GamesDataService,
     ProfileGamesDataService,
     AchievementsDataService,
     ProfileAchievementsDataService,
     SyncRunsDataService,
+    UserSteamAccountsDataService,
+    UserPreferencesDataService,
+    PublicProfilesDataService,
+    AuthSessionsDataService,
   ],
 })
 export class DatabaseModule {}

@@ -88,6 +88,10 @@ Frontend hooks should import the configured clients from that file. Do not
 instantiate SDK clients in page components, reusable UI components, or random
 feature files.
 
+The shared SDK configuration includes `credentials: "include"` so auth session
+cookies work for `AuthApi.getCurrentUser` and `AuthApi.logout` without changing
+the browser API base URL.
+
 Generated DTOs and enums should be reused directly in frontend hooks and
 components. Frontend-local types should describe only UI state, component props,
 or derived view models.
@@ -137,3 +141,6 @@ pnpm --filter @steam-achievement/web build
   run.
 - `enqueueProfileSync` now accepts `scope: "profile" | "games" |
   "achievements"` and optional `appIds` for selected achievement sync.
+- `AuthApi` is generated for `GET /auth/me` and `POST /auth/logout`.
+  `GET /auth/steam/login` and `GET /auth/steam/callback` are redirect endpoints;
+  the frontend starts login by browser navigation rather than by fetching JSON.

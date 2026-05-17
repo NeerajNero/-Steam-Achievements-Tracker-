@@ -12,6 +12,47 @@ Interactive API documentation is available locally at:
 The generated OpenAPI contract is written to `docs/openapi/openapi.json`, and
 the frontend SDK is generated in `libs/client-sdk`.
 
+## Auth
+
+Auth is Steam-only and backend-owned. The frontend must not call Steam OpenID or
+Steam Web API directly.
+
+### `GET /auth/steam/login`
+
+Starts Sign in with Steam. This is a browser redirect endpoint, not a JSON data
+API.
+
+Query parameters:
+- `returnTo`: optional frontend path to return to after login. Unsafe external
+  redirects are normalized by the backend.
+
+Behavior:
+- creates a short-lived OpenID state cookie;
+- redirects the browser to Steam OpenID;
+- does not expose Steam API keys or session tokens.
+
+### `GET /auth/steam/callback`
+
+Handles the Steam OpenID callback. This endpoint verifies the OpenID assertion
+server-side, creates or reuses the app user, links the Steam account, creates a
+hashed-token session row, sets the httpOnly session cookie, and redirects back
+to the frontend.
+
+### `GET /auth/me`
+
+Returns the current authenticated user from the session cookie.
+
+Response shape:
+- `user`: id, display name, avatar URL, role, status.
+- `steamAccount`: linked Steam ID/profile data, or `null`.
+- `publicProfile`: public profile settings, or `null`.
+
+Returns `401` when there is no active session.
+
+### `POST /auth/logout`
+
+Revokes the current session and clears the session cookie. Returns `204`.
+
 ## Profiles
 
 ### `GET /profiles/:steamId`

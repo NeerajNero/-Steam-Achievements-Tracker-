@@ -11,6 +11,8 @@ import { describe, expect, it } from 'vitest';
 import {
   findRelevantSyncRun,
   isActiveSyncStatus,
+  getSyncStatusBadgeClassName,
+  getSyncStatusLabel,
   isTerminalSyncStatus,
   shouldPollSyncRuns,
 } from './sync-status';
@@ -49,6 +51,24 @@ describe('sync status helpers', () => {
     const target = createRun('target', SyncHistoryItemResponseDtoStatusEnum.Queued);
 
     expect(findRelevantSyncRun([newest, target], queuedSync)).toEqual(target);
+  });
+
+  it('maps status labels and classes for all terminal UI states', () => {
+    expect(getSyncStatusLabel(SyncHistoryItemResponseDtoStatusEnum.PartialSuccess)).toBe(
+      'partial success',
+    );
+    expect(getSyncStatusBadgeClassName(SyncHistoryItemResponseDtoStatusEnum.Queued)).toContain(
+      'bg-slate',
+    );
+    expect(getSyncStatusBadgeClassName(SyncHistoryItemResponseDtoStatusEnum.Running)).toContain(
+      'bg-amber',
+    );
+    expect(getSyncStatusBadgeClassName(SyncHistoryItemResponseDtoStatusEnum.Success)).toContain(
+      'bg-emerald',
+    );
+    expect(getSyncStatusBadgeClassName(SyncHistoryItemResponseDtoStatusEnum.Failed)).toContain(
+      'bg-red',
+    );
   });
 });
 

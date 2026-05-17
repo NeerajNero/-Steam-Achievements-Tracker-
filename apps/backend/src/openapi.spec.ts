@@ -63,6 +63,22 @@ describe('OpenAPI document', () => {
         },
       },
     });
+    expect(Object.keys(document.paths)).toEqual(
+      expect.arrayContaining([
+        '/auth/steam/login',
+        '/auth/steam/callback',
+        '/auth/me',
+        '/auth/logout',
+      ]),
+    );
+    expect(document.paths['/auth/steam/login']?.get?.operationId).toBe(
+      'startSteamLogin',
+    );
+    expect(
+      document.paths['/auth/steam/callback']?.get?.operationId,
+    ).toBe('handleSteamCallback');
+    expect(document.paths['/auth/me']?.get?.operationId).toBe('getCurrentUser');
+    expect(document.paths['/auth/logout']?.post?.operationId).toBe('logout');
 
     await app.close();
   });

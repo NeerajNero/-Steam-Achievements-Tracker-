@@ -2,6 +2,10 @@
 /* eslint-disable */
 export * from './AchievementWithUnlockStateResponseDto';
 export * from './AchievementsResponseDto';
+export * from './AuthMeResponseDto';
+export * from './AuthPublicProfileResponseDto';
+export * from './AuthSteamAccountResponseDto';
+export * from './AuthUserResponseDto';
 export * from './GameAchievementsSummaryResponseDto';
 export * from './GameDetailResponseDto';
 export * from './GameLibraryItemResponseDto';

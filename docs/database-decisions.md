@@ -14,11 +14,16 @@ This project uses migration-first PostgreSQL development.
 
 ## Current State
 
-The initial MVP schema has been created by
-`apps/backend/src/db/migrations/0001-create-mvp-schema.sql`.
+The current local/dev baseline schema is created by
+`apps/backend/src/db/migrations/0001-initial-platform-schema.sql`.
 
 Future schema changes should be added as new reviewed SQL migration files under
 `apps/backend/src/db/migrations`.
+
+The baseline migration intentionally squashes the original MVP schema and
+achievement progress function because the project is still local/dev only and
+the local PostgreSQL volume can be reset. After this reset, applied migrations
+should not be edited; future changes get new numbered forward migrations.
 
 ## Rules
 
@@ -45,7 +50,7 @@ Repositories should use Drizzle query builder by default. Raw `pg` access is res
 
 ## PostgreSQL Calculation Decision
 
-`0002-add-achievement-progress-refresh-function.sql` adds
+`0001-initial-platform-schema.sql` includes
 `refresh_profile_game_achievement_progress(profile_id, steam_app_id)`.
 
 Achievement sync upserts canonical achievements and profile unlock state, then
@@ -57,3 +62,19 @@ calls the function once per synced game. PostgreSQL derives:
 
 This keeps dashboard-critical progress fields consistent with the persisted
 rows they summarize.
+
+## Auth And Profile Claiming Foundation
+
+The initial platform schema includes auth/profile-claiming tables, but auth
+runtime is not implemented yet.
+
+- `app_users` stores internal application users.
+- `user_steam_accounts` links app users to claimed Steam profiles.
+- `auth_sessions` is reserved for server-managed sessions and stores hashed
+  session tokens only.
+- `user_preferences` stores authenticated user settings.
+- `public_profiles` stores publishing settings and future slug support.
+
+Sign in with Steam is the preferred future auth method. User ownership,
+publishing settings, and sessions stay separate from raw Steam sync data in
+`steam_profiles`, `games`, `achievements`, and profile-specific sync tables.

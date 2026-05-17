@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { formatDateTime, getErrorMessage } from '@/lib/format';
 
+import { formatSyncMetadata } from '../utils/sync-metadata';
 import { SyncStatusBadge } from './sync-status-badge';
 
 export function SyncRunsList({
@@ -50,9 +51,19 @@ export function SyncRunsList({
               </div>
               <div className="mt-1 text-xs text-slate-500">
                 Started {formatDateTime(run.startedAt)}
+                {run.finishedAt ? (
+                  <span className="ml-2">
+                    · Finished {formatDateTime(run.finishedAt)}
+                  </span>
+                ) : null}
               </div>
+              {formatSyncMetadata(run.metadata) ? (
+                <p className="mt-2 text-sm text-slate-600">
+                  {formatSyncMetadata(run.metadata)}
+                </p>
+              ) : null}
               {run.errorMessage ? (
-                <div className="mt-2 text-sm text-red-700">
+                <div className="mt-2 rounded bg-red-50 px-2 py-1 text-sm text-red-700">
                   {run.errorMessage}
                 </div>
               ) : null}

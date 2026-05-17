@@ -31,8 +31,12 @@ export const profileQueryKeys = {
     [...profileQueryKeys.profile(steamId), 'summary'] as const,
   games: (steamId: string, options: ProfileGamesQueryOptions = {}) =>
     [...profileQueryKeys.profile(steamId), 'games', options] as const,
+  gamesPrefix: (steamId: string) =>
+    [...profileQueryKeys.profile(steamId), 'games'] as const,
   game: (steamId: string, steamAppId: number) =>
     [...profileQueryKeys.profile(steamId), 'games', steamAppId] as const,
+  gamePrefix: (steamId: string, steamAppId: number) =>
+    [...profileQueryKeys.game(steamId, steamAppId)] as const,
   gameAchievements: (
     steamId: string,
     steamAppId: number,
@@ -45,8 +49,14 @@ export const profileQueryKeys = {
     ] as const,
   nearestCompletions: (steamId: string, limit: number) =>
     [...profileQueryKeys.profile(steamId), 'nearest-completions', limit] as const,
+  nearestCompletionsPrefix: (steamId: string) =>
+    [...profileQueryKeys.profile(steamId), 'nearest-completions'] as const,
   rarestAchievements: (steamId: string, limit: number) =>
     [...profileQueryKeys.profile(steamId), 'rarest-achievements', limit] as const,
+  rarestAchievementsPrefix: (steamId: string) =>
+    [...profileQueryKeys.profile(steamId), 'rarest-achievements'] as const,
   syncRuns: (steamId: string, limit: number) =>
     [...profileQueryKeys.profile(steamId), 'sync-runs', limit] as const,
+  syncRunsPrefix: (steamId: string) =>
+    [...profileQueryKeys.profile(steamId), 'sync-runs'] as const,
 };

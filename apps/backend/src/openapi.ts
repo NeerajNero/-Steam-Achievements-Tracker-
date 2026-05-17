@@ -14,6 +14,7 @@ export function createOpenApiDocument(app: INestApplication): OpenAPIObject {
     .addTag('games')
     .addTag('achievements')
     .addTag('sync')
+    .addTag('auth')
     .addServer('http://localhost:3000', 'Local Docker backend')
     .build();
 

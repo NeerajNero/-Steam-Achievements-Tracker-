@@ -3,6 +3,7 @@
 README.md
 package.json
 src/apis/AchievementsApi.ts
+src/apis/AuthApi.ts
 src/apis/GamesApi.ts
 src/apis/HealthApi.ts
 src/apis/ProfilesApi.ts
@@ -11,6 +12,10 @@ src/apis/index.ts
 src/index.ts
 src/models/AchievementWithUnlockStateResponseDto.ts
 src/models/AchievementsResponseDto.ts
+src/models/AuthMeResponseDto.ts
+src/models/AuthPublicProfileResponseDto.ts
+src/models/AuthSteamAccountResponseDto.ts
+src/models/AuthUserResponseDto.ts
 src/models/GameAchievementsSummaryResponseDto.ts
 src/models/GameDetailResponseDto.ts
 src/models/GameLibraryItemResponseDto.ts
