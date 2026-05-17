@@ -13,6 +13,7 @@
     "seed:reset-dev": "tsx src/db/seed-dev.ts reset",
     "api:smoke": "tsx src/scripts/api-smoke.ts",
     "real-sync:smoke": "tsx src/scripts/real-steam-sync-smoke.ts",
+    "steam:config-check": "tsx src/scripts/steam-config-check.ts",
     "openapi:generate": "tsx src/scripts/generate-openapi.ts",
     "migration:run": "tsx src/db/migrate.ts run",
     "migration:status": "tsx src/db/migrate.ts status",

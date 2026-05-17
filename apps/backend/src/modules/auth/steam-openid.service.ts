@@ -1,7 +1,10 @@
 import { URLSearchParams } from 'node:url';
 
 import { Injectable } from '@nestjs/common';
-import { SteamApiConfigError } from '../steam/steam-api.errors';
+import {
+  AUTH_CALLBACK_REASON_CODES,
+  AuthCallbackError,
+} from './auth-callback-error';
 import { getAuthConfig } from './auth.config';
 
 export interface OpenIdCallbackData {
@@ -16,6 +19,14 @@ export interface VerifiedSteamIdentity {
 
 const OPENID_PROVIDER_URL = 'https://steamcommunity.com/openid/login';
 const OPENID_NS = 'http://specs.openid.net/auth/2.0';
+const REQUIRED_OPENID_FIELDS = [
+  'openid.mode',
+  'openid.claimed_id',
+  'openid.identity',
+  'openid.assoc_handle',
+  'openid.signed',
+  'openid.sig',
+] as const;
 
 @Injectable()
 export class SteamOpenIdService {
@@ -39,8 +50,25 @@ export class SteamOpenIdService {
   }
 
   async verifyCallback(query: Record<string, string>): Promise<VerifiedSteamIdentity> {
+    if (query['openid.mode'] === 'cancel') {
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdCancelled,
+        'Steam OpenID login was cancelled.',
+      );
+    }
+
     if (query['openid.mode'] !== 'id_res') {
-      throw new SteamApiConfigError('Steam OpenID mode is not id_res.');
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdMissingRequiredFields,
+        'Steam OpenID callback is missing id_res mode.',
+      );
+    }
+
+    if (!hasRequiredOpenIdFields(query)) {
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdMissingRequiredFields,
+        'Steam OpenID callback is missing required fields.',
+      );
     }
 
     const claimedId = query['openid.claimed_id'];
@@ -48,7 +76,10 @@ export class SteamOpenIdService {
     const isValid = await this.verifyWithSteamProvider(query);
 
     if (!isValid) {
-      throw new SteamApiConfigError('Steam OpenID response is not valid.');
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdVerificationFailed,
+        'Steam OpenID response is not valid.',
+      );
     }
 
     return { claimedId, steamId };
@@ -60,13 +91,19 @@ export class SteamOpenIdService {
 
   extractSteamId(claimedId?: string): string {
     if (typeof claimedId !== 'string' || claimedId.length === 0) {
-      throw new SteamApiConfigError('Steam OpenID callback is missing claimed_id.');
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.SteamIdExtractFailed,
+        'Steam OpenID callback is missing claimed_id.',
+      );
     }
 
     const match = claimedId.match(/\/openid\/id\/(\d{17})\/?$/);
 
     if (match === null || match[1] === undefined) {
-      throw new SteamApiConfigError('Steam OpenID claimed_id is malformed.');
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.SteamIdExtractFailed,
+        'Steam OpenID claimed_id is malformed.',
+      );
     }
 
     return match[1];
@@ -83,17 +120,40 @@ export class SteamOpenIdService {
       }
     });
 
-    const response = await fetch(OPENID_PROVIDER_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: body.toString(),
-    });
+    let response: Response;
+
+    try {
+      response = await fetch(OPENID_PROVIDER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+    } catch (error: unknown) {
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdVerificationRequestFailed,
+        'Steam OpenID verification request failed.',
+        { cause: error },
+      );
+    }
+
+    if (!response.ok) {
+      throw new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.OpenIdVerificationRequestFailed,
+        'Steam OpenID verification request returned a non-success status.',
+      );
+    }
 
     const text = await response.text();
     const kv = parseKeyValueResponse(text);
 
     return kv['is_valid'] === 'true';
   }
+}
+
+export function hasRequiredOpenIdFields(query: Record<string, string>): boolean {
+  return REQUIRED_OPENID_FIELDS.every(
+    (field) => typeof query[field] === 'string' && query[field].trim().length > 0,
+  );
 }
 
 function parseKeyValueResponse(input: string): Record<string, string> {

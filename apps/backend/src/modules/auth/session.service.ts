@@ -12,6 +12,14 @@ export interface CreatedSession {
   expiresAt: Date;
 }
 
+export interface PreparedSession {
+  token: string;
+  sessionTokenHash: string;
+  userAgent: string | null;
+  ipAddress: string | null;
+  expiresAt: Date;
+}
+
 @Injectable()
 export class SessionService {
   private readonly config = getAuthConfig();
@@ -22,26 +30,38 @@ export class SessionService {
     userId: string,
     req?: Pick<Request, 'ip' | 'headers'>,
   ): Promise<CreatedSession> {
+    const prepared = this.prepareSession(req);
+
+    await this.authSessionsDataService.create({
+      userId,
+      sessionTokenHash: prepared.sessionTokenHash,
+      userAgent: prepared.userAgent,
+      ipAddress: prepared.ipAddress,
+      expiresAt: prepared.expiresAt,
+    });
+
+    return {
+      token: prepared.token,
+      userId,
+      expiresAt: prepared.expiresAt,
+    };
+  }
+
+  prepareSession(req?: Pick<Request, 'ip' | 'headers'>): PreparedSession {
     const token = randomBytes(32).toString('base64url');
     const now = new Date();
     const expiresAt = new Date(
       now.getTime() + this.config.authSessionTtlDays * 24 * 60 * 60 * 1000,
     );
 
-    await this.authSessionsDataService.create({
-      userId,
+    return {
+      token,
       sessionTokenHash: this.hashSessionToken(token),
       userAgent:
         typeof req?.headers['user-agent'] === 'string'
           ? req.headers['user-agent']
           : null,
       ipAddress: normalizeIp(req?.ip),
-      expiresAt,
-    });
-
-    return {
-      token,
-      userId,
       expiresAt,
     };
   }

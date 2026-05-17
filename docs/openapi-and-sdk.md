@@ -92,6 +92,10 @@ The shared SDK configuration includes `credentials: "include"` so auth session
 cookies work for `AuthApi.getCurrentUser` and `AuthApi.logout` without changing
 the browser API base URL.
 
+Account and public profile SDK calls use the same shared configuration. The
+frontend should use the generated `AccountApi` for authenticated settings and
+`PublicProfilesApi` for `/public-profiles/:slug`.
+
 Generated DTOs and enums should be reused directly in frontend hooks and
 components. Frontend-local types should describe only UI state, component props,
 or derived view models.
@@ -144,3 +148,6 @@ pnpm --filter @steam-achievement/web build
 - `AuthApi` is generated for `GET /auth/me` and `POST /auth/logout`.
   `GET /auth/steam/login` and `GET /auth/steam/callback` are redirect endpoints;
   the frontend starts login by browser navigation rather than by fetching JSON.
+- `AccountApi` is generated for authenticated account, preferences, and public
+  profile settings endpoints.
+- `PublicProfilesApi` is generated for public slug lookups.

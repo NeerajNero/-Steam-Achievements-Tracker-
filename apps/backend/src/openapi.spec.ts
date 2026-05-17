@@ -69,6 +69,10 @@ describe('OpenAPI document', () => {
         '/auth/steam/callback',
         '/auth/me',
         '/auth/logout',
+        '/account/me',
+        '/account/preferences',
+        '/account/public-profile',
+        '/public-profiles/{slug}',
       ]),
     );
     expect(document.paths['/auth/steam/login']?.get?.operationId).toBe(
@@ -79,6 +83,25 @@ describe('OpenAPI document', () => {
     ).toBe('handleSteamCallback');
     expect(document.paths['/auth/me']?.get?.operationId).toBe('getCurrentUser');
     expect(document.paths['/auth/logout']?.post?.operationId).toBe('logout');
+    expect(document.paths['/account/me']?.get?.operationId).toBe('getAccountMe');
+    expect(document.paths['/account/me']?.patch?.operationId).toBe(
+      'updateAccountMe',
+    );
+    expect(document.paths['/account/preferences']?.get?.operationId).toBe(
+      'getAccountPreferences',
+    );
+    expect(document.paths['/account/preferences']?.patch?.operationId).toBe(
+      'updateAccountPreferences',
+    );
+    expect(document.paths['/account/public-profile']?.get?.operationId).toBe(
+      'getAccountPublicProfile',
+    );
+    expect(document.paths['/account/public-profile']?.patch?.operationId).toBe(
+      'updateAccountPublicProfile',
+    );
+    expect(document.paths['/public-profiles/{slug}']?.get?.operationId).toBe(
+      'getPublicProfileBySlug',
+    );
 
     await app.close();
   });

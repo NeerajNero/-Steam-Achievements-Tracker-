@@ -111,28 +111,34 @@ export class UserSteamAccountsRepository {
   }
 
   async upsertByUserAndProfile(input: UpsertUserSteamAccountInput): Promise<UserSteamAccount> {
-    await this.databaseService.db
-      .update(userSteamAccounts)
-      .set({})
-      .where(eq(userSteamAccounts.userId, input.userId));
+    return this.databaseService.db.transaction(async (tx) => {
+      await tx
+        .update(userSteamAccounts)
+        .set({ isPrimary: false })
+        .where(
+          and(
+            eq(userSteamAccounts.userId, input.userId),
+            eq(userSteamAccounts.isPrimary, true),
+          ),
+        );
 
-    const rows = await this.databaseService.db
-      .insert(userSteamAccounts)
-      .values({
-        ...input,
-        isPrimary: true,
-      })
-      .onConflictDoUpdate({
-        target: [userSteamAccounts.userId, userSteamAccounts.steamProfileId],
-        set: {
-          steamId: input.steamId,
+      const rows = await tx
+        .insert(userSteamAccounts)
+        .values({
+          ...input,
           isPrimary: true,
-        },
-      })
-      .returning();
+        })
+        .onConflictDoUpdate({
+          target: [userSteamAccounts.userId, userSteamAccounts.steamProfileId],
+          set: {
+            steamId: input.steamId,
+            isPrimary: true,
+          },
+        })
+        .returning();
 
-    await this.setPrimary(input.userId, input.steamProfileId);
-    return rows[0];
+      return rows[0];
+    });
   }
 
   async clearPrimaryForUser(userId: string): Promise<void> {

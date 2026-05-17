@@ -1,4 +1,5 @@
 import {
+  AccountApi,
   AuthApi,
   AchievementsApi,
   Configuration,
@@ -6,6 +7,7 @@ import {
   HealthApi,
   ProfilesApi,
   SyncApi,
+  PublicProfilesApi,
 } from '@steam-achievement/client-sdk';
 
 const apiBaseUrl =
@@ -23,5 +25,7 @@ export const achievementsApi = new AchievementsApi(sdkConfiguration);
 export const syncApi = new SyncApi(sdkConfiguration);
 export const healthApi = new HealthApi(sdkConfiguration);
 export const authApi = new AuthApi(sdkConfiguration);
+export const accountApi = new AccountApi(sdkConfiguration);
+export const publicProfilesApi = new PublicProfilesApi(sdkConfiguration);
 
 export { apiBaseUrl };

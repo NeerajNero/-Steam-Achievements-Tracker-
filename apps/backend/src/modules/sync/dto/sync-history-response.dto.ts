@@ -42,7 +42,7 @@ export class SyncHistoryItemResponseDto {
 
   @ApiPropertyOptional({
     type: String,
-    example: 'Steam API is not configured for this sync operation.',
+    example: 'STEAM_API_KEY is not configured in backend runtime environment.',
     nullable: true,
   })
   errorMessage!: string | null;

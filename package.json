@@ -15,6 +15,7 @@
     "seed:reset-dev": "pnpm --filter @steam-achievement/backend seed:reset-dev",
     "api:smoke": "pnpm --filter @steam-achievement/backend api:smoke",
     "real-sync:smoke": "pnpm --filter @steam-achievement/backend real-sync:smoke",
+    "steam:config-check": "pnpm --filter @steam-achievement/backend steam:config-check",
     "openapi:generate": "pnpm --filter @steam-achievement/backend openapi:generate",
     "sdk:generate": "openapi-generator-cli generate -i docs/openapi/openapi.json -g typescript-fetch -o libs/client-sdk/src/generated -c openapi-generator.config.json",
     "sdk:clean": "node -e \"const fs=require('node:fs'); fs.rmSync('libs/client-sdk/src/generated', { recursive: true, force: true }); fs.rmSync('libs/client-sdk/dist', { recursive: true, force: true });\"",

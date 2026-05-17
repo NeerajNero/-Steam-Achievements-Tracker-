@@ -1,12 +1,15 @@
-import { UnauthorizedException } from '@nestjs/common';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { AuthCallbackDataService } from '../../db/services/auth-callback-data.service';
 import type { AppUsersDataService } from '../../db/services/app-users-data.service';
 import type { PublicProfilesDataService } from '../../db/services/public-profiles-data.service';
 import type { SteamProfilesDataService } from '../../db/services/steam-profiles-data.service';
-import type { UserPreferencesDataService } from '../../db/services/user-preferences-data.service';
 import type { UserSteamAccountsDataService } from '../../db/services/user-steam-accounts-data.service';
 import type { SteamApiClient } from '../steam/steam-api.client';
+import {
+  AUTH_CALLBACK_REASON_CODES,
+  AuthCallbackError,
+} from './auth-callback-error';
 import { AuthService } from './auth.service';
 import type { SessionService } from './session.service';
 import type { SteamOpenIdService } from './steam-openid.service';
@@ -18,9 +21,9 @@ describe('AuthService', () => {
   beforeEach(() => {
     mocks = createMocks();
     service = new AuthService(
+      mocks.authCallbackDataService as unknown as AuthCallbackDataService,
       mocks.appUsersDataService as unknown as AppUsersDataService,
       mocks.userSteamAccountsDataService as unknown as UserSteamAccountsDataService,
-      mocks.userPreferencesDataService as unknown as UserPreferencesDataService,
       mocks.publicProfilesDataService as unknown as PublicProfilesDataService,
       mocks.steamProfilesDataService as unknown as SteamProfilesDataService,
       mocks.steamApiClient as unknown as SteamApiClient,
@@ -46,56 +49,60 @@ describe('AuthService', () => {
         },
         { state: 'expected-state', returnTo: '/', expiresAt: new Date().toISOString() },
       ),
-    ).rejects.toBeInstanceOf(UnauthorizedException);
+    ).rejects.toMatchObject({
+      reasonCode: AUTH_CALLBACK_REASON_CODES.AuthStateInvalid,
+    });
   });
 
-  it('creates user, linked Steam account, preferences, and public profile for a new Steam login', async () => {
+  it('persists a verified Steam login and session atomically', async () => {
     await expect(
-      service.handleOpenIdCallback(
+      service.handleOpenIdCallbackAndCreateSession(
         createCallbackQuery(),
         { state: 'state-1', returnTo: '/', expiresAt: new Date().toISOString() },
+        { ip: '127.0.0.1', headers: { 'user-agent': 'vitest' } },
       ),
     ).resolves.toMatchObject({
       userId: 'user-id',
       steamProfileId: 'steam-profile-id',
       steamId: '76561198000000000',
       personaName: 'Steam Persona',
+      session: {
+        token: 'raw-session-token',
+        userId: 'user-id',
+      },
     });
 
-    expect(mocks.steamProfilesDataService.upsertProfile).toHaveBeenCalledWith(
-      expect.objectContaining({
+    expect(mocks.authCallbackDataService.persistSteamLogin).toHaveBeenCalledWith(
+      {
         steamId: '76561198000000000',
-        personaName: 'Steam Persona',
-      }),
+        profile: expect.objectContaining({
+          personaName: 'Steam Persona',
+          avatarUrl: 'https://avatars.example/avatar.jpg',
+        }),
+        session: {
+          sessionTokenHash: 'session-token-hash',
+          userAgent: 'vitest',
+          ipAddress: '127.0.0.1',
+          expiresAt: expect.any(Date) as Date,
+        },
+      },
     );
-    expect(mocks.appUsersDataService.create).toHaveBeenCalledWith({
-      displayName: 'Steam Persona',
-      avatarUrl: 'https://avatars.example/avatar.jpg',
-    });
-    expect(
-      mocks.userSteamAccountsDataService.createOrRefreshPrimaryAccount,
-    ).toHaveBeenCalledWith({
-      userId: 'user-id',
-      steamProfileId: 'steam-profile-id',
-      steamId: '76561198000000000',
-    });
-    expect(mocks.userPreferencesDataService.create).toHaveBeenCalledWith('user-id');
-    expect(mocks.publicProfilesDataService.create).toHaveBeenCalledWith({
-      userId: 'user-id',
-      steamProfileId: 'steam-profile-id',
-    });
   });
 
-  it('reuses an existing linked Steam account and backfills missing profile settings', async () => {
-    mocks.userSteamAccountsDataService.findBySteamId.mockResolvedValue({
+  it('returns the user reused by atomic persistence for repeated Steam login', async () => {
+    mocks.authCallbackDataService.persistSteamLogin.mockResolvedValue({
       userId: 'existing-user-id',
       steamProfileId: 'steam-profile-id',
       steamId: '76561198000000000',
-      isPrimary: true,
+      personaName: 'Steam Persona',
+      avatarUrl: 'https://avatars.example/avatar.jpg',
+      steamProfileUrl: 'https://steamcommunity.com/profiles/76561198000000000',
+      visibilityState: 3,
+      sessionId: 'session-id',
     });
 
     await expect(
-      service.handleOpenIdCallback(
+      service.handleOpenIdCallbackAndCreateSession(
         createCallbackQuery(),
         { state: 'state-1', returnTo: '/', expiresAt: new Date().toISOString() },
       ),
@@ -103,23 +110,76 @@ describe('AuthService', () => {
       userId: 'existing-user-id',
       steamProfileId: 'steam-profile-id',
     });
+  });
 
-    expect(mocks.appUsersDataService.create).not.toHaveBeenCalled();
-    expect(mocks.userSteamAccountsDataService.setPrimary).toHaveBeenCalledWith(
-      'existing-user-id',
-      'steam-profile-id',
+  it('creates a minimal profile and account when Steam summary enrichment fails', async () => {
+    mocks.steamApiClient.getPlayerSummaries.mockRejectedValue(
+      new Error('summary unavailable'),
     );
-    expect(mocks.userPreferencesDataService.create).toHaveBeenCalledWith(
-      'existing-user-id',
-    );
-    expect(mocks.publicProfilesDataService.create).toHaveBeenCalledWith({
-      userId: 'existing-user-id',
+
+    await expect(
+      service.handleOpenIdCallbackAndCreateSession(
+        createCallbackQuery(),
+        { state: 'state-1', returnTo: '/', expiresAt: new Date().toISOString() },
+      ),
+    ).resolves.toMatchObject({
+      userId: 'user-id',
       steamProfileId: 'steam-profile-id',
+      steamId: '76561198000000000',
+      personaName: null,
+    });
+
+    expect(mocks.authCallbackDataService.persistSteamLogin).toHaveBeenCalledWith(
+      expect.objectContaining({
+        steamId: '76561198000000000',
+        profile: {
+          personaName: null,
+          avatarUrl: null,
+          profileUrl: null,
+          visibilityState: null,
+        },
+      }),
+    );
+  });
+
+  it('wraps Steam profile persistence failures in a safe callback reason code', async () => {
+    mocks.authCallbackDataService.persistSteamLogin.mockRejectedValue(
+      new AuthCallbackError(
+        AUTH_CALLBACK_REASON_CODES.SteamProfileUpsertFailed,
+        'profile persistence failed',
+      ),
+    );
+
+    await expect(
+      service.handleOpenIdCallbackAndCreateSession(
+        createCallbackQuery(),
+        { state: 'state-1', returnTo: '/', expiresAt: new Date().toISOString() },
+      ),
+    ).rejects.toMatchObject({
+      reasonCode: AUTH_CALLBACK_REASON_CODES.SteamProfileUpsertFailed,
+    });
+  });
+
+  it('wraps app user linking failures in a safe callback reason code', async () => {
+    mocks.authCallbackDataService.persistSteamLogin.mockRejectedValue(
+      new Error('unique violation'),
+    );
+
+    await expect(
+      service.handleOpenIdCallbackAndCreateSession(
+        createCallbackQuery(),
+        { state: 'state-1', returnTo: '/', expiresAt: new Date().toISOString() },
+      ),
+    ).rejects.toMatchObject({
+      reasonCode: AUTH_CALLBACK_REASON_CODES.AppUserLinkFailed,
     });
   });
 });
 
 interface AuthServiceMocks {
+  authCallbackDataService: {
+    persistSteamLogin: ReturnType<typeof vi.fn>;
+  };
   appUsersDataService: {
     create: ReturnType<typeof vi.fn>;
     findById: ReturnType<typeof vi.fn>;
@@ -130,10 +190,6 @@ interface AuthServiceMocks {
     createOrRefreshPrimaryAccount: ReturnType<typeof vi.fn>;
     setPrimary: ReturnType<typeof vi.fn>;
     findPrimaryByUserId: ReturnType<typeof vi.fn>;
-  };
-  userPreferencesDataService: {
-    findByUserId: ReturnType<typeof vi.fn>;
-    create: ReturnType<typeof vi.fn>;
   };
   publicProfilesDataService: {
     findByUserAndProfileId: ReturnType<typeof vi.fn>;
@@ -147,6 +203,7 @@ interface AuthServiceMocks {
     getPlayerSummaries: ReturnType<typeof vi.fn>;
   };
   sessionService: {
+    prepareSession: ReturnType<typeof vi.fn>;
     createSession: ReturnType<typeof vi.fn>;
     revokeSessionByToken: ReturnType<typeof vi.fn>;
     findSessionByToken: ReturnType<typeof vi.fn>;
@@ -160,6 +217,18 @@ interface AuthServiceMocks {
 
 function createMocks(): AuthServiceMocks {
   return {
+    authCallbackDataService: {
+      persistSteamLogin: vi.fn(async (input: PersistSteamLoginMockInput) => ({
+          userId: 'user-id',
+          steamProfileId: 'steam-profile-id',
+          steamId: input.steamId,
+          personaName: input.profile.personaName,
+          avatarUrl: input.profile.avatarUrl,
+          steamProfileUrl: input.profile.profileUrl,
+          visibilityState: input.profile.visibilityState,
+          sessionId: 'session-id',
+        })),
+    },
     appUsersDataService: {
       create: vi.fn(async () => ({
         id: 'user-id',
@@ -179,10 +248,6 @@ function createMocks(): AuthServiceMocks {
       })),
       setPrimary: vi.fn(),
       findPrimaryByUserId: vi.fn(),
-    },
-    userPreferencesDataService: {
-      findByUserId: vi.fn(async () => null),
-      create: vi.fn(),
     },
     publicProfilesDataService: {
       findByUserAndProfileId: vi.fn(async () => null),
@@ -204,6 +269,13 @@ function createMocks(): AuthServiceMocks {
       ]),
     },
     sessionService: {
+      prepareSession: vi.fn(() => ({
+        token: 'raw-session-token',
+        sessionTokenHash: 'session-token-hash',
+        userAgent: 'vitest',
+        ipAddress: '127.0.0.1',
+        expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+      })),
       createSession: vi.fn(),
       revokeSessionByToken: vi.fn(),
       findSessionByToken: vi.fn(),
@@ -219,11 +291,27 @@ function createMocks(): AuthServiceMocks {
   };
 }
 
+interface PersistSteamLoginMockInput {
+  steamId: string;
+  profile: {
+    personaName: string | null;
+    avatarUrl: string | null;
+    profileUrl: string | null;
+    visibilityState: number | null;
+  };
+}
+
 function createCallbackQuery(): Record<string, string> {
   return {
     state: 'state-1',
     'openid.mode': 'id_res',
+    'openid.ns': 'http://specs.openid.net/auth/2.0',
     'openid.claimed_id':
       'https://steamcommunity.com/openid/id/76561198000000000',
+    'openid.identity':
+      'https://steamcommunity.com/openid/id/76561198000000000',
+    'openid.assoc_handle': 'assoc',
+    'openid.signed': 'signed-fields',
+    'openid.sig': 'signature',
   };
 }

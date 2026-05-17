@@ -5,19 +5,29 @@ import { and, eq, gte, like, sql } from 'drizzle-orm';
 
 import { AchievementSyncRepository } from '../achievement-sync.repository';
 import { AchievementsRepository } from '../achievements.repository';
+import { AuthCallbackRepository } from '../auth-callback.repository';
+import { AppUsersRepository } from '../app-users.repository';
 import { GamesRepository } from '../games.repository';
 import { ProfileAchievementsRepository } from '../profile-achievements.repository';
 import { ProfileGamesRepository } from '../profile-games.repository';
+import { PublicProfilesRepository } from '../public-profiles.repository';
 import { SteamProfilesRepository } from '../steam-profiles.repository';
 import { SyncRunsRepository } from '../sync-runs.repository';
+import { UserPreferencesRepository } from '../user-preferences.repository';
+import { UserSteamAccountsRepository } from '../user-steam-accounts.repository';
 import { DatabaseService } from '../../database.service';
 import {
   achievements,
+  appUsers,
+  authSessions,
   games,
   profileAchievements,
   profileGames,
+  publicProfiles,
   steamProfiles,
   syncRuns,
+  userPreferences,
+  userSteamAccounts,
 } from '../../schema';
 import type { Game } from '../games.repository';
 import type { SteamProfile } from '../steam-profiles.repository';
@@ -33,6 +43,11 @@ let achievementsRepository: AchievementsRepository;
 let achievementSyncRepository: AchievementSyncRepository;
 let profileAchievementsRepository: ProfileAchievementsRepository;
 let syncRunsRepository: SyncRunsRepository;
+let authCallbackRepository: AuthCallbackRepository;
+let appUsersRepository: AppUsersRepository;
+let userSteamAccountsRepository: UserSteamAccountsRepository;
+let userPreferencesRepository: UserPreferencesRepository;
+let publicProfilesRepository: PublicProfilesRepository;
 
 interface TestIdentity {
   suffix: string;
@@ -50,6 +65,11 @@ describe('Drizzle repositories integration', () => {
     achievementSyncRepository = new AchievementSyncRepository(databaseService);
     profileAchievementsRepository = new ProfileAchievementsRepository(databaseService);
     syncRunsRepository = new SyncRunsRepository(databaseService);
+    authCallbackRepository = new AuthCallbackRepository(databaseService);
+    appUsersRepository = new AppUsersRepository(databaseService);
+    userSteamAccountsRepository = new UserSteamAccountsRepository(databaseService);
+    userPreferencesRepository = new UserPreferencesRepository(databaseService);
+    publicProfilesRepository = new PublicProfilesRepository(databaseService);
   });
 
   afterEach(async () => {
@@ -583,6 +603,169 @@ describe('Drizzle repositories integration', () => {
       await expect(syncRunsRepository.findById(randomUUID())).resolves.toBeNull();
     });
   });
+
+  describe('Auth foundation repositories', () => {
+    it('persists Steam callback auth state and session atomically', async () => {
+      const identity = createIdentity();
+      const result = await authCallbackRepository.persistSteamLogin({
+        steamId: identity.steamId,
+        profile: createAuthProfile('Integration Callback User'),
+        session: createAuthSessionInput('callback-session-hash-1'),
+      });
+
+      expect(result).toMatchObject({
+        steamId: identity.steamId,
+        personaName: 'Integration Callback User',
+      });
+      await expect(
+        userSteamAccountsRepository.findBySteamId(identity.steamId),
+      ).resolves.toMatchObject({
+        userId: result.userId,
+        steamProfileId: result.steamProfileId,
+        isPrimary: true,
+      });
+      await expect(userPreferencesRepository.findByUserId(result.userId)).resolves.toMatchObject({
+        userId: result.userId,
+      });
+      await expect(
+        publicProfilesRepository.findByUserAndProfileId(
+          result.userId,
+          result.steamProfileId,
+        ),
+      ).resolves.toMatchObject({
+        userId: result.userId,
+        steamProfileId: result.steamProfileId,
+      });
+
+      const sessionRows = await databaseService.db
+        .select({ id: authSessions.id })
+        .from(authSessions)
+        .where(eq(authSessions.userId, result.userId));
+      expect(sessionRows).toHaveLength(1);
+    });
+
+    it('rolls back user and account rows if session persistence fails', async () => {
+      const firstIdentity = createIdentity();
+      const secondIdentity = createIdentity();
+      const duplicateSessionHash = 'callback-duplicate-session-hash';
+
+      await authCallbackRepository.persistSteamLogin({
+        steamId: firstIdentity.steamId,
+        profile: createAuthProfile('Integration Callback Existing User'),
+        session: createAuthSessionInput(duplicateSessionHash),
+      });
+
+      await expect(
+        authCallbackRepository.persistSteamLogin({
+          steamId: secondIdentity.steamId,
+          profile: createAuthProfile('Integration Callback Rolled Back User'),
+          session: createAuthSessionInput(duplicateSessionHash),
+        }),
+      ).rejects.toThrow();
+
+      await expect(
+        userSteamAccountsRepository.findBySteamId(secondIdentity.steamId),
+      ).resolves.toBeNull();
+      await expect(
+        steamProfilesRepository.findBySteamId(secondIdentity.steamId),
+      ).resolves.toBeNull();
+
+      const rolledBackUsers = await databaseService.db
+        .select({ id: appUsers.id })
+        .from(appUsers)
+        .where(eq(appUsers.displayName, 'Integration Callback Rolled Back User'));
+      expect(rolledBackUsers).toHaveLength(0);
+    });
+
+    it('reuses an existing linked account on repeated Steam login', async () => {
+      const identity = createIdentity();
+      const first = await authCallbackRepository.persistSteamLogin({
+        steamId: identity.steamId,
+        profile: createAuthProfile('Integration Callback Reused User'),
+        session: createAuthSessionInput('callback-session-hash-reused-1'),
+      });
+      const second = await authCallbackRepository.persistSteamLogin({
+        steamId: identity.steamId,
+        profile: createAuthProfile('Integration Callback Reused User Updated'),
+        session: createAuthSessionInput('callback-session-hash-reused-2'),
+      });
+
+      expect(second.userId).toBe(first.userId);
+      expect(second.steamProfileId).toBe(first.steamProfileId);
+
+      const accounts = await userSteamAccountsRepository.findForUser(first.userId);
+      expect(accounts.filter((account) => account.steamId === identity.steamId)).toHaveLength(1);
+
+      const sessionRows = await databaseService.db
+        .select({ id: authSessions.id })
+        .from(authSessions)
+        .where(eq(authSessions.userId, first.userId));
+      expect(sessionRows).toHaveLength(2);
+    });
+
+    it('links a Steam account and moves the primary flag without invalid SQL', async () => {
+      const identity = createIdentity();
+      const secondaryIdentity = createIdentity();
+      const profile = await createProfile(identity, 'Integration Auth Primary Profile');
+      const secondaryProfile = await createProfile(
+        secondaryIdentity,
+        'Integration Auth Secondary Profile',
+      );
+      const user = await appUsersRepository.create({
+        displayName: 'Integration Auth User',
+        avatarUrl: null,
+      });
+
+      const firstAccount = await userSteamAccountsRepository.upsertByUserAndProfile({
+        userId: user.id,
+        steamProfileId: profile.id,
+        steamId: identity.steamId,
+      });
+
+      expect(firstAccount).toMatchObject({
+        userId: user.id,
+        steamProfileId: profile.id,
+        steamId: identity.steamId,
+        isPrimary: true,
+      });
+
+      const secondAccount = await userSteamAccountsRepository.upsertByUserAndProfile({
+        userId: user.id,
+        steamProfileId: secondaryProfile.id,
+        steamId: secondaryIdentity.steamId,
+      });
+
+      expect(secondAccount).toMatchObject({
+        userId: user.id,
+        steamProfileId: secondaryProfile.id,
+        isPrimary: true,
+      });
+
+      await expect(
+        userSteamAccountsRepository.findPrimaryByUserId(user.id),
+      ).resolves.toMatchObject({
+        steamProfileId: secondaryProfile.id,
+      });
+      await expect(
+        userSteamAccountsRepository.findBySteamId(identity.steamId),
+      ).resolves.toMatchObject({
+        isPrimary: false,
+      });
+
+      await expect(userPreferencesRepository.create(user.id)).resolves.toMatchObject({
+        userId: user.id,
+      });
+      await expect(
+        publicProfilesRepository.create({
+          userId: user.id,
+          steamProfileId: secondaryProfile.id,
+        }),
+      ).resolves.toMatchObject({
+        userId: user.id,
+        steamProfileId: secondaryProfile.id,
+      });
+    });
+  });
 });
 
 function createIdentity(): TestIdentity {
@@ -641,6 +824,24 @@ function createSyncedAchievement(apiName: string) {
   };
 }
 
+function createAuthProfile(personaName: string) {
+  return {
+    personaName,
+    avatarUrl: 'https://avatars.example/auth-callback.jpg',
+    profileUrl: 'https://steamcommunity.com/profiles/76561198000000000',
+    visibilityState: 3,
+  };
+}
+
+function createAuthSessionInput(sessionTokenHash: string) {
+  return {
+    sessionTokenHash,
+    userAgent: 'integration-test',
+    ipAddress: '127.0.0.1',
+    expiresAt: new Date('2030-01-01T00:00:00.000Z'),
+  };
+}
+
 async function cleanupTestData(): Promise<void> {
   const testProfiles = databaseService.db
     .select({ id: steamProfiles.id })
@@ -659,6 +860,16 @@ async function cleanupTestData(): Promise<void> {
     .delete(syncRuns)
     .where(sql`${syncRuns.profileId} IN ${testProfiles}`);
   await databaseService.db
+    .delete(authSessions)
+    .where(
+      sql`${authSessions.userId} IN (
+        select ${appUsers.id}
+        from ${appUsers}
+        where ${appUsers.displayName} like 'Integration Auth%'
+          or ${appUsers.displayName} like 'Integration Callback%'
+      )`,
+    );
+  await databaseService.db
     .delete(profileAchievements)
     .where(
       sql`${profileAchievements.profileId} IN ${testProfiles}
@@ -676,6 +887,44 @@ async function cleanupTestData(): Promise<void> {
   await databaseService.db
     .delete(games)
     .where(gte(games.steamAppId, testAppIdBase));
+  await databaseService.db
+    .delete(publicProfiles)
+    .where(
+      sql`${publicProfiles.steamProfileId} IN ${testProfiles}
+        OR ${publicProfiles.userId} IN (
+          select ${appUsers.id}
+          from ${appUsers}
+          where ${appUsers.displayName} like 'Integration Auth%'
+            or ${appUsers.displayName} like 'Integration Callback%'
+        )`,
+    );
+  await databaseService.db
+    .delete(userPreferences)
+    .where(
+      sql`${userPreferences.userId} IN (
+        select ${appUsers.id}
+        from ${appUsers}
+        where ${appUsers.displayName} like 'Integration Auth%'
+          or ${appUsers.displayName} like 'Integration Callback%'
+      )`,
+    );
+  await databaseService.db
+    .delete(userSteamAccounts)
+    .where(
+      sql`${userSteamAccounts.steamProfileId} IN ${testProfiles}
+        OR ${userSteamAccounts.userId} IN (
+          select ${appUsers.id}
+          from ${appUsers}
+          where ${appUsers.displayName} like 'Integration Auth%'
+            or ${appUsers.displayName} like 'Integration Callback%'
+        )`,
+    );
+  await databaseService.db
+    .delete(appUsers)
+    .where(
+      sql`${appUsers.displayName} like 'Integration Auth%'
+        or ${appUsers.displayName} like 'Integration Callback%'`,
+    );
   await databaseService.db
     .delete(steamProfiles)
     .where(like(steamProfiles.steamId, `${testSteamIdPrefix}%`));

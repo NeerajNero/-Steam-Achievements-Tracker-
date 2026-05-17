@@ -104,7 +104,9 @@ Frontend API calls must use `@steam-achievement/client-sdk`. Do not add raw
 
 Current SDK clients used by the frontend:
 
+- `AccountApi`
 - `AuthApi`
+- `PublicProfilesApi`
 - `ProfilesApi`
 - `GamesApi`
 - `AchievementsApi`
@@ -128,7 +130,7 @@ Reminder: regenerate SDK packages only if the backend API shape changes.
 ## Auth UI
 
 Auth is Steam-only. The frontend does not implement email/password auth,
-protected settings pages, or role dashboards yet.
+protected middleware, or role dashboards.
 
 Minimal auth UI lives in:
 
@@ -148,6 +150,18 @@ to the SDK data-call rule.
 
 SDK configuration uses `credentials: "include"` so the browser sends the
 httpOnly session cookie to the backend.
+
+Authenticated account settings live at:
+
+```txt
+apps/web/src/app/settings/page.tsx
+apps/web/src/features/account
+```
+
+The settings page is client-side gated: signed-out users see the Steam sign-in
+prompt, and signed-in users can update display fields, preferences, and public
+profile publishing settings. No frontend auth middleware is required for this
+step.
 
 ## App Structure
 
@@ -197,6 +211,47 @@ The profile page is organized as:
 - nearest completions;
 - rarest achievements;
 - sync history.
+
+## Account Settings
+
+The settings page uses generated SDK clients through feature hooks only:
+
+- `GET /account/me`
+- `PATCH /account/me`
+- `GET /account/preferences`
+- `PATCH /account/preferences`
+- `GET /account/public-profile`
+- `PATCH /account/public-profile`
+
+Public profile slugs are trimmed and normalized to lowercase before submission.
+Valid slugs are 3 to 64 characters and may contain only lowercase letters,
+digits, and hyphens. Reserved app routes such as `admin`, `api`, `auth`,
+`account`, `profiles`, `games`, `settings`, `docs`, and `health` are rejected.
+
+If a slug is saved and publishing is enabled, the UI shows a preview link:
+
+```txt
+/u/:slug
+```
+
+The account page must not expose session fields, token hashes, or internal
+database identifiers beyond the public response DTOs.
+
+## Public Profiles
+
+Public Steam profile pages live at:
+
+```txt
+apps/web/src/app/u/[slug]/page.tsx
+apps/web/src/features/public-profile
+```
+
+They fetch `GET /public-profiles/:slug` through `PublicProfilesApi`, not through
+raw fetch. The page displays public Steam metadata, summary stats, nearest
+completions, and rarest achievements when the owner has enabled that section.
+
+When `showSteamId` is disabled, the frontend must not display the Steam ID or
+link to the full `/profiles/:steamId` dashboard.
 
 ## Query Hooks
 
@@ -364,9 +419,39 @@ Manual browser smoke:
 Auth note:
 - auth schema tables exist in SQL (`app_users`, `user_steam_accounts`,
   `auth_sessions`, `user_preferences`, `public_profiles`);
-- auth runtime and minimal frontend auth UI are implemented;
-- protected settings pages and role-specific dashboards are intentionally
-  deferred.
+- auth runtime, minimal frontend auth UI, and account settings are implemented;
+- protected middleware and role-specific dashboards are intentionally deferred.
+
+Manual auth smoke:
+- open `http://localhost:3001`;
+- click `Sign in with Steam`;
+- complete Steam login;
+- verify `AuthStatus` changes from guest to signed-in user;
+- verify the linked Steam ID is shown;
+- click `Sign out`;
+- verify `AuthStatus` returns to guest state.
+
+Manual settings/public profile smoke:
+- sign in with Steam;
+- open `http://localhost:3001/settings`;
+- update display name or avatar URL;
+- set a public slug and toggle publishing settings;
+- open `http://localhost:3001/u/<slug>`;
+- verify private account settings, session fields, and token data are not shown;
+- logout and verify `/settings` returns to the sign-in prompt while the public
+  slug page still follows the `isPublic` setting.
+
+Use `localhost` consistently for the whole login flow. Do not start on
+`127.0.0.1` and return to `localhost` or vice versa because auth cookies are
+host-bound. `BACKEND_PUBLIC_URL` should remain `http://localhost:3000` and
+`FRONTEND_PUBLIC_URL` should remain `http://localhost:3001` for local browser
+auth. If the frontend receives `auth_error=<reason_code>`, check the backend
+callback logs for the matching safe reason code without copying OpenID callback
+URLs, cookie values, or token data.
+
+For auth data calls, the frontend uses `AuthApi` with `credentials: "include"`.
+The only direct browser navigation is the Sign in with Steam redirect to
+`/auth/steam/login`.
 
 The sync buttons enqueue through the generated SDK. After enqueue, the profile
 page refreshes sync runs immediately, polls every few seconds while the relevant

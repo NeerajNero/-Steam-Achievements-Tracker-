@@ -606,6 +606,218 @@
           "auth"
         ]
       }
+    },
+    "/account/me": {
+      "get": {
+        "operationId": "getAccountMe",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get current account settings",
+        "tags": [
+          "account"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAccountMe",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAccountDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Update current account display fields",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/account/preferences": {
+      "get": {
+        "operationId": "getAccountPreferences",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPreferencesResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get current account preferences",
+        "tags": [
+          "account"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAccountPreferences",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePreferencesDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPreferencesResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Update current account preferences",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/account/public-profile": {
+      "get": {
+        "operationId": "getAccountPublicProfile",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPublicProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get current public profile publishing settings",
+        "tags": [
+          "account"
+        ]
+      },
+      "patch": {
+        "operationId": "updateAccountPublicProfile",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdatePublicProfileSettingsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountPublicProfileResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          },
+          "409": {
+            "description": "Public profile slug is already in use."
+          }
+        },
+        "summary": "Update current public profile publishing settings",
+        "tags": [
+          "account"
+        ]
+      }
+    },
+    "/public-profiles/{slug}": {
+      "get": {
+        "operationId": "getPublicProfileBySlug",
+        "parameters": [
+          {
+            "name": "slug",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "example": "my-steam-profile",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicProfileResponseDto"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Public profile is missing or private."
+          }
+        },
+        "summary": "Get a published Steam profile by slug",
+        "tags": [
+          "public-profiles"
+        ]
+      }
     }
   },
   "info": {
@@ -637,6 +849,14 @@
     },
     {
       "name": "auth",
+      "description": ""
+    },
+    {
+      "name": "account",
+      "description": ""
+    },
+    {
+      "name": "public-profiles",
       "description": ""
     }
   ],
@@ -1324,7 +1544,7 @@
           },
           "errorMessage": {
             "type": "string",
-            "example": "Steam API is not configured for this sync operation.",
+            "example": "STEAM_API_KEY is not configured in backend runtime environment.",
             "nullable": true
           },
           "metadata": {
@@ -1485,6 +1705,322 @@
         },
         "required": [
           "user"
+        ]
+      },
+      "AccountUserResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "c1a4f4d1-2f3d-4a3a-8e6e-8f3a4e7f8b6d"
+          },
+          "displayName": {
+            "type": "string",
+            "example": "Steam User",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://avatars.steamstatic.com/example.jpg",
+            "nullable": true
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "user",
+              "moderator",
+              "admin"
+            ],
+            "example": "user"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "disabled",
+              "deleted"
+            ],
+            "example": "active"
+          }
+        },
+        "required": [
+          "id",
+          "role",
+          "status"
+        ]
+      },
+      "AccountSteamAccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "steamProfileId": {
+            "type": "string",
+            "example": "f0a6d95f-8d8c-4e9b-bc11-2f5a5f8c4f0f"
+          },
+          "personaName": {
+            "type": "string",
+            "example": "Steam Persona",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://avatars.akamai.steamstatic.com/example.jpg",
+            "nullable": true
+          },
+          "isPrimary": {
+            "type": "boolean",
+            "example": true
+          }
+        },
+        "required": [
+          "steamId",
+          "steamProfileId",
+          "isPrimary"
+        ]
+      },
+      "AccountPreferencesResponseDto": {
+        "type": "object",
+        "properties": {
+          "settings": {
+            "type": "object",
+            "example": {
+              "defaultGameSort": "completion",
+              "defaultGameOrder": "desc",
+              "showPrivateHints": true
+            }
+          }
+        },
+        "required": [
+          "settings"
+        ]
+      },
+      "AccountPublicProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "my-steam-profile",
+            "nullable": true
+          },
+          "isPublic": {
+            "type": "boolean",
+            "example": true
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+              "showRarestAchievements": true,
+              "showRecentSyncs": true,
+              "showSteamId": true
+            }
+          }
+        },
+        "required": [
+          "isPublic",
+          "settings"
+        ]
+      },
+      "AccountResponseDto": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/AccountUserResponseDto"
+          },
+          "steamAccount": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountSteamAccountResponseDto"
+              }
+            ]
+          },
+          "preferences": {
+            "$ref": "#/components/schemas/AccountPreferencesResponseDto"
+          },
+          "publicProfile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountPublicProfileResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "user",
+          "preferences"
+        ]
+      },
+      "UpdateAccountDto": {
+        "type": "object",
+        "properties": {
+          "displayName": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "example": "Achievement Hunter"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://avatars.steamstatic.com/example.jpg"
+          }
+        }
+      },
+      "AccountPreferenceSettingsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePreferencesDto": {
+        "type": "object",
+        "properties": {
+          "settings": {
+            "example": {
+              "defaultGameSort": "completion",
+              "defaultGameOrder": "desc",
+              "showPrivateHints": true
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AccountPreferenceSettingsDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "settings"
+        ]
+      },
+      "PublicProfileSettingsDto": {
+        "type": "object",
+        "properties": {}
+      },
+      "UpdatePublicProfileSettingsDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "nullable": true,
+            "example": "my-steam-profile",
+            "description": "Lowercase public profile slug. Use null to clear the slug."
+          },
+          "isPublic": {
+            "type": "boolean",
+            "example": true
+          },
+          "settings": {
+            "example": {
+              "showRarestAchievements": true,
+              "showRecentSyncs": true,
+              "showSteamId": true
+            },
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/PublicProfileSettingsDto"
+              }
+            ]
+          }
+        }
+      },
+      "PublicProfileInfoResponseDto": {
+        "type": "object",
+        "properties": {
+          "slug": {
+            "type": "string",
+            "example": "my-steam-profile"
+          },
+          "isPublic": {
+            "type": "boolean",
+            "example": true
+          },
+          "settings": {
+            "type": "object",
+            "example": {
+              "showRarestAchievements": true,
+              "showRecentSyncs": true,
+              "showSteamId": true
+            }
+          }
+        },
+        "required": [
+          "slug",
+          "isPublic",
+          "settings"
+        ]
+      },
+      "PublicSteamProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000",
+            "nullable": true
+          },
+          "personaName": {
+            "type": "string",
+            "example": "Steam Persona",
+            "nullable": true
+          },
+          "avatarUrl": {
+            "type": "string",
+            "example": "https://avatars.akamai.steamstatic.com/example.jpg",
+            "nullable": true
+          },
+          "profileUrl": {
+            "type": "string",
+            "example": "https://steamcommunity.com/id/example",
+            "nullable": true
+          },
+          "isPrivate": {
+            "type": "boolean",
+            "example": false
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "example": "2026-05-16T05:07:30.710Z",
+            "nullable": true
+          }
+        },
+        "required": [
+          "isPrivate"
+        ]
+      },
+      "PublicProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "publicProfile": {
+            "$ref": "#/components/schemas/PublicProfileInfoResponseDto"
+          },
+          "steamProfile": {
+            "$ref": "#/components/schemas/PublicSteamProfileResponseDto"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/ProfileSummaryResponseDto"
+          },
+          "nearestCompletions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/GameLibraryItemResponseDto"
+            }
+          },
+          "rarestAchievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/RarestAchievementResponseDto"
+            }
+          }
+        },
+        "required": [
+          "publicProfile",
+          "steamProfile",
+          "summary",
+          "nearestCompletions",
+          "rarestAchievements"
         ]
       }
     }
