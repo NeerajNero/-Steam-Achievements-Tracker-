@@ -17,6 +17,7 @@ import {
   normalizeOwnedGames,
   normalizePlayerAchievements,
   normalizePlayerSummaries,
+  normalizeRecentlyPlayedGames,
   normalizeSchemaForGame,
 } from './steam-api.normalizers';
 import type {
@@ -25,6 +26,7 @@ import type {
   SteamOwnedGame,
   SteamPlayerAchievementResult,
   SteamPlayerSummary,
+  SteamRecentlyPlayedGame,
 } from './steam-api.types';
 
 const TRANSIENT_STATUS_CODES = new Set([429, 500, 502, 503, 504]);
@@ -58,6 +60,27 @@ export class SteamApiClient {
     });
 
     return normalizeOwnedGames(raw);
+  }
+
+  async getRecentlyPlayedGames(input: {
+    steamId: string;
+    count?: number;
+  }): Promise<SteamRecentlyPlayedGame[]> {
+    const query: Record<string, string> = {
+      key: this.requireApiKey('getRecentlyPlayedGames'),
+      steamid: input.steamId,
+    };
+
+    if (input.count !== undefined) {
+      query.count = String(input.count);
+    }
+
+    const raw = await this.getJson(
+      '/IPlayerService/GetRecentlyPlayedGames/v1/',
+      query,
+    );
+
+    return normalizeRecentlyPlayedGames(raw);
   }
 
   async getPlayerAchievements(input: {

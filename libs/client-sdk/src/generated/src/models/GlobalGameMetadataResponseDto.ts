@@ -55,7 +55,32 @@ export interface GlobalGameMetadataResponseDto {
      * @memberof GlobalGameMetadataResponseDto
      */
     hasAchievements: boolean;
+    /**
+     * 
+     * @type {number}
+     * @memberof GlobalGameMetadataResponseDto
+     */
+    achievementMetadataCount: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof GlobalGameMetadataResponseDto
+     */
+    achievementDataState: GlobalGameMetadataResponseDtoAchievementDataStateEnum;
 }
+
+
+/**
+ * @export
+ */
+export const GlobalGameMetadataResponseDtoAchievementDataStateEnum = {
+    NotSynced: 'not_synced',
+    NoAchievements: 'no_achievements',
+    MetadataOnly: 'metadata_only',
+    UnlockStateSynced: 'unlock_state_synced'
+} as const;
+export type GlobalGameMetadataResponseDtoAchievementDataStateEnum = typeof GlobalGameMetadataResponseDtoAchievementDataStateEnum[keyof typeof GlobalGameMetadataResponseDtoAchievementDataStateEnum];
+
 
 /**
  * Check if a given object implements the GlobalGameMetadataResponseDto interface.
@@ -65,6 +90,8 @@ export function instanceOfGlobalGameMetadataResponseDto(value: object): value is
     if (!('steamAppId' in value) || value['steamAppId'] === undefined) return false;
     if (!('name' in value) || value['name'] === undefined) return false;
     if (!('hasAchievements' in value) || value['hasAchievements'] === undefined) return false;
+    if (!('achievementMetadataCount' in value) || value['achievementMetadataCount'] === undefined) return false;
+    if (!('achievementDataState' in value) || value['achievementDataState'] === undefined) return false;
     return true;
 }
 
@@ -84,6 +111,8 @@ export function GlobalGameMetadataResponseDtoFromJSONTyped(json: any, ignoreDisc
         'iconUrl': json['iconUrl'] == null ? undefined : json['iconUrl'],
         'logoUrl': json['logoUrl'] == null ? undefined : json['logoUrl'],
         'hasAchievements': json['hasAchievements'],
+        'achievementMetadataCount': json['achievementMetadataCount'],
+        'achievementDataState': json['achievementDataState'],
     };
 }
 
@@ -99,6 +128,8 @@ export function GlobalGameMetadataResponseDtoToJSON(value?: GlobalGameMetadataRe
         'iconUrl': value['iconUrl'],
         'logoUrl': value['logoUrl'],
         'hasAchievements': value['hasAchievements'],
+        'achievementMetadataCount': value['achievementMetadataCount'],
+        'achievementDataState': value['achievementDataState'],
     };
 }
 

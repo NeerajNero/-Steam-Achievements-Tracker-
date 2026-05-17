@@ -18,6 +18,11 @@ export function AchievementList({
   isError: boolean;
   isLoading: boolean;
 }>): ReactNode {
+  const hasMetadataOnlyUnlockState =
+    achievements !== undefined &&
+    achievements.length > 0 &&
+    achievements.every((achievement) => achievement.unlockState === 'unknown');
+
   return (
     <div className="mt-6">
       <SectionCard
@@ -32,6 +37,13 @@ export function AchievementList({
       ) : null}
       {achievements?.length === 0 ? (
         <EmptyState message="No achievements are stored for this game." />
+      ) : null}
+      {hasMetadataOnlyUnlockState ? (
+        <div className="border-b border-white/10 bg-amber-400/10 p-4 text-sm text-amber-100">
+          Achievement metadata is available, but Steam did not provide player
+          unlock state for this game. These achievements are shown as unknown,
+          not locked.
+        </div>
       ) : null}
       {achievements && achievements.length > 0 ? (
         <ul className="divide-y divide-white/10">

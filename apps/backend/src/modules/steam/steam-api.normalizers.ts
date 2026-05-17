@@ -6,6 +6,7 @@ import type {
   SteamPlayerAchievement,
   SteamPlayerAchievementResult,
   SteamPlayerSummary,
+  SteamRecentlyPlayedGame,
 } from './steam-api.types';
 
 export function normalizePlayerSummaries(raw: unknown): SteamPlayerSummary[] {
@@ -46,12 +47,52 @@ export function normalizeOwnedGames(raw: unknown): SteamOwnedGame[] {
       return {
         appId,
         gameName: toStringOrNull(getPath(game, ['name'])) ?? `Steam App ${appId}`,
+        iconUrl: toSteamAppImageUrl(
+          appId,
+          toStringOrNull(getPath(game, ['img_icon_url'])),
+        ),
+        logoUrl: toSteamAppImageUrl(
+          appId,
+          toStringOrNull(getPath(game, ['img_logo_url'])),
+        ),
         playtimeMinutes: toNumberOrNull(getPath(game, ['playtime_forever'])) ?? 0,
         playtimeTwoWeeksMinutes:
           toNumberOrNull(getPath(game, ['playtime_2weeks'])) ?? 0,
         lastPlayedAt: unixSecondsToDateOrNull(
           toNumberOrNull(getPath(game, ['rtime_last_played'])),
         ),
+      };
+    })
+    .filter(isPresent);
+}
+
+export function normalizeRecentlyPlayedGames(
+  raw: unknown,
+): SteamRecentlyPlayedGame[] {
+  const games = asArray(getPath(raw, ['response', 'games']));
+
+  return games
+    .map((game): SteamRecentlyPlayedGame | null => {
+      const appId = toNumberOrNull(getPath(game, ['appid']));
+
+      if (appId === null) {
+        return null;
+      }
+
+      return {
+        appId,
+        gameName: toStringOrNull(getPath(game, ['name'])) ?? `Steam App ${appId}`,
+        iconUrl: toSteamAppImageUrl(
+          appId,
+          toStringOrNull(getPath(game, ['img_icon_url'])),
+        ),
+        logoUrl: toSteamAppImageUrl(
+          appId,
+          toStringOrNull(getPath(game, ['img_logo_url'])),
+        ),
+        playtimeMinutes: toNumberOrNull(getPath(game, ['playtime_forever'])) ?? 0,
+        playtimeTwoWeeksMinutes:
+          toNumberOrNull(getPath(game, ['playtime_2weeks'])) ?? 0,
       };
     })
     .filter(isPresent);
@@ -207,6 +248,14 @@ function unixSecondsToDateOrNull(value: number | null): Date | null {
   }
 
   return new Date(value * 1000);
+}
+
+function toSteamAppImageUrl(appId: number, imageHash: string | null): string | null {
+  if (imageHash === null) {
+    return null;
+  }
+
+  return `https://media.steampowered.com/steamcommunity/public/images/apps/${appId}/${imageHash}.jpg`;
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

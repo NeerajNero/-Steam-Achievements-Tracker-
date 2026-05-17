@@ -9,6 +9,7 @@ import { SectionCard } from '@/components/ui/section-card';
 import { StatusBadge, type StatusTone } from '@/components/ui/status-badge';
 import {
   formatNumber,
+  formatDateTime,
   formatPercent,
   formatPlaytime,
   getErrorMessage,
@@ -24,7 +25,9 @@ type GameStatus = ReturnType<typeof getProfileGameStatus>;
 const statusBadgeTone: Record<GameStatus, StatusTone> = {
   completed: 'success',
   incomplete: 'default',
+  metadata_only: 'warning',
   no_achievements: 'warning',
+  not_synced: 'warning',
 };
 
 export function GameLibrary({
@@ -80,6 +83,8 @@ export function GameLibrary({
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Progress</th>
                 <th className="px-4 py-3">Playtime</th>
+                <th className="px-4 py-3">Recent</th>
+                <th className="px-4 py-3">Last Played</th>
                 <th className="px-4 py-3">Remaining</th>
               </tr>
             </thead>
@@ -110,18 +115,51 @@ export function GameLibrary({
                       <StatusBadge tone={statusBadgeTone[status]}>
                         {formatProfileGameStatusLabel(status)}
                       </StatusBadge>
+                      {status === 'metadata_only' ? (
+                        <div className="mt-2 max-w-40 text-xs text-amber-100">
+                          Achievement metadata exists; unlock state is unknown.
+                        </div>
+                      ) : null}
+                      {status === 'not_synced' ? (
+                        <div className="mt-2 max-w-40 text-xs text-amber-100">
+                          Achievement metadata has not been synced for this game.
+                        </div>
+                      ) : null}
                     </td>
                     <td className="px-4 py-3">
-                      {formatPercent(game.completionPercentage)}
-                      <div className="mt-2">
-                        <ProgressBar value={game.completionPercentage} />
-                      </div>
-                      <div className="mt-1 text-xs text-slate-500">
-                        {game.unlockedAchievements}/{game.totalAchievements}
-                      </div>
+                      {status === 'metadata_only' ? (
+                        <>
+                          Unknown
+                          <div className="mt-1 text-xs text-slate-500">
+                            Unknown / {formatNumber(game.achievementMetadataCount)}
+                          </div>
+                        </>
+                      ) : status === 'not_synced' ? (
+                        <span className="text-slate-400">Metadata not synced</span>
+                      ) : (
+                        <>
+                          {formatPercent(game.completionPercentage)}
+                          <div className="mt-2">
+                            <ProgressBar value={game.completionPercentage} />
+                          </div>
+                          <div className="mt-1 text-xs text-slate-500">
+                            {game.unlockedAchievements}/{game.totalAchievements}
+                          </div>
+                        </>
+                      )}
                     </td>
                     <td className="px-4 py-3">{formatPlaytime(game.playtimeMinutes)}</td>
-                    <td className="px-4 py-3">{formatNumber(game.remainingAchievements)}</td>
+                    <td className="px-4 py-3">
+                      {game.playtimeTwoWeeksMinutes > 0
+                        ? formatPlaytime(game.playtimeTwoWeeksMinutes)
+                        : 'No recent play'}
+                    </td>
+                    <td className="px-4 py-3">{formatDateTime(game.lastPlayedAt)}</td>
+                    <td className="px-4 py-3">
+                      {status === 'metadata_only' || status === 'not_synced'
+                        ? 'Unknown'
+                        : formatNumber(game.remainingAchievements)}
+                    </td>
                   </tr>
                 );
               })}

@@ -82,12 +82,22 @@ describe('SyncWorkflowService', () => {
     ]);
     mocks.steamProfilesRepository.upsertProfile.mockResolvedValue(createProfile());
     mocks.steamApiClient.getOwnedGames.mockResolvedValue([createOwnedGame()]);
+    mocks.steamApiClient.getRecentlyPlayedGames.mockResolvedValue([
+      createRecentlyPlayedGame(10),
+      createRecentlyPlayedGame(11),
+    ]);
 
     await expect(
       service.syncOwnedGamesBySteamId('sync-run-id', '76561198000000000'),
     ).resolves.toMatchObject({
       status: 'success',
-      metadata: { gamesSynced: 1, profileGamesSynced: 1 },
+      metadata: {
+        gamesSynced: 1,
+        profileGamesSynced: 2,
+        recentGamesSynced: 2,
+        ownedGamesWithPlaytime: 1,
+        ownedGamesWithRecentPlaytime: 1,
+      },
     });
     expect(mocks.steamApiClient.getPlayerSummaries).toHaveBeenCalledWith([
       '76561198000000000',
@@ -95,7 +105,7 @@ describe('SyncWorkflowService', () => {
     expect(mocks.gamesRepository.upsertOwnedGame).toHaveBeenCalledWith({
       steamAppId: 10,
       name: 'Owned Game',
-      iconUrl: null,
+      iconUrl: 'https://example.com/icon.jpg',
       logoUrl: null,
     });
     expect(
@@ -107,6 +117,17 @@ describe('SyncWorkflowService', () => {
         gameId: 'game-id',
         playtimeMinutes: 120,
         playtimeTwoWeeksMinutes: 15,
+      }),
+    );
+    expect(
+      mocks.profileGamesRepository
+        .upsertRecentGameProgressPreservingAchievementStats,
+    ).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profileId: 'profile-id',
+        gameId: 'game-id',
+        playtimeMinutes: 150,
+        playtimeTwoWeeksMinutes: 30,
       }),
     );
   });
@@ -127,6 +148,34 @@ describe('SyncWorkflowService', () => {
         completionPercentage: expect.any(Number),
       }),
     );
+    expect(
+      mocks.profileGamesRepository
+        .upsertRecentGameProgressPreservingAchievementStats,
+    ).not.toHaveBeenCalledWith(
+      expect.objectContaining({
+        totalAchievements: expect.any(Number),
+        unlockedAchievements: expect.any(Number),
+        completionPercentage: expect.any(Number),
+      }),
+    );
+  });
+
+  it('games sync continues when recent games are unavailable', async () => {
+    mocks.steamProfilesRepository.findBySteamId.mockResolvedValue(createProfile());
+    mocks.steamApiClient.getOwnedGames.mockResolvedValue([createOwnedGame()]);
+    mocks.steamApiClient.getRecentlyPlayedGames.mockRejectedValue(
+      new SteamApiRequestError('recent games unavailable', 403),
+    );
+
+    await expect(
+      service.syncOwnedGamesBySteamId('sync-run-id', '76561198000000000'),
+    ).resolves.toMatchObject({
+      status: 'success',
+      metadata: expect.objectContaining({
+        gamesSynced: 1,
+        recentGamesSynced: 0,
+      }),
+    });
   });
 
   it('creates a profile snapshot after games sync when profile games exist', async () => {
@@ -551,6 +600,7 @@ interface SyncWorkflowMocks {
   steamApiClient: {
     getPlayerSummaries: ReturnType<typeof vi.fn>;
     getOwnedGames: ReturnType<typeof vi.fn>;
+    getRecentlyPlayedGames: ReturnType<typeof vi.fn>;
     getSchemaForGame: ReturnType<typeof vi.fn>;
     getGlobalAchievementPercentages: ReturnType<typeof vi.fn>;
     getPlayerAchievements: ReturnType<typeof vi.fn>;
@@ -565,6 +615,7 @@ interface SyncWorkflowMocks {
   };
   profileGamesRepository: {
     upsertOwnedGameProgressPreservingAchievementStats: ReturnType<typeof vi.fn>;
+    upsertRecentGameProgressPreservingAchievementStats: ReturnType<typeof vi.fn>;
     findProfileGamesForAchievementSync: ReturnType<typeof vi.fn>;
     getProfileGameSummary: ReturnType<typeof vi.fn>;
   };
@@ -614,6 +665,7 @@ function createMocks(): SyncWorkflowMocks {
     steamApiClient: {
       getPlayerSummaries: vi.fn(),
       getOwnedGames: vi.fn(async () => []),
+      getRecentlyPlayedGames: vi.fn(async () => []),
       getSchemaForGame: vi.fn(),
       getGlobalAchievementPercentages: vi.fn(),
       getPlayerAchievements: vi.fn(),
@@ -637,6 +689,7 @@ function createMocks(): SyncWorkflowMocks {
     },
     profileGamesRepository: {
       upsertOwnedGameProgressPreservingAchievementStats: vi.fn(),
+      upsertRecentGameProgressPreservingAchievementStats: vi.fn(),
       findProfileGamesForAchievementSync: vi.fn(async () => []),
       getProfileGameSummary: vi.fn(async () => ({
         totalGames: 0,
@@ -735,9 +788,22 @@ function createOwnedGame(): SteamOwnedGame {
   return {
     appId: 10,
     gameName: 'Owned Game',
+    iconUrl: 'https://example.com/icon.jpg',
+    logoUrl: null,
     playtimeMinutes: 120,
     playtimeTwoWeeksMinutes: 15,
     lastPlayedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+}
+
+function createRecentlyPlayedGame(appId: number) {
+  return {
+    appId,
+    gameName: `Recent Game ${appId}`,
+    iconUrl: null,
+    logoUrl: null,
+    playtimeMinutes: 150,
+    playtimeTwoWeeksMinutes: 30,
   };
 }
 

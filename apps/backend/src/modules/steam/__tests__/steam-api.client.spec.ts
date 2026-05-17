@@ -51,6 +51,80 @@ describe('SteamApiClient', () => {
     expect(url.searchParams.has('key')).toBe(false);
   });
 
+  it('constructs owned games URLs with app info and played free games enabled', async () => {
+    const calls: string[] = [];
+    const client = createClient(
+      async (url) => {
+        calls.push(url);
+        return jsonResponse({ response: { games: [] } });
+      },
+      { apiKey: 'test-key' },
+    );
+
+    await expect(client.getOwnedGames('76561198000000000')).resolves.toEqual([]);
+
+    const url = new URL(calls[0]);
+    expect(url.pathname).toBe('/IPlayerService/GetOwnedGames/v1/');
+    expect(url.searchParams.get('key')).toBe('test-key');
+    expect(url.searchParams.get('steamid')).toBe('76561198000000000');
+    expect(url.searchParams.get('include_appinfo')).toBe('true');
+    expect(url.searchParams.get('include_played_free_games')).toBe('true');
+    expect(url.searchParams.has('appids_filter')).toBe(false);
+  });
+
+  it('constructs schema URLs with appid and requested language', async () => {
+    const calls: string[] = [];
+    const client = createClient(
+      async (url) => {
+        calls.push(url);
+        return jsonResponse({ game: { availableGameStats: { achievements: [] } } });
+      },
+      { apiKey: 'test-key' },
+    );
+
+    await expect(
+      client.getSchemaForGame({ appId: 2669320, language: 'english' }),
+    ).resolves.toMatchObject({ appId: 2669320, achievements: [] });
+
+    const url = new URL(calls[0]);
+    expect(url.pathname).toBe('/ISteamUserStats/GetSchemaForGame/v2/');
+    expect(url.searchParams.get('key')).toBe('test-key');
+    expect(url.searchParams.get('appid')).toBe('2669320');
+    expect(url.searchParams.get('l')).toBe('english');
+  });
+
+  it('constructs player achievement URLs with steamid, appid, and language', async () => {
+    const calls: string[] = [];
+    const client = createClient(
+      async (url) => {
+        calls.push(url);
+        return jsonResponse({
+          playerstats: { steamID: '76561198000000000', achievements: [] },
+        });
+      },
+      { apiKey: 'test-key' },
+    );
+
+    await expect(
+      client.getPlayerAchievements({
+        steamId: '76561198000000000',
+        appId: 2669320,
+        language: 'english',
+      }),
+    ).resolves.toMatchObject({
+      steamId: '76561198000000000',
+      appId: 2669320,
+      achievements: [],
+    });
+
+    const url = new URL(calls[0]);
+    expect(url.pathname).toBe('/ISteamUserStats/GetPlayerAchievements/v1/');
+    expect(url.searchParams.get('key')).toBe('test-key');
+    expect(url.searchParams.get('steamid')).toBe('76561198000000000');
+    expect(url.searchParams.get('appid')).toBe('2669320');
+    expect(url.searchParams.get('l')).toBe('english');
+  });
+
   it('throws a config error when a key-required method has no API key', async () => {
     const client = createClient(async () => jsonResponse({}));
 
@@ -67,6 +141,7 @@ describe('SteamApiClient', () => {
             {
               appid: 10,
               name: 'Game',
+              img_icon_url: 'iconhash',
               playtime_forever: 120,
               playtime_2weeks: 20,
               rtime_last_played: 1_700_000_000,
@@ -98,6 +173,9 @@ describe('SteamApiClient', () => {
       {
         appId: 10,
         gameName: 'Game',
+        iconUrl:
+          'https://media.steampowered.com/steamcommunity/public/images/apps/10/iconhash.jpg',
+        logoUrl: null,
         playtimeMinutes: 120,
         playtimeTwoWeeksMinutes: 20,
         lastPlayedAt: new Date(1_700_000_000 * 1000),
@@ -118,6 +196,50 @@ describe('SteamApiClient', () => {
       gameName: 'Game',
       achievements: [{ apiName: 'WIN', displayName: 'Win', hidden: false }],
     });
+  });
+
+  it('normalizes recently played games and sends count when provided', async () => {
+    const calls: string[] = [];
+    const client = createClient(
+      async (url) => {
+        calls.push(url);
+        return jsonResponse({
+          response: {
+            games: [
+              {
+                appid: 550,
+                name: 'Left 4 Dead 2',
+                playtime_forever: 420,
+                playtime_2weeks: 60,
+              },
+            ],
+          },
+        });
+      },
+      { apiKey: 'test-key' },
+    );
+
+    await expect(
+      client.getRecentlyPlayedGames({
+        steamId: '76561198000000000',
+        count: 5,
+      }),
+    ).resolves.toEqual([
+      {
+        appId: 550,
+        gameName: 'Left 4 Dead 2',
+        iconUrl: null,
+        logoUrl: null,
+        playtimeMinutes: 420,
+        playtimeTwoWeeksMinutes: 60,
+      },
+    ]);
+
+    const url = new URL(calls[0]);
+    expect(url.pathname).toBe('/IPlayerService/GetRecentlyPlayedGames/v1/');
+    expect(url.searchParams.get('steamid')).toBe('76561198000000000');
+    expect(url.searchParams.get('count')).toBe('5');
+    expect(url.searchParams.get('key')).toBe('test-key');
   });
 
   it('handles private or unavailable achievement responses gracefully', async () => {

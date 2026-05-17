@@ -14,6 +14,7 @@ import type {
   SteamPlayerAchievement,
   SteamPlayerAchievementResult,
   SteamPlayerSummary,
+  SteamRecentlyPlayedGame,
 } from './steam-api.types';
 
 @Injectable()
@@ -60,6 +61,20 @@ export class CachedSteamApiClient {
       this.ttl.ownedGamesSeconds,
       decodeOwnedGames,
       () => this.steamApiClient.getOwnedGames(steamId),
+    );
+  }
+
+  async getRecentlyPlayedGames(input: {
+    steamId: string;
+    count?: number;
+  }): Promise<SteamRecentlyPlayedGame[]> {
+    const count = input.count ?? 20;
+
+    return this.getOrSet(
+      this.cacheKey(`recent-games:${input.steamId}:${count}`),
+      this.ttl.recentGamesSeconds,
+      decodeRecentlyPlayedGames,
+      () => this.steamApiClient.getRecentlyPlayedGames({ ...input, count }),
     );
   }
 
@@ -204,9 +219,46 @@ function decodeOwnedGames(value: unknown): SteamOwnedGame[] | null {
       return {
         appId,
         gameName,
+        iconUrl: stringOrNull(item.iconUrl),
+        logoUrl: stringOrNull(item.logoUrl),
         playtimeMinutes,
         playtimeTwoWeeksMinutes,
         lastPlayedAt: dateOrNull(item.lastPlayedAt),
+      };
+    })
+    .filter(isPresent);
+}
+
+function decodeRecentlyPlayedGames(
+  value: unknown,
+): SteamRecentlyPlayedGame[] | null {
+  return asArray(value)
+    .map((item): SteamRecentlyPlayedGame | null => {
+      if (!isRecord(item)) {
+        return null;
+      }
+
+      const appId = numberOrNull(item.appId);
+      const gameName = stringOrNull(item.gameName);
+      const playtimeMinutes = numberOrNull(item.playtimeMinutes);
+      const playtimeTwoWeeksMinutes = numberOrNull(item.playtimeTwoWeeksMinutes);
+
+      if (
+        appId === null ||
+        gameName === null ||
+        playtimeMinutes === null ||
+        playtimeTwoWeeksMinutes === null
+      ) {
+        return null;
+      }
+
+      return {
+        appId,
+        gameName,
+        iconUrl: stringOrNull(item.iconUrl),
+        logoUrl: stringOrNull(item.logoUrl),
+        playtimeMinutes,
+        playtimeTwoWeeksMinutes,
       };
     })
     .filter(isPresent);

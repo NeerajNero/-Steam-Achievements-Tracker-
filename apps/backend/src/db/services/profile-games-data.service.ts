@@ -11,6 +11,7 @@ import {
   type PublicTrackedPlayerForGame,
   type UpsertOwnedGameProgressInput,
   type UpsertProfileGameInput,
+  type UpsertRecentGameProgressInput,
 } from '../repositories/profile-games.repository';
 
 export type {
@@ -29,6 +30,7 @@ export type {
   SortOrder,
   UpsertOwnedGameProgressInput,
   UpsertProfileGameInput,
+  UpsertRecentGameProgressInput,
 } from '../repositories/profile-games.repository';
 
 @Injectable()
@@ -46,6 +48,13 @@ export class ProfileGamesDataService {
   ): Promise<ProfileGame> {
     return this.profileGamesRepository
       .upsertOwnedGameProgressPreservingAchievementStats(input);
+  }
+
+  async upsertRecentGameProgressPreservingAchievementStats(
+    input: UpsertRecentGameProgressInput,
+  ): Promise<ProfileGame> {
+    return this.profileGamesRepository
+      .upsertRecentGameProgressPreservingAchievementStats(input);
   }
 
   async findByProfileId(

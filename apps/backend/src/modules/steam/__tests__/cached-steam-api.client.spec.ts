@@ -8,6 +8,7 @@ describe('CachedSteamApiClient', () => {
   let steamApiClient: {
     getPlayerSummaries: ReturnType<typeof vi.fn>;
     getOwnedGames: ReturnType<typeof vi.fn>;
+    getRecentlyPlayedGames: ReturnType<typeof vi.fn>;
     getPlayerAchievements: ReturnType<typeof vi.fn>;
     getSchemaForGame: ReturnType<typeof vi.fn>;
     getGlobalAchievementPercentages: ReturnType<typeof vi.fn>;
@@ -27,6 +28,7 @@ describe('CachedSteamApiClient', () => {
     steamApiClient = {
       getPlayerSummaries: vi.fn(async () => [createProfile()]),
       getOwnedGames: vi.fn(async () => [createOwnedGame()]),
+      getRecentlyPlayedGames: vi.fn(async () => [createRecentlyPlayedGame()]),
       getPlayerAchievements: vi.fn(async () => createPlayerAchievements()),
       getSchemaForGame: vi.fn(async () => createSchema()),
       getGlobalAchievementPercentages: vi.fn(async () => [
@@ -138,6 +140,35 @@ describe('CachedSteamApiClient', () => {
       client.schemaTtlSeconds,
     );
   });
+
+  it('caches recently played games with the recent-games TTL', async () => {
+    process.env.STEAM_API_CACHE_RECENT_GAMES_TTL_SECONDS = '300';
+    client = new CachedSteamApiClient(
+      steamApiClient as unknown as SteamApiClient,
+      cacheService as unknown as RedisCacheService,
+    );
+
+    await expect(
+      client.getRecentlyPlayedGames({
+        steamId: '76561198000000000',
+        count: 5,
+      }),
+    ).resolves.toEqual([createRecentlyPlayedGame()]);
+
+    expect(cacheService.getJson).toHaveBeenCalledWith(
+      'steam:v1:recent-games:76561198000000000:5',
+      expect.any(Function),
+    );
+    expect(steamApiClient.getRecentlyPlayedGames).toHaveBeenCalledWith({
+      steamId: '76561198000000000',
+      count: 5,
+    });
+    expect(cacheService.setJson).toHaveBeenCalledWith(
+      'steam:v1:recent-games:76561198000000000:5',
+      [createRecentlyPlayedGame()],
+      300,
+    );
+  });
 });
 
 function createProfile() {
@@ -154,9 +185,22 @@ function createOwnedGame() {
   return {
     appId: 910001,
     gameName: 'Cached Game',
+    iconUrl: null,
+    logoUrl: null,
     playtimeMinutes: 120,
     playtimeTwoWeeksMinutes: 0,
     lastPlayedAt: new Date('2026-01-01T00:00:00.000Z'),
+  };
+}
+
+function createRecentlyPlayedGame() {
+  return {
+    appId: 910001,
+    gameName: 'Cached Game',
+    iconUrl: null,
+    logoUrl: null,
+    playtimeMinutes: 120,
+    playtimeTwoWeeksMinutes: 45,
   };
 }
 

@@ -42,6 +42,12 @@ export interface GlobalGameStatsResponseDto {
      * @type {number}
      * @memberof GlobalGameStatsResponseDto
      */
+    achievementMetadataCount: number;
+    /**
+     * 
+     * @type {number}
+     * @memberof GlobalGameStatsResponseDto
+     */
     averageCompletionPercentage: number;
     /**
      * 
@@ -64,6 +70,7 @@ export function instanceOfGlobalGameStatsResponseDto(value: object): value is Gl
     if (!('trackedPlayers' in value) || value['trackedPlayers'] === undefined) return false;
     if (!('completedPlayers' in value) || value['completedPlayers'] === undefined) return false;
     if (!('totalAchievements' in value) || value['totalAchievements'] === undefined) return false;
+    if (!('achievementMetadataCount' in value) || value['achievementMetadataCount'] === undefined) return false;
     if (!('averageCompletionPercentage' in value) || value['averageCompletionPercentage'] === undefined) return false;
     if (!('totalPlaytimeMinutes' in value) || value['totalPlaytimeMinutes'] === undefined) return false;
     if (!('averagePlaytimeMinutes' in value) || value['averagePlaytimeMinutes'] === undefined) return false;
@@ -83,6 +90,7 @@ export function GlobalGameStatsResponseDtoFromJSONTyped(json: any, ignoreDiscrim
         'trackedPlayers': json['trackedPlayers'],
         'completedPlayers': json['completedPlayers'],
         'totalAchievements': json['totalAchievements'],
+        'achievementMetadataCount': json['achievementMetadataCount'],
         'averageCompletionPercentage': json['averageCompletionPercentage'],
         'totalPlaytimeMinutes': json['totalPlaytimeMinutes'],
         'averagePlaytimeMinutes': json['averagePlaytimeMinutes'],
@@ -98,6 +106,7 @@ export function GlobalGameStatsResponseDtoToJSON(value?: GlobalGameStatsResponse
         'trackedPlayers': value['trackedPlayers'],
         'completedPlayers': value['completedPlayers'],
         'totalAchievements': value['totalAchievements'],
+        'achievementMetadataCount': value['achievementMetadataCount'],
         'averageCompletionPercentage': value['averageCompletionPercentage'],
         'totalPlaytimeMinutes': value['totalPlaytimeMinutes'],
         'averagePlaytimeMinutes': value['averagePlaytimeMinutes'],

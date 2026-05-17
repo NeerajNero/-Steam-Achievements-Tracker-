@@ -5,6 +5,7 @@ import {
   normalizeOwnedGames,
   normalizePlayerAchievements,
   normalizePlayerSummaries,
+  normalizeRecentlyPlayedGames,
   normalizeSchemaForGame,
 } from '../steam-api.normalizers';
 
@@ -43,6 +44,8 @@ describe('Steam API normalizers', () => {
             {
               appid: 10,
               name: 'Counter-Strike',
+              img_icon_url: 'iconhash',
+              img_logo_url: 'logohash',
               playtime_forever: 90,
               playtime_2weeks: 5,
               rtime_last_played: 1_700_000_000,
@@ -54,9 +57,41 @@ describe('Steam API normalizers', () => {
       {
         appId: 10,
         gameName: 'Counter-Strike',
+        iconUrl:
+          'https://media.steampowered.com/steamcommunity/public/images/apps/10/iconhash.jpg',
+        logoUrl:
+          'https://media.steampowered.com/steamcommunity/public/images/apps/10/logohash.jpg',
         playtimeMinutes: 90,
         playtimeTwoWeeksMinutes: 5,
         lastPlayedAt: new Date(1_700_000_000 * 1000),
+      },
+    ]);
+  });
+
+  it('normalizes recently played games without inventing last played timestamps', () => {
+    expect(
+      normalizeRecentlyPlayedGames({
+        response: {
+          games: [
+            {
+              appid: 550,
+              name: 'Left 4 Dead 2',
+              img_icon_url: 'recenticon',
+              playtime_forever: 1200,
+              playtime_2weeks: 35,
+            },
+          ],
+        },
+      }),
+    ).toEqual([
+      {
+        appId: 550,
+        gameName: 'Left 4 Dead 2',
+        iconUrl:
+          'https://media.steampowered.com/steamcommunity/public/images/apps/550/recenticon.jpg',
+        logoUrl: null,
+        playtimeMinutes: 1200,
+        playtimeTwoWeeksMinutes: 35,
       },
     ]);
   });

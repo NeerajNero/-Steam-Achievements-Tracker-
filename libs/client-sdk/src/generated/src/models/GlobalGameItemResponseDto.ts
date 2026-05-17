@@ -72,6 +72,18 @@ export interface GlobalGameItemResponseDto {
      * @type {number}
      * @memberof GlobalGameItemResponseDto
      */
+    achievementMetadataCount: number;
+    /**
+     * 
+     * @type {string}
+     * @memberof GlobalGameItemResponseDto
+     */
+    achievementDataState: GlobalGameItemResponseDtoAchievementDataStateEnum;
+    /**
+     * 
+     * @type {number}
+     * @memberof GlobalGameItemResponseDto
+     */
     averageCompletionPercentage: number;
     /**
      * 
@@ -87,6 +99,19 @@ export interface GlobalGameItemResponseDto {
     totalPlaytimeMinutes: number;
 }
 
+
+/**
+ * @export
+ */
+export const GlobalGameItemResponseDtoAchievementDataStateEnum = {
+    NotSynced: 'not_synced',
+    NoAchievements: 'no_achievements',
+    MetadataOnly: 'metadata_only',
+    UnlockStateSynced: 'unlock_state_synced'
+} as const;
+export type GlobalGameItemResponseDtoAchievementDataStateEnum = typeof GlobalGameItemResponseDtoAchievementDataStateEnum[keyof typeof GlobalGameItemResponseDtoAchievementDataStateEnum];
+
+
 /**
  * Check if a given object implements the GlobalGameItemResponseDto interface.
  */
@@ -97,6 +122,8 @@ export function instanceOfGlobalGameItemResponseDto(value: object): value is Glo
     if (!('hasAchievements' in value) || value['hasAchievements'] === undefined) return false;
     if (!('trackedPlayers' in value) || value['trackedPlayers'] === undefined) return false;
     if (!('totalAchievements' in value) || value['totalAchievements'] === undefined) return false;
+    if (!('achievementMetadataCount' in value) || value['achievementMetadataCount'] === undefined) return false;
+    if (!('achievementDataState' in value) || value['achievementDataState'] === undefined) return false;
     if (!('averageCompletionPercentage' in value) || value['averageCompletionPercentage'] === undefined) return false;
     if (!('completedPlayers' in value) || value['completedPlayers'] === undefined) return false;
     if (!('totalPlaytimeMinutes' in value) || value['totalPlaytimeMinutes'] === undefined) return false;
@@ -121,6 +148,8 @@ export function GlobalGameItemResponseDtoFromJSONTyped(json: any, ignoreDiscrimi
         'hasAchievements': json['hasAchievements'],
         'trackedPlayers': json['trackedPlayers'],
         'totalAchievements': json['totalAchievements'],
+        'achievementMetadataCount': json['achievementMetadataCount'],
+        'achievementDataState': json['achievementDataState'],
         'averageCompletionPercentage': json['averageCompletionPercentage'],
         'completedPlayers': json['completedPlayers'],
         'totalPlaytimeMinutes': json['totalPlaytimeMinutes'],
@@ -141,6 +170,8 @@ export function GlobalGameItemResponseDtoToJSON(value?: GlobalGameItemResponseDt
         'hasAchievements': value['hasAchievements'],
         'trackedPlayers': value['trackedPlayers'],
         'totalAchievements': value['totalAchievements'],
+        'achievementMetadataCount': value['achievementMetadataCount'],
+        'achievementDataState': value['achievementDataState'],
         'averageCompletionPercentage': value['averageCompletionPercentage'],
         'completedPlayers': value['completedPlayers'],
         'totalPlaytimeMinutes': value['totalPlaytimeMinutes'],

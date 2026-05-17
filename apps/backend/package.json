@@ -19,6 +19,7 @@
     "milestones:backfill-dev": "tsx src/scripts/backfill-milestones-dev.ts",
     "badges:backfill-dev": "tsx src/scripts/backfill-badges-dev.ts",
     "real-sync:smoke": "tsx src/scripts/real-steam-sync-smoke.ts",
+    "steam:data-diagnostics": "tsx src/scripts/steam-data-diagnostics.ts",
     "steam:config-check": "tsx src/scripts/steam-config-check.ts",
     "openapi:generate": "tsx src/scripts/generate-openapi.ts",
     "migration:run": "tsx src/db/migrate.ts run",

@@ -31,7 +31,7 @@ const checks: SmokeCheck[] = [
   {
     label: 'games',
     path: `/profiles/${DEMO_STEAM_ID}/games`,
-    validate: (body) => expectItems(body),
+    validate: (body) => expectProfileGamesWithPlaytime(body),
   },
   {
     label: 'completed games',
@@ -87,14 +87,21 @@ const checks: SmokeCheck[] = [
     label: 'game detail',
     path: `/profiles/${DEMO_STEAM_ID}/games/${DETAIL_APP_ID}`,
     validate: (body) =>
-      isRecord(body) && body.steamAppId === DETAIL_APP_ID
+      isRecord(body) &&
+      body.steamAppId === DETAIL_APP_ID &&
+      typeof body.playtimeMinutes === 'number' &&
+      typeof body.playtimeTwoWeeksMinutes === 'number' &&
+      typeof body.achievementMetadataCount === 'number' &&
+      typeof body.knownUnlockStateCount === 'number' &&
+      typeof body.achievementDataState === 'string' &&
+      ('lastPlayedAt' in body)
         ? String(body.name)
         : fail(),
   },
   {
     label: 'game achievements',
     path: `/profiles/${DEMO_STEAM_ID}/games/${DETAIL_APP_ID}/achievements`,
-    validate: (body) => expectItems(body),
+    validate: (body) => expectAchievementsWithUnlockState(body),
   },
   {
     label: 'global games',
@@ -107,7 +114,10 @@ const checks: SmokeCheck[] = [
     validate: (body) =>
       isRecord(body) &&
       isRecord(body.game) &&
-      body.game.steamAppId === GLOBAL_DETAIL_APP_ID
+      isRecord(body.stats) &&
+      body.game.steamAppId === GLOBAL_DETAIL_APP_ID &&
+      typeof body.game.achievementDataState === 'string' &&
+      typeof body.stats.achievementMetadataCount === 'number'
         ? String(body.game.name)
         : fail(),
   },
@@ -192,6 +202,52 @@ function expectItems(body: unknown): string {
   }
 
   return `${body.items.length} items`;
+}
+
+function expectProfileGamesWithPlaytime(body: unknown): string {
+  if (!isRecord(body) || !Array.isArray(body.items) || body.items.length === 0) {
+    return fail();
+  }
+
+  const hasPlaytimeFields = body.items.every(
+    (item) =>
+      isRecord(item) &&
+      typeof item.playtimeMinutes === 'number' &&
+      typeof item.playtimeTwoWeeksMinutes === 'number' &&
+      typeof item.achievementMetadataCount === 'number' &&
+      typeof item.knownUnlockStateCount === 'number' &&
+      typeof item.achievementDataState === 'string' &&
+      'lastPlayedAt' in item,
+  );
+
+  if (!hasPlaytimeFields) {
+    return fail();
+  }
+
+  const recentCount = body.items.filter(
+    (item) => isRecord(item) && Number(item.playtimeTwoWeeksMinutes) > 0,
+  ).length;
+  return `${body.items.length} items, ${recentCount} recent`;
+}
+
+function expectAchievementsWithUnlockState(body: unknown): string {
+  if (!isRecord(body) || !Array.isArray(body.items) || body.items.length === 0) {
+    return fail();
+  }
+
+  const unlockStates = new Set(
+    body.items.map((item) => (isRecord(item) ? item.unlockState : undefined)),
+  );
+
+  if (
+    ![...unlockStates].every(
+      (value) => value === 'unlocked' || value === 'locked' || value === 'unknown',
+    )
+  ) {
+    return fail();
+  }
+
+  return `${body.items.length} items, states=${[...unlockStates].join(',')}`;
 }
 
 function expectCollection(body: unknown): string {

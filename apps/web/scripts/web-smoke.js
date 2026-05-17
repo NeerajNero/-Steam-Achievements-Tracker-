@@ -21,6 +21,11 @@ const checks = [
   },
   {
     path: `/profiles/${DEMO_STEAM_ID}`,
+    marker: 'Recently Played',
+    label: 'demo profile recent games section',
+  },
+  {
+    path: `/profiles/${DEMO_STEAM_ID}`,
     marker: 'Badges',
     label: 'demo profile badges section',
   },
@@ -108,7 +113,7 @@ const sessionId = process.env.WEB_SESSION_ID;
 if (publicProfileSlug !== undefined && publicProfileSlug.length > 0) {
   checks.push({
     path: `/u/${encodeURIComponent(publicProfileSlug)}`,
-    marker: 'Public profile:',
+    marker: 'Loading public profile',
     label: 'configured public profile page',
   });
 }

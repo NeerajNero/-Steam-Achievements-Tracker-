@@ -15,7 +15,14 @@ import {
 import type { InferInsertModel, InferSelectModel, SQL } from 'drizzle-orm';
 
 import { DatabaseService } from '../database.service';
-import { games, profileGames, publicProfiles, steamProfiles } from '../schema';
+import {
+  achievements,
+  games,
+  profileAchievements,
+  profileGames,
+  publicProfiles,
+  steamProfiles,
+} from '../schema';
 import type { Game } from './games.repository';
 
 export type ProfileGame = InferSelectModel<typeof profileGames>;
@@ -73,9 +80,17 @@ export interface GameLibraryFilters {
 export interface ProfileGameWithGame {
   profileGame: ProfileGame;
   game: Game;
+  achievementMetadataCount?: number;
+  knownUnlockStateCount?: number;
 }
 
 export type UpsertOwnedGameProgressInput = Pick<
+  NewProfileGame,
+  'profileId' | 'gameId' | 'playtimeMinutes' | 'playtimeTwoWeeksMinutes'
+> &
+  Partial<Pick<NewProfileGame, 'lastPlayedAt' | 'lastSyncedAt'>>;
+
+export type UpsertRecentGameProgressInput = Pick<
   NewProfileGame,
   'profileId' | 'gameId' | 'playtimeMinutes' | 'playtimeTwoWeeksMinutes'
 > &
@@ -98,6 +113,7 @@ export interface PublicTrackedPlayerForGame {
   avatarUrl: string | null;
   profileUrl: string | null;
   playtimeMinutes: number;
+  playtimeTwoWeeksMinutes: number;
   totalAchievements: number;
   unlockedAchievements: number;
   completionPercentage: number;
@@ -148,6 +164,34 @@ export class ProfileGamesRepository {
           playtimeMinutes: input.playtimeMinutes,
           playtimeTwoWeeksMinutes: input.playtimeTwoWeeksMinutes,
           lastPlayedAt: input.lastPlayedAt,
+          lastSyncedAt: input.lastSyncedAt,
+          updatedAt: sql`now()`,
+        },
+      })
+      .returning();
+
+    return rows[0];
+  }
+
+  async upsertRecentGameProgressPreservingAchievementStats(
+    input: UpsertRecentGameProgressInput,
+  ): Promise<ProfileGame> {
+    const rows = await this.databaseService.db
+      .insert(profileGames)
+      .values({
+        ...input,
+        totalAchievements: 0,
+        unlockedAchievements: 0,
+        completionPercentage: 0,
+      })
+      .onConflictDoUpdate({
+        target: [profileGames.profileId, profileGames.gameId],
+        set: {
+          playtimeMinutes: input.playtimeMinutes,
+          playtimeTwoWeeksMinutes: input.playtimeTwoWeeksMinutes,
+          ...(input.lastPlayedAt === undefined || input.lastPlayedAt === null
+            ? {}
+            : { lastPlayedAt: input.lastPlayedAt }),
           lastSyncedAt: input.lastSyncedAt,
           updatedAt: sql`now()`,
         },
@@ -217,6 +261,7 @@ export class ProfileGamesRepository {
       .select({
         profileGame: profileGames,
         game: games,
+        ...achievementStateCountSelect,
       })
       .from(profileGames)
       .innerJoin(games, eq(profileGames.gameId, games.id))
@@ -245,6 +290,7 @@ export class ProfileGamesRepository {
       .select({
         profileGame: profileGames,
         game: games,
+        ...achievementStateCountSelect,
       })
       .from(profileGames)
       .innerJoin(games, eq(profileGames.gameId, games.id))
@@ -273,6 +319,7 @@ export class ProfileGamesRepository {
       .select({
         profileGame: profileGames,
         game: games,
+        ...achievementStateCountSelect,
       })
       .from(profileGames)
       .innerJoin(games, eq(profileGames.gameId, games.id))
@@ -288,6 +335,7 @@ export class ProfileGamesRepository {
       .select({
         profileGame: profileGames,
         game: games,
+        ...achievementStateCountSelect,
       })
       .from(profileGames)
       .innerJoin(games, eq(profileGames.gameId, games.id))
@@ -353,6 +401,7 @@ export class ProfileGamesRepository {
         avatarUrl: steamProfiles.avatarUrl,
         profileUrl: steamProfiles.profileUrl,
         playtimeMinutes: profileGames.playtimeMinutes,
+        playtimeTwoWeeksMinutes: profileGames.playtimeTwoWeeksMinutes,
         totalAchievements: profileGames.totalAchievements,
         unlockedAchievements: profileGames.unlockedAchievements,
         completionPercentage: profileGames.completionPercentage,
@@ -432,7 +481,11 @@ export class ProfileGamesRepository {
       case 'playtime':
         return [direction(profileGames.playtimeMinutes), asc(games.name)];
       case 'recently_played':
-        return [direction(profileGames.lastPlayedAt), asc(games.name)];
+        return [
+          direction(profileGames.playtimeTwoWeeksMinutes),
+          direction(profileGames.lastPlayedAt),
+          asc(games.name),
+        ];
       case 'remaining':
         return [
           direction(
@@ -481,6 +534,7 @@ export class ProfileGamesRepository {
         ];
       case 'recently_played':
         return [
+          direction(profileGames.playtimeTwoWeeksMinutes),
           direction(profileGames.lastPlayedAt),
           asc(steamProfiles.personaName),
           asc(steamProfiles.steamId),
@@ -496,3 +550,24 @@ export class ProfileGamesRepository {
     }
   }
 }
+
+const achievementStateCountSql = {
+  achievementMetadataCount: sql<number>`(
+    select cast(count(*) as int)
+    from ${achievements}
+    where ${achievements.steamAppId} = ${games.steamAppId}
+  )`,
+  knownUnlockStateCount: sql<number>`(
+    select cast(count(*) as int)
+    from ${profileAchievements}
+    inner join ${achievements}
+      on ${achievements.id} = ${profileAchievements.achievementId}
+    where ${profileAchievements.profileId} = ${profileGames.profileId}
+      and ${achievements.steamAppId} = ${games.steamAppId}
+  )`,
+};
+
+const achievementStateCountSelect = {
+  achievementMetadataCount: achievementStateCountSql.achievementMetadataCount,
+  knownUnlockStateCount: achievementStateCountSql.knownUnlockStateCount,
+};

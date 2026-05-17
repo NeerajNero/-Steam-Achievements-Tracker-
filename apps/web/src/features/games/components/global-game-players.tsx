@@ -216,7 +216,14 @@ export function GlobalGamePlayers({
                       {formatNumber(player.totalAchievements)}
                     </div>
                   </td>
-                  <td className="px-4 py-3">{formatPlaytime(player.playtimeMinutes)}</td>
+                  <td className="px-4 py-3">
+                    {formatPlaytime(player.playtimeMinutes)}
+                    <div className="mt-1 text-xs text-slate-500">
+                      {player.playtimeTwoWeeksMinutes > 0
+                        ? `${formatPlaytime(player.playtimeTwoWeeksMinutes)} past 2 weeks`
+                        : 'No recent play'}
+                    </div>
+                  </td>
                   <td className="px-4 py-3">{formatDateTime(player.lastPlayedAt)}</td>
                 </tr>
               ))}

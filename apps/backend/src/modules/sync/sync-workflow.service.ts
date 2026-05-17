@@ -43,6 +43,7 @@ import type {
   SteamPlayerAchievement,
   SteamPlayerAchievementResult,
   SteamPlayerSummary,
+  SteamRecentlyPlayedGame,
 } from '../steam/steam-api.types';
 import type { SyncScope } from './dto/sync-request.dto';
 import type { SyncJobData } from './sync-job.types';
@@ -266,10 +267,16 @@ export class SyncWorkflowService {
     await this.syncRunsDataService.assignProfile(syncRunId, profile.id);
 
     const ownedGames = await this.steamApiClient.getOwnedGames(steamId);
+    const recentGames = await this.fetchRecentlyPlayedGamesOrEmpty(steamId);
     const syncedAt = new Date();
 
     for (const ownedGame of ownedGames) {
       await this.upsertOwnedGame(profile.id, ownedGame, syncedAt);
+    }
+
+    const ownedAppIds = new Set(ownedGames.map((game) => game.appId));
+    for (const recentGame of recentGames) {
+      await this.upsertRecentGame(profile.id, recentGame, syncedAt);
     }
 
     await this.steamProfilesDataService.updateSyncState(profile.id, {
@@ -281,7 +288,17 @@ export class SyncWorkflowService {
     return requireSyncRun(
       await this.syncRunsDataService.markSuccess(syncRunId, {
         gamesSynced: ownedGames.length,
-        profileGamesSynced: ownedGames.length,
+        profileGamesSynced: ownedGames.length + countRecentOnlyGames(
+          recentGames,
+          ownedAppIds,
+        ),
+        recentGamesSynced: recentGames.length,
+        ownedGamesWithPlaytime: ownedGames.filter(
+          (game) => game.playtimeMinutes > 0,
+        ).length,
+        ownedGamesWithRecentPlaytime: ownedGames.filter(
+          (game) => game.playtimeTwoWeeksMinutes > 0,
+        ).length,
       }),
     );
   }
@@ -327,6 +344,22 @@ export class SyncWorkflowService {
     });
   }
 
+  private async fetchRecentlyPlayedGamesOrEmpty(
+    steamId: string,
+  ): Promise<SteamRecentlyPlayedGame[]> {
+    try {
+      return await this.steamApiClient.getRecentlyPlayedGames({
+        steamId,
+        count: 50,
+      });
+    } catch (error: unknown) {
+      this.logger.warn(
+        `Recent games refresh skipped steamId=${steamId} reason="${toSafeRecentGamesErrorMessage(error)}"`,
+      );
+      return [];
+    }
+  }
+
   private async upsertOwnedGame(
     profileId: string,
     ownedGame: SteamOwnedGame,
@@ -335,8 +368,8 @@ export class SyncWorkflowService {
     const game = await this.gamesDataService.upsertOwnedGame({
       steamAppId: ownedGame.appId,
       name: ownedGame.gameName,
-      iconUrl: null,
-      logoUrl: null,
+      iconUrl: ownedGame.iconUrl,
+      logoUrl: ownedGame.logoUrl,
     });
 
     await this.profileGamesDataService.upsertOwnedGameProgressPreservingAchievementStats(
@@ -346,6 +379,29 @@ export class SyncWorkflowService {
         playtimeMinutes: ownedGame.playtimeMinutes,
         playtimeTwoWeeksMinutes: ownedGame.playtimeTwoWeeksMinutes,
         lastPlayedAt: ownedGame.lastPlayedAt,
+        lastSyncedAt: syncedAt,
+      },
+    );
+  }
+
+  private async upsertRecentGame(
+    profileId: string,
+    recentGame: SteamRecentlyPlayedGame,
+    syncedAt: Date,
+  ): Promise<void> {
+    const game = await this.gamesDataService.upsertOwnedGame({
+      steamAppId: recentGame.appId,
+      name: recentGame.gameName,
+      iconUrl: recentGame.iconUrl,
+      logoUrl: recentGame.logoUrl,
+    });
+
+    await this.profileGamesDataService.upsertRecentGameProgressPreservingAchievementStats(
+      {
+        profileId,
+        gameId: game.id,
+        playtimeMinutes: recentGame.playtimeMinutes,
+        playtimeTwoWeeksMinutes: recentGame.playtimeTwoWeeksMinutes,
         lastSyncedAt: syncedAt,
       },
     );
@@ -748,6 +804,13 @@ function sumBy<T>(items: T[], selector: (item: T) => number): number {
   return items.reduce((total, item) => total + selector(item), 0);
 }
 
+function countRecentOnlyGames(
+  recentGames: SteamRecentlyPlayedGame[],
+  ownedAppIds: Set<number>,
+): number {
+  return recentGames.filter((game) => !ownedAppIds.has(game.appId)).length;
+}
+
 function isFullSuccessGameAchievementSync(
   result: GameAchievementSyncResult,
 ): result is SuccessfulGameAchievementSync {
@@ -790,6 +853,26 @@ function toSafeGameSyncErrorMessage(error: unknown): string {
   }
 
   return 'Achievement sync failed for this game.';
+}
+
+function toSafeRecentGamesErrorMessage(error: unknown): string {
+  if (error instanceof SteamApiConfigError) {
+    return 'STEAM_API_KEY is not configured in backend runtime environment.';
+  }
+
+  if (error instanceof SteamApiRateLimitError) {
+    return 'Steam API rate limit was reached while refreshing recent games.';
+  }
+
+  if (error instanceof SteamApiNotFoundOrPrivateError) {
+    return 'Recent games are missing, private, or unavailable.';
+  }
+
+  if (error instanceof SteamApiRequestError) {
+    return 'Steam API request failed while refreshing recent games.';
+  }
+
+  return 'Recent games refresh failed.';
 }
 
 function toSafeSnapshotErrorMessage(error: unknown): string {

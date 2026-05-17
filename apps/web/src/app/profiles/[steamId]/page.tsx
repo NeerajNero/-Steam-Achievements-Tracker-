@@ -42,6 +42,7 @@ import { GameLibrary } from '@/features/profile/components/game-library';
 import { GameLibraryFilters } from '@/features/profile/components/game-library-filters';
 import { NearestCompletions } from '@/features/profile/components/nearest-completions';
 import { RarestAchievements } from '@/features/profile/components/rarest-achievements';
+import { RecentGames } from '@/features/profile/components/recent-games';
 import { useProfileSnapshots } from '@/features/snapshots/api/use-profile-snapshots';
 import { ProfileSnapshotsList } from '@/features/snapshots/components/profile-snapshots-list';
 import { useProfileShowcase } from '@/features/showcase/api/use-profile-showcase';
@@ -97,6 +98,13 @@ export default function ProfilePage() {
     status: filters.status,
     sort: filters.sort,
     order: filters.order,
+  });
+  const recentGames = useProfileGames(steamId, {
+    limit: 5,
+    offset: 0,
+    status: ListProfileGamesStatusEnum.All,
+    sort: ListProfileGamesSortEnum.RecentlyPlayed,
+    order: ListProfileGamesOrderEnum.Desc,
   });
   const nearestCompletions = useNearestCompletions(steamId, 5);
   const rarestAchievements = useRarestAchievements(steamId, 5);
@@ -260,6 +268,13 @@ export default function ProfilePage() {
         </div>
 
         <aside className="grid content-start gap-6">
+          <RecentGames
+            error={recentGames.error}
+            isError={recentGames.isError}
+            isLoading={recentGames.isLoading}
+            items={recentGames.data?.items}
+            steamId={steamId}
+          />
           <NearestCompletions
             error={nearestCompletions.error}
             isError={nearestCompletions.isError}

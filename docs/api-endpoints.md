@@ -233,8 +233,9 @@ Query parameters:
 - `offset`: non-negative integer; default `0`.
 
 Response shape:
-- `items`: game metadata plus tracked player count, achievement count, average
-  completion, completed players, and total playtime.
+- `items`: game metadata plus tracked player count, achievement metadata count,
+  achievement data state, average completion, completed players, and total
+  playtime.
 - `total`
 - `limit`
 - `offset`
@@ -244,9 +245,10 @@ Response shape:
 Returns canonical game metadata and aggregate tracked-player stats.
 
 Response shape:
-- `game`: stored Steam app metadata.
-- `stats`: tracked players, completed players, total achievements, average
-  completion percentage, total playtime, and average playtime.
+- `game`: stored Steam app metadata plus `achievementMetadataCount` and
+  `achievementDataState`.
+- `stats`: tracked players, completed players, total achievement metadata rows,
+  average completion percentage, total playtime, and average playtime.
 
 Returns `404` when the Steam app is not tracked in the database.
 
@@ -278,6 +280,8 @@ Query parameters:
 Player rows include public Steam profile metadata and `publicSlug` when the
 linked public profile is published. They do not expose app user private fields,
 preferences, sessions, or token data.
+Rows include `playtimeMinutes`, `playtimeTwoWeeksMinutes`, and `lastPlayedAt`
+so global game pages can show both lifetime and recent playtime.
 
 ## Guides
 
@@ -351,13 +355,31 @@ Query parameters:
 
 Default sorting is `completion desc` so the library initially prioritizes games
 closest to completion.
+The `recently_played` sort uses two-week playtime first and then last-played
+timestamps, because Steam's recently played endpoint does not expose exact
+last-played timestamps.
 
 Response shape:
 - `steamId`
 - `total`
 - `limit`
 - `offset`
-- `items`: game metadata plus stored progress fields.
+- `items`: game metadata plus stored progress fields, including
+  `playtimeMinutes`, `playtimeTwoWeeksMinutes`, `lastPlayedAt`, and
+  `lastSyncedAt`.
+
+Each item also includes:
+- `achievementMetadataCount`: canonical `achievements` rows for the Steam app.
+- `knownUnlockStateCount`: profile-specific `profile_achievements` rows for
+  the Steam app.
+- `achievementDataState`: one of `not_synced`, `no_achievements`,
+  `metadata_only`, or `unlock_state_synced`.
+
+`metadata_only` means the platform has achievement names/icons/rarity, but
+Steam did not provide player unlock state. The frontend must show unknown
+progress, not locked progress. `not_synced` means achievement metadata has not
+been stored for that game yet; it is different from a confirmed
+zero-achievement game.
 
 ### `GET /profiles/:steamId/games/nearest-completions`
 
@@ -377,6 +399,11 @@ Returns one stored game detail for a profile.
 Response shape:
 - game metadata
 - profile progress
+- playtime fields: `playtimeMinutes`, `playtimeTwoWeeksMinutes`,
+  `lastPlayedAt`, and `lastSyncedAt`
+- `achievementMetadataCount`
+- `knownUnlockStateCount`
+- `achievementDataState`
 - `achievementsSummary`
 
 Returns `404` when the profile is missing or the profile does not have a stored
@@ -589,8 +616,8 @@ Selected achievement sync:
 
 Supported `scope` values:
 - `profile`: fetches Steam profile metadata and updates `steam_profiles`.
-- `games`: ensures the profile exists, fetches owned games, updates `games`,
-  and updates `profile_games` playtime fields.
+- `games`: ensures the profile exists, fetches owned games and recently played
+  games, updates `games`, and updates `profile_games` playtime fields.
 - `achievements`: syncs achievement metadata, global rarity, and profile
   unlock state for stored profile games.
 

@@ -13,6 +13,18 @@ import {
   getErrorMessage,
 } from '@/lib/format';
 
+function formatAchievementMetadata(game: GlobalGameItemResponseDto): string {
+  if (game.achievementDataState === 'not_synced') {
+    return 'Metadata not synced';
+  }
+
+  if (game.achievementDataState === 'no_achievements') {
+    return 'No achievements confirmed';
+  }
+
+  return `${formatNumber(game.achievementMetadataCount)} achievements`;
+}
+
 export function GlobalGamesList({
   error,
   isError,
@@ -86,9 +98,7 @@ export function GlobalGamesList({
                     </div>
                   </td>
                   <td className="px-4 py-3">
-                    {game.hasAchievements
-                      ? formatNumber(game.totalAchievements)
-                      : 'No achievements'}
+                    {formatAchievementMetadata(game)}
                   </td>
                   <td className="px-4 py-3">{formatNumber(game.trackedPlayers)}</td>
                   <td className="px-4 py-3">
