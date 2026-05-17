@@ -5,37 +5,19 @@ The backend isolates Steam Web API calls behind `SteamApiClient` in
 
 ## Supported Methods
 
-- `ISteamUser/GetPlayerSummaries/v2`
-  - Client method: `getPlayerSummaries(steamIds)`
-  - Fetches Steam profile metadata for one or more Steam IDs.
+| Data needed | Endpoint | Params used | Persistence target | Known limitations |
+| --- | --- | --- | --- | --- |
+| Steam profile summaries | `ISteamUser/GetPlayerSummaries/v2` | `key`, `steamids` | `steam_profiles` | Profile fields vary by privacy settings. |
+| Owned games and lifetime playtime | `IPlayerService/GetOwnedGames/v1` | `key`, `steamid`, `include_appinfo=true`, `include_played_free_games=true` | `games`, `profile_games.playtime_minutes`, `profile_games.playtime_two_weeks_minutes`, `profile_games.last_played_at` | Owned games/game details must be visible to the key. |
+| Recently played games | `IPlayerService/GetRecentlyPlayedGames/v1` | `key`, `steamid`, `count` | `profile_games.playtime_two_weeks_minutes`; `playtime_minutes` when returned | Does not expose exact last-played timestamps, so sync does not invent one. |
+| Achievement schema metadata | `ISteamUserStats/GetSchemaForGame/v2` | `key`, `appid`, `l=english` by default | `achievements` metadata fields | Some apps have no achievement schema. |
+| Player achievement unlock state | `ISteamUserStats/GetPlayerAchievements/v1` | `key`, `steamid`, `appid`, `l=english` by default | `profile_achievements`, then `profile_games` progress refresh | May return 403/unavailable; metadata remains valid and is shown as unknown unlock state. |
+| Global achievement rarity | `ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2` | `gameid` with the Steam app ID value | `achievements.global_percentage` | Public endpoint does not require a key on the public host. |
 
-- `IPlayerService/GetOwnedGames/v1`
-  - Client method: `getOwnedGames(steamId)`
-  - Fetches owned games with `include_appinfo=true` and
-    `include_played_free_games=true`.
-  - Normalizes lifetime playtime, two-week playtime, last played timestamp when
-    present, and Steam-hosted icon/logo URLs.
-
-- `IPlayerService/GetRecentlyPlayedGames/v1`
-  - Client method: `getRecentlyPlayedGames({ steamId, count })`
-  - Fetches recently played games and two-week playtime when Steam exposes it.
-    This endpoint does not provide an exact last-played timestamp, so sync does
-    not invent one.
-
-- `ISteamUserStats/GetPlayerAchievements/v1`
-  - Client method: `getPlayerAchievements({ steamId, appId, language })`
-  - Fetches profile achievement unlock state for one game. Sync treats this as
-    separate from schema/global metadata because Steam may deny player state
-    while still returning canonical metadata.
-
-- `ISteamUserStats/GetSchemaForGame/v2`
-  - Client method: `getSchemaForGame({ appId, language })`
-  - Fetches game achievement metadata.
-
-- `ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2`
-  - Client method: `getGlobalAchievementPercentages(appId)`
-  - Fetches global achievement rarity percentages. The client sends the app ID
-    as `gameid`, which is the parameter name used by this endpoint shape.
+`IPlayerService` is a Steam service interface. Steam documents `input_json`
+support for service interfaces, but service methods also accept standard query
+parameters. The client uses query parameters so paths and values are explicit in
+unit tests.
 
 ## Environment
 
@@ -81,6 +63,12 @@ docker-compose up -d --force-recreate backend
 Local development can use the public Steam Web API host. The base URL remains
 configurable so a partner host can be used later where needed. The client does
 not force a partner host.
+
+The local default is `https://api.steampowered.com`. Valve's Web API overview
+also documents `https://partner.steam-api.com` for secure server requests; that
+host can require a publisher key even for methods that are unkeyed on the
+public host. Keep `STEAM_API_BASE_URL` on the public host unless a publisher-key
+partner setup has been explicitly tested.
 
 ## Error Handling
 

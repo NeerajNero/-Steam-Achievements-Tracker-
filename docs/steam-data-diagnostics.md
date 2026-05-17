@@ -29,6 +29,17 @@ cache values.
   - persisted achievement/profile-achievement counts;
   - stored profile game progress.
 
+## Endpoint Matrix
+
+| Data needed | Steam endpoint | Params verified by diagnostics/tests | DB target |
+| --- | --- | --- | --- |
+| Profile metadata | `ISteamUser/GetPlayerSummaries/v2` | `key`, `steamids` | `steam_profiles` |
+| Owned games | `IPlayerService/GetOwnedGames/v1` | `key`, `steamid`, `include_appinfo`, `include_played_free_games` | `games`, `profile_games` |
+| Recent games | `IPlayerService/GetRecentlyPlayedGames/v1` | `key`, `steamid`, `count` | `profile_games.playtime_two_weeks_minutes` |
+| Achievement metadata | `ISteamUserStats/GetSchemaForGame/v2` | `key`, `appid`, `l` | `achievements` |
+| Player unlock state | `ISteamUserStats/GetPlayerAchievements/v1` | `key`, `steamid`, `appid`, `l` | `profile_achievements` |
+| Global rarity | `ISteamUserStats/GetGlobalAchievementPercentagesForApp/v2` | `gameid`; no key on public host | `achievements.global_percentage` |
+
 ## Reading The Result
 
 - Owned games count is present but playtime counts are zero:
