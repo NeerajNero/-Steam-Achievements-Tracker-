@@ -22,6 +22,12 @@ The current forward migrations are:
 ```txt
 0001-initial-platform-schema.sql
 0002-add-profile-snapshots-and-leaderboards.sql
+0003-add-guides-foundation.sql
+0004-add-gaming-sessions-foundation.sql
+0005-add-community-interactions.sql
+0006-add-activity-feed-and-milestones.sql
+0007-add-badges-and-showcase.sql
+0008-add-targets-foundation.sql
 ```
 
 Future schema changes should be added as new reviewed SQL migration files under
@@ -218,3 +224,22 @@ Showcase items are managed by the authenticated owner of the linked Steam
 profile. V1 limits the showcase to six items and focuses the frontend editor on
 earned badges. Image uploads, Cloudinary, generated share cards, notifications,
 and badge artwork pipelines remain deferred.
+
+## Targets Foundation Decision
+
+`0008-add-targets-foundation.sql` adds private account planner tables:
+
+- `game_targets` for signed-in users saving known Steam games as completion
+  targets;
+- `achievement_targets` for signed-in users saving known canonical achievements
+  as completion targets.
+
+Targets are tied to `app_users` and the user's linked primary
+`steam_profiles` row. Foreign keys use `ON DELETE RESTRICT`; target history is
+soft-deleted with `status = archived`.
+
+The schema is Steam-only. It intentionally does not add platform-neutral target
+types, notifications, calendar automation, public visibility, or AI
+recommendations. Achievement targets do not require known player unlock state,
+because Steam can expose achievement metadata without exposing player unlock
+state.

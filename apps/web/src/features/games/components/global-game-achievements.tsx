@@ -9,6 +9,7 @@ import type { ReactNode } from 'react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { SectionCard } from '@/components/ui/section-card';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { AchievementTargetButton } from '@/features/targets/components/target-button';
 import { formatPercent, getErrorMessage } from '@/lib/format';
 
 import {
@@ -233,6 +234,9 @@ export function GlobalGameAchievements({
                     ? 'Unknown rarity'
                     : formatPercent(achievement.globalPercentage)}
                 </StatusBadge>
+                <div className="mt-3">
+                  <AchievementTargetButton achievementId={achievement.id} />
+                </div>
               </div>
             </li>
           ))}

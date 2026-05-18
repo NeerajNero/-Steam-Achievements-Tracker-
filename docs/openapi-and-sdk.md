@@ -96,6 +96,16 @@ Account and public profile SDK calls use the same shared configuration. The
 frontend should use the generated `AccountApi` for authenticated settings and
 `PublicProfilesApi` for `/public-profiles/:slug`.
 
+The signed-in Hunter Command Center uses generated `DashboardApi` methods for
+`/dashboard/me`. This endpoint is auth-backed, DB-only, and should be consumed
+through `apps/web/src/features/dashboard/api/use-my-dashboard.ts`. The dashboard
+response includes saved active targets through generated target DTOs.
+
+Private target planning uses generated `TargetsApi` methods for
+`/account/targets`, `/account/targets/games`, and
+`/account/targets/achievements`. These endpoints require the auth session cookie
+and are consumed through `apps/web/src/features/targets/api`.
+
 Global game browsing uses the generated `GamesApi` methods for `/games`,
 `/games/:steamAppId`, `/games/:steamAppId/achievements`, and
 `/games/:steamAppId/players`. These are DB-only read endpoints and should still
@@ -215,3 +225,4 @@ docker-compose up -d --force-recreate web
   comments.
 - `ReportsApi` is generated for report intake. Report moderation review
   endpoints are not implemented yet.
+- `TargetsApi` is generated for private account game and achievement targets.

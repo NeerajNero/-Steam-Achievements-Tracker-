@@ -54,24 +54,22 @@ the squashed `0001` on top of a database that already has the old tables.
 After this reset point, treat applied migrations as immutable again. Future
 schema changes must be new numbered forward migrations.
 
-The current forward migration after the baseline is:
+The current forward migrations after the baseline are:
 
 ```txt
 0002-add-profile-snapshots-and-leaderboards.sql
+0003-add-guides-foundation.sql
+0004-add-gaming-sessions-foundation.sql
+0005-add-community-interactions.sql
+0006-add-activity-feed-and-milestones.sql
+0007-add-badges-and-showcase.sql
+0008-add-targets-foundation.sql
 ```
 
 It adds `profile_snapshots` and `create_profile_snapshot(...)` for snapshot and
 leaderboard v1 reads.
-
-The next forward migration is:
-
-```txt
-0003-add-guides-foundation.sql
-```
-
-It adds Steam game guides, ordered guide sections, and guide-to-achievement
-mappings. The migration uses status/archive lifecycle fields instead of cascade
-deletes or hard-deleting guide documents.
+The later migrations add guides, gaming sessions, community interactions,
+activity/milestones, badges/showcase, and private target planner tables.
 
 ## Create A Migration
 
@@ -193,6 +191,7 @@ Use clear numbered filenames:
 0005-add-community-interactions.sql
 0006-add-activity-feed-and-milestones.sql
 0007-add-badges-and-showcase.sql
+0008-add-targets-foundation.sql
 ```
 
 The runner sorts filenames lexicographically, so keep the zero-padded prefix.

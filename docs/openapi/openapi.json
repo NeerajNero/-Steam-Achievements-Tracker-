@@ -1106,6 +1106,347 @@
         ]
       }
     },
+    "/dashboard/me": {
+      "get": {
+        "operationId": "getMyDashboard",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MyDashboardResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "No active session."
+          }
+        },
+        "summary": "Get the signed-in hunter command center dashboard",
+        "tags": [
+          "dashboard"
+        ]
+      }
+    },
+    "/account/targets": {
+      "get": {
+        "operationId": "listAccountTargets",
+        "parameters": [
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "type",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "game",
+                "achievement",
+                "all"
+              ],
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "enum": [
+                "active",
+                "paused",
+                "completed",
+                "ignored",
+                "archived"
+              ],
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetsResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          }
+        },
+        "summary": "List signed-in user completion targets",
+        "tags": [
+          "targets"
+        ]
+      }
+    },
+    "/account/targets/games": {
+      "post": {
+        "operationId": "createGameTarget",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateGameTargetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A linked Steam profile is required."
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Game is unknown."
+          }
+        },
+        "summary": "Create or reactivate a signed-in user game target",
+        "tags": [
+          "targets"
+        ]
+      }
+    },
+    "/account/targets/games/{targetId}": {
+      "patch": {
+        "operationId": "updateGameTarget",
+        "parameters": [
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateGameTargetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Target is missing or belongs to another user."
+          }
+        },
+        "summary": "Update a signed-in user game target",
+        "tags": [
+          "targets"
+        ]
+      },
+      "delete": {
+        "operationId": "archiveGameTarget",
+        "parameters": [
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Target is missing or belongs to another user."
+          }
+        },
+        "summary": "Archive a signed-in user game target",
+        "tags": [
+          "targets"
+        ]
+      }
+    },
+    "/account/targets/achievements": {
+      "post": {
+        "operationId": "createAchievementTarget",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateAchievementTargetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "A linked Steam profile is required."
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Achievement is unknown."
+          }
+        },
+        "summary": "Create or reactivate a signed-in user achievement target",
+        "tags": [
+          "targets"
+        ]
+      }
+    },
+    "/account/targets/achievements/{targetId}": {
+      "patch": {
+        "operationId": "updateAchievementTarget",
+        "parameters": [
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateAchievementTargetDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Target is missing or belongs to another user."
+          }
+        },
+        "summary": "Update a signed-in user achievement target",
+        "tags": [
+          "targets"
+        ]
+      },
+      "delete": {
+        "operationId": "archiveAchievementTarget",
+        "parameters": [
+          {
+            "name": "targetId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountTargetResponseDto"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication is required."
+          },
+          "404": {
+            "description": "Target is missing or belongs to another user."
+          }
+        },
+        "summary": "Archive a signed-in user achievement target",
+        "tags": [
+          "targets"
+        ]
+      }
+    },
     "/sessions": {
       "get": {
         "operationId": "listGlobalSessions",
@@ -3083,6 +3424,14 @@
       "description": ""
     },
     {
+      "name": "dashboard",
+      "description": ""
+    },
+    {
+      "name": "targets",
+      "description": ""
+    },
+    {
       "name": "public-profiles",
       "description": ""
     }
@@ -4128,6 +4477,1070 @@
           "status",
           "createdAt"
         ]
+      },
+      "DashboardViewerResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Steam Hunter"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id"
+        ]
+      },
+      "DashboardProfileResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamId": {
+            "type": "string",
+            "example": "76561198000000000"
+          },
+          "steamProfileId": {
+            "type": "string",
+            "example": "steam-profile-id"
+          },
+          "personaName": {
+            "type": "string",
+            "nullable": true,
+            "example": "Demo Hunter"
+          },
+          "avatarUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "profileUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": "https://steamcommunity.com/profiles/76561198000000000"
+          },
+          "publicSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "demo-hunter"
+          },
+          "publicProfileIsPublished": {
+            "type": "boolean",
+            "example": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-18T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "steamId",
+          "steamProfileId",
+          "publicProfileIsPublished"
+        ]
+      },
+      "DashboardSummaryResponseDto": {
+        "type": "object",
+        "properties": {
+          "totalGames": {
+            "type": "number",
+            "example": 118
+          },
+          "completedGames": {
+            "type": "number",
+            "example": 12
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 7414
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 7373
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 41
+          },
+          "averageCompletionPercentage": {
+            "type": "number",
+            "example": 62.4
+          }
+        },
+        "required": [
+          "totalGames",
+          "completedGames",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "averageCompletionPercentage"
+        ]
+      },
+      "DashboardSyncRunResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "syncType": {
+            "type": "string",
+            "enum": [
+              "profile",
+              "games",
+              "achievements",
+              "full"
+            ],
+            "example": "achievements"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "queued",
+              "running",
+              "success",
+              "partial_success",
+              "failed"
+            ],
+            "example": "success"
+          },
+          "startedAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          },
+          "finishedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-18T12:00:04.000Z"
+          },
+          "errorMessage": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          }
+        },
+        "required": [
+          "id",
+          "syncType",
+          "status",
+          "startedAt"
+        ]
+      },
+      "DashboardGameRefResponseDto": {
+        "type": "object",
+        "properties": {
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo Complete Quest"
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 10
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 7
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 3
+          },
+          "completionPercentage": {
+            "type": "number",
+            "example": 70
+          },
+          "achievementDataState": {
+            "type": "string",
+            "enum": [
+              "not_synced",
+              "no_achievements",
+              "metadata_only",
+              "unlock_state_synced"
+            ],
+            "example": "unlock_state_synced"
+          },
+          "playtimeMinutes": {
+            "type": "number",
+            "example": 1240
+          },
+          "playtimeTwoWeeksMinutes": {
+            "type": "number",
+            "example": 45
+          },
+          "lastPlayedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-16T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "steamAppId",
+          "name",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "completionPercentage",
+          "achievementDataState",
+          "playtimeMinutes",
+          "playtimeTwoWeeksMinutes"
+        ]
+      },
+      "DashboardNextTargetResponseDto": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "closest_completion",
+              "recently_played_incomplete",
+              "high_playtime_unfinished",
+              "metadata_only",
+              "not_synced",
+              "guide_available",
+              "session_available"
+            ],
+            "example": "closest_completion"
+          },
+          "reason": {
+            "type": "string",
+            "example": "Only 3 achievements remaining"
+          },
+          "href": {
+            "type": "string",
+            "example": "/profiles/76561198000000000/games/910001"
+          },
+          "game": {
+            "$ref": "#/components/schemas/DashboardGameRefResponseDto"
+          },
+          "guideId": {
+            "type": "string",
+            "nullable": true,
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "guideSlug": {
+            "type": "string",
+            "nullable": true,
+            "example": "complete-route"
+          },
+          "sessionId": {
+            "type": "string",
+            "nullable": true,
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          }
+        },
+        "required": [
+          "type",
+          "reason",
+          "href",
+          "game"
+        ]
+      },
+      "TargetGameResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "name": {
+            "type": "string",
+            "example": "Demo Complete Quest"
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "logoUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "totalAchievements": {
+            "type": "number",
+            "example": 10
+          },
+          "unlockedAchievements": {
+            "type": "number",
+            "example": 7
+          },
+          "remainingAchievements": {
+            "type": "number",
+            "example": 3
+          },
+          "completionPercentage": {
+            "type": "number",
+            "example": 70
+          },
+          "achievementDataState": {
+            "type": "string",
+            "enum": [
+              "not_synced",
+              "no_achievements",
+              "metadata_only",
+              "unlock_state_synced"
+            ],
+            "example": "unlock_state_synced"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "name",
+          "totalAchievements",
+          "unlockedAchievements",
+          "remainingAchievements",
+          "completionPercentage",
+          "achievementDataState"
+        ]
+      },
+      "TargetAchievementResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "apiName": {
+            "type": "string",
+            "example": "ACH_WIN_ONE_GAME"
+          },
+          "displayName": {
+            "type": "string",
+            "nullable": true,
+            "example": "First Win"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Win once."
+          },
+          "iconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "iconGrayUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "globalPercentage": {
+            "type": "number",
+            "nullable": true,
+            "example": 12.4
+          },
+          "hidden": {
+            "type": "boolean",
+            "example": false
+          },
+          "unlockState": {
+            "type": "string",
+            "enum": [
+              "unlocked",
+              "locked",
+              "unknown"
+            ]
+          },
+          "unlockedAt": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "apiName",
+          "hidden",
+          "unlockState"
+        ]
+      },
+      "AccountTargetResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "game",
+              "achievement"
+            ]
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "completed",
+              "ignored",
+              "archived"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "targetCompletionPercentage": {
+            "type": "number",
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          },
+          "createdAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          },
+          "updatedAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          },
+          "game": {
+            "$ref": "#/components/schemas/TargetGameResponseDto"
+          },
+          "achievement": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/TargetAchievementResponseDto"
+              }
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "type",
+          "status",
+          "priority",
+          "createdAt",
+          "updatedAt",
+          "game"
+        ]
+      },
+      "DashboardActiveTargetsResponseDto": {
+        "type": "object",
+        "properties": {
+          "games": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountTargetResponseDto"
+            }
+          },
+          "achievements": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountTargetResponseDto"
+            }
+          }
+        },
+        "required": [
+          "games",
+          "achievements"
+        ]
+      },
+      "DashboardActivityResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "eventType": {
+            "type": "string",
+            "example": "profile_synced"
+          },
+          "occurredAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          },
+          "steamAppId": {
+            "type": "number",
+            "nullable": true,
+            "example": 910001
+          },
+          "entityType": {
+            "type": "string",
+            "example": "steam_profile"
+          },
+          "metadata": {
+            "type": "object",
+            "example": {
+              "scope": "achievements"
+            }
+          }
+        },
+        "required": [
+          "id",
+          "eventType",
+          "occurredAt",
+          "entityType",
+          "metadata"
+        ]
+      },
+      "DashboardMilestoneResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "milestoneType": {
+            "type": "string",
+            "example": "completion_percentage"
+          },
+          "thresholdValue": {
+            "type": "number",
+            "nullable": true,
+            "example": 75
+          },
+          "title": {
+            "type": "string",
+            "example": "75% Average Completion"
+          },
+          "description": {
+            "type": "string",
+            "nullable": true,
+            "example": "Reached 75% average completion."
+          },
+          "achievedAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "milestoneType",
+          "title",
+          "achievedAt"
+        ]
+      },
+      "DashboardBadgeResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "code": {
+            "type": "string",
+            "example": "first-sync"
+          },
+          "name": {
+            "type": "string",
+            "example": "First Sync"
+          },
+          "tier": {
+            "type": "string",
+            "nullable": true,
+            "example": "bronze"
+          },
+          "iconKey": {
+            "type": "string",
+            "nullable": true,
+            "example": "spark"
+          },
+          "earnedAt": {
+            "type": "string",
+            "example": "2026-05-18T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "code",
+          "name",
+          "earnedAt"
+        ]
+      },
+      "DashboardSessionResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "gameName": {
+            "type": "string",
+            "example": "Demo Complete Quest"
+          },
+          "gameIconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "title": {
+            "type": "string",
+            "example": "Co-op completion run"
+          },
+          "status": {
+            "type": "string",
+            "example": "open"
+          },
+          "scheduledStartAt": {
+            "type": "string",
+            "example": "2026-05-20T12:00:00.000Z"
+          },
+          "maxParticipants": {
+            "type": "number",
+            "example": 4
+          },
+          "participantCount": {
+            "type": "number",
+            "example": 2
+          },
+          "achievementCount": {
+            "type": "number",
+            "example": 3
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "gameName",
+          "title",
+          "status",
+          "scheduledStartAt",
+          "maxParticipants",
+          "participantCount",
+          "achievementCount"
+        ]
+      },
+      "DashboardSessionsResponseDto": {
+        "type": "object",
+        "properties": {
+          "hosted": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardSessionResponseDto"
+            }
+          },
+          "joined": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardSessionResponseDto"
+            }
+          },
+          "upcomingForOwnedGames": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardSessionResponseDto"
+            }
+          }
+        },
+        "required": [
+          "hosted",
+          "joined",
+          "upcomingForOwnedGames"
+        ]
+      },
+      "DashboardGuideResponseDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "gameName": {
+            "type": "string",
+            "example": "Demo Complete Quest"
+          },
+          "gameIconUrl": {
+            "type": "string",
+            "nullable": true,
+            "example": null
+          },
+          "title": {
+            "type": "string",
+            "example": "100% Roadmap"
+          },
+          "slug": {
+            "type": "string",
+            "example": "100-roadmap"
+          },
+          "summary": {
+            "type": "string",
+            "nullable": true,
+            "example": "Route overview."
+          },
+          "status": {
+            "type": "string",
+            "example": "published"
+          },
+          "visibility": {
+            "type": "string",
+            "example": "public"
+          },
+          "publishedAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-18T12:00:00.000Z"
+          }
+        },
+        "required": [
+          "id",
+          "steamAppId",
+          "gameName",
+          "title",
+          "slug",
+          "status",
+          "visibility"
+        ]
+      },
+      "DashboardGuidesResponseDto": {
+        "type": "object",
+        "properties": {
+          "authored": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGuideResponseDto"
+            }
+          },
+          "suggested": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGuideResponseDto"
+            }
+          }
+        },
+        "required": [
+          "authored",
+          "suggested"
+        ]
+      },
+      "DashboardDataQualityResponseDto": {
+        "type": "object",
+        "properties": {
+          "metadataOnlyGames": {
+            "type": "number",
+            "example": 2
+          },
+          "notSyncedGames": {
+            "type": "number",
+            "example": 4
+          },
+          "lastSyncAt": {
+            "type": "string",
+            "nullable": true,
+            "example": "2026-05-18T12:00:00.000Z"
+          },
+          "metadataOnlyExamples": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGameRefResponseDto"
+            }
+          },
+          "notSyncedExamples": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardGameRefResponseDto"
+            }
+          }
+        },
+        "required": [
+          "metadataOnlyGames",
+          "notSyncedGames",
+          "metadataOnlyExamples",
+          "notSyncedExamples"
+        ]
+      },
+      "MyDashboardResponseDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "ready",
+              "link_required"
+            ],
+            "example": "ready"
+          },
+          "viewer": {
+            "$ref": "#/components/schemas/DashboardViewerResponseDto"
+          },
+          "profile": {
+            "nullable": true,
+            "type": "object",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DashboardProfileResponseDto"
+              }
+            ]
+          },
+          "summary": {
+            "$ref": "#/components/schemas/DashboardSummaryResponseDto"
+          },
+          "latestSyncRuns": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardSyncRunResponseDto"
+            }
+          },
+          "nextTargets": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardNextTargetResponseDto"
+            }
+          },
+          "activeTargets": {
+            "$ref": "#/components/schemas/DashboardActiveTargetsResponseDto"
+          },
+          "recentActivity": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardActivityResponseDto"
+            }
+          },
+          "milestones": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardMilestoneResponseDto"
+            }
+          },
+          "badges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/DashboardBadgeResponseDto"
+            }
+          },
+          "sessions": {
+            "$ref": "#/components/schemas/DashboardSessionsResponseDto"
+          },
+          "guides": {
+            "$ref": "#/components/schemas/DashboardGuidesResponseDto"
+          },
+          "dataQuality": {
+            "$ref": "#/components/schemas/DashboardDataQualityResponseDto"
+          }
+        },
+        "required": [
+          "status",
+          "viewer",
+          "summary",
+          "latestSyncRuns",
+          "nextTargets",
+          "activeTargets",
+          "recentActivity",
+          "milestones",
+          "badges",
+          "sessions",
+          "guides",
+          "dataQuality"
+        ]
+      },
+      "AccountTargetsResponseDto": {
+        "type": "object",
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/AccountTargetResponseDto"
+            }
+          },
+          "total": {
+            "type": "number",
+            "example": 10
+          },
+          "limit": {
+            "type": "number",
+            "example": 50
+          },
+          "offset": {
+            "type": "number",
+            "example": 0
+          }
+        },
+        "required": [
+          "items",
+          "total",
+          "limit",
+          "offset"
+        ]
+      },
+      "CreateGameTargetDto": {
+        "type": "object",
+        "properties": {
+          "steamAppId": {
+            "type": "number",
+            "example": 910001
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "medium"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "targetCompletionPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "required": [
+          "steamAppId"
+        ]
+      },
+      "UpdateGameTargetDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "completed",
+              "ignored",
+              "archived"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "targetCompletionPercentage": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 100,
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
+      },
+      "CreateAchievementTargetDto": {
+        "type": "object",
+        "properties": {
+          "achievementId": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "medium"
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        },
+        "required": [
+          "achievementId"
+        ]
+      },
+      "UpdateAchievementTargetDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "paused",
+              "completed",
+              "ignored",
+              "archived"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          },
+          "dueDate": {
+            "type": "string",
+            "format": "date",
+            "nullable": true
+          }
+        }
       },
       "SessionUserResponseDto": {
         "type": "object",
@@ -5356,6 +6769,10 @@
       "AchievementWithUnlockStateResponseDto": {
         "type": "object",
         "properties": {
+          "id": {
+            "type": "string",
+            "example": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95"
+          },
           "apiName": {
             "type": "string",
             "example": "ACH_WIN_ONE_GAME"
@@ -5415,6 +6832,7 @@
           }
         },
         "required": [
+          "id",
           "apiName",
           "hidden",
           "achieved",

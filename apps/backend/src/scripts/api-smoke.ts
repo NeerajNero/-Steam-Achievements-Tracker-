@@ -4,6 +4,7 @@ const DETAIL_APP_ID = 910002;
 const GLOBAL_DETAIL_APP_ID = 910001;
 
 interface SmokeCheck {
+  expectedStatus?: number;
   label: string;
   path: string;
   validate: (body: unknown) => string;
@@ -14,6 +15,18 @@ const checks: SmokeCheck[] = [
     label: 'health',
     path: '/health',
     validate: (body) => (isRecord(body) && body.status === 'ok' ? 'ok' : fail()),
+  },
+  {
+    expectedStatus: 401,
+    label: 'dashboard requires auth',
+    path: '/dashboard/me',
+    validate: (body) => expectUnauthorized(body),
+  },
+  {
+    expectedStatus: 401,
+    label: 'targets require auth',
+    path: '/account/targets',
+    validate: (body) => expectUnauthorized(body),
   },
   {
     label: 'profile',
@@ -176,10 +189,11 @@ async function main(): Promise<void> {
 
   for (const check of checks) {
     const response = await fetch(`${baseUrl}${check.path}`);
+    const expectedStatus = check.expectedStatus ?? 200;
 
-    if (!response.ok) {
+    if (response.status !== expectedStatus) {
       throw new Error(
-        `${check.label} failed with HTTP ${response.status} ${response.statusText}`,
+        `${check.label} failed with HTTP ${response.status} ${response.statusText}; expected ${expectedStatus}`,
       );
     }
 
@@ -256,6 +270,14 @@ function expectCollection(body: unknown): string {
   }
 
   return `${body.items.length} items`;
+}
+
+function expectUnauthorized(body: unknown): string {
+  if (!isRecord(body) || body.statusCode !== 401) {
+    return fail();
+  }
+
+  return '401';
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

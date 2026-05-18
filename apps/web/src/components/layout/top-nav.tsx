@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 
 import { AuthStatus } from '@/features/auth/components/auth-status';
+import { useCurrentUser } from '@/features/auth/api/use-current-user';
 
 import { isNavLinkActive } from './nav-utils';
 
@@ -19,6 +20,16 @@ const primaryLinks = [
 
 export function TopNav(): ReactNode {
   const pathname = usePathname();
+  const currentUser = useCurrentUser();
+  const links =
+    currentUser.data === null || currentUser.data === undefined
+      ? primaryLinks
+      : [
+          primaryLinks[0],
+          { href: '/dashboard', label: 'Dashboard' },
+          { href: '/account/targets', label: 'Targets' },
+          ...primaryLinks.slice(1),
+        ];
 
   return (
     <header className="sticky top-0 z-30 border-b border-white/10 bg-slate-950/90 backdrop-blur">
@@ -36,7 +47,7 @@ export function TopNav(): ReactNode {
             </span>
           </Link>
           <nav aria-label="Primary navigation" className="flex flex-wrap gap-1">
-            {primaryLinks.map((link) => (
+            {links.map((link) => (
               <Link
                 className={`rounded-full px-3 py-2 text-sm font-medium transition ${
                   isNavLinkActive(pathname, link.href)

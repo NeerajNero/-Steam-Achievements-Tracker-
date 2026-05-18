@@ -45,6 +45,11 @@ const checks = [
     label: 'global games page',
   },
   {
+    path: '/dashboard',
+    marker: 'Hunter Command Center',
+    label: 'dashboard page',
+  },
+  {
     path: `/games/${DEMO_GAME_ID}`,
     marker: 'Global Steam Game',
     label: 'global game detail page',
@@ -83,6 +88,11 @@ const checks = [
     path: '/account/guides',
     marker: 'Your guides',
     label: 'account guides page',
+  },
+  {
+    path: '/account/targets',
+    marker: 'Achievement Targets',
+    label: 'account targets page',
   },
   {
     path: '/leaderboards',

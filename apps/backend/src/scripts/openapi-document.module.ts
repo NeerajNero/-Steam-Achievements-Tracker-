@@ -13,6 +13,8 @@ import { GamesService } from '../modules/games/games.service';
 import { GlobalGamesController } from '../modules/games/global-games.controller';
 import { CommunityController } from '../modules/community/community.controller';
 import { CommunityService } from '../modules/community/community.service';
+import { DashboardController } from '../modules/dashboard/dashboard.controller';
+import { DashboardService } from '../modules/dashboard/dashboard.service';
 import { ReportsController } from '../modules/community/reports.controller';
 import { GamingSessionsController } from '../modules/gaming-sessions/gaming-sessions.controller';
 import { GamingSessionsService } from '../modules/gaming-sessions/gaming-sessions.service';
@@ -36,6 +38,8 @@ import { SnapshotsController } from '../modules/snapshots/snapshots.controller';
 import { SnapshotsService } from '../modules/snapshots/snapshots.service';
 import { SyncController } from '../modules/sync/sync.controller';
 import { SyncService } from '../modules/sync/sync.service';
+import { TargetsController } from '../modules/targets/targets.controller';
+import { TargetsService } from '../modules/targets/targets.service';
 import { SessionAuthGuard } from '../modules/auth/session-auth.guard';
 import { OptionalSessionAuthGuard } from '../modules/auth/optional-session-auth.guard';
 
@@ -50,6 +54,8 @@ const serviceStub = {};
     GlobalGamesController,
     CommunityController,
     ReportsController,
+    DashboardController,
+    TargetsController,
     GamingSessionsController,
     GuidesController,
     GamesController,
@@ -69,6 +75,8 @@ const serviceStub = {};
     { provide: BadgesService, useValue: serviceStub },
     { provide: GamesService, useValue: serviceStub },
     { provide: CommunityService, useValue: serviceStub },
+    { provide: DashboardService, useValue: serviceStub },
+    { provide: TargetsService, useValue: serviceStub },
     { provide: GamingSessionsService, useValue: serviceStub },
     { provide: GuidesService, useValue: serviceStub },
     { provide: AchievementsService, useValue: serviceStub },

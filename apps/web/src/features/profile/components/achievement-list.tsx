@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { SectionCard } from '@/components/ui/section-card';
 import { formatDateTime, formatPercent, getErrorMessage } from '@/lib/format';
+import { AchievementTargetButton } from '@/features/targets/components/target-button';
 
 import { UnlockStateBadge } from './unlock-state-badge';
 
@@ -94,6 +95,12 @@ export function AchievementList({
                     {formatDateTime(achievement.unlockedAt)}
                   </div>
                 ) : null}
+                <div className="mt-3">
+                  <AchievementTargetButton
+                    achievementId={achievement.id}
+                    unlockState={achievement.unlockState}
+                  />
+                </div>
               </div>
             </li>
           ))}

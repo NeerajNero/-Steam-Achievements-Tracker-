@@ -21,6 +21,10 @@ export type {
 export class AchievementsDataService {
   constructor(private readonly achievementsRepository: AchievementsRepository) {}
 
+  async findById(id: string): Promise<Achievement | null> {
+    return this.achievementsRepository.findById(id);
+  }
+
   async findBySteamAppIdAndApiName(
     steamAppId: number,
     apiName: string,

@@ -25,6 +25,16 @@ export function formatDateTime(value: string | null | undefined): string {
   }).format(new Date(value));
 }
 
+export function formatDate(value: Date | string | null | undefined): string {
+  if (value === undefined || value === null) {
+    return 'Not set';
+  }
+
+  return new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+  }).format(new Date(value));
+}
+
 export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;

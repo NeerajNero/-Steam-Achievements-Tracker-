@@ -158,7 +158,7 @@ describe('GamingSessionsService', () => {
 });
 
 const now = new Date('2026-01-01T00:00:00.000Z');
-const futureDate = new Date('2026-05-18T15:00:00.000Z');
+const futureDate = new Date('2030-05-18T15:00:00.000Z');
 
 function createService(
   options: {

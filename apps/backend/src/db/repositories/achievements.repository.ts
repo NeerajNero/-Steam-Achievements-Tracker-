@@ -41,6 +41,16 @@ export interface GlobalAchievementFilters {
 export class AchievementsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
 
+  async findById(id: string): Promise<Achievement | null> {
+    const rows = await this.databaseService.db
+      .select()
+      .from(achievements)
+      .where(eq(achievements.id, id))
+      .limit(1);
+
+    return rows[0] ?? null;
+  }
+
   async findBySteamAppIdAndApiName(
     steamAppId: number,
     apiName: string,

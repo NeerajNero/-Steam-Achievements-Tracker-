@@ -1,6 +1,7 @@
 export * from './activity-events.schema';
 export * from './app-users.schema';
 export * from './achievements.schema';
+export * from './achievement-targets.schema';
 export * from './auth-sessions.schema';
 export * from './badges.schema';
 export * from './content-reports.schema';
@@ -10,6 +11,7 @@ export * from './guide-sections.schema';
 export * from './guide-votes.schema';
 export * from './guides.schema';
 export * from './games.schema';
+export * from './game-targets.schema';
 export * from './gaming-session-achievements.schema';
 export * from './session-comments.schema';
 export * from './gaming-session-participants.schema';

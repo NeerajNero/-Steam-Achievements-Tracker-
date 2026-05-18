@@ -6,6 +6,7 @@ import { ActivityEventsRepository } from './repositories/activity-events.reposit
 import { AppUsersRepository } from './repositories/app-users.repository';
 import { AuthCallbackRepository } from './repositories/auth-callback.repository';
 import { ContentReportsRepository } from './repositories/content-reports.repository';
+import { DashboardRepository } from './repositories/dashboard.repository';
 import { BadgesRepository } from './repositories/badges.repository';
 import { GamesRepository } from './repositories/games.repository';
 import { GuideCommentsRepository } from './repositories/guide-comments.repository';
@@ -26,6 +27,7 @@ import { ProfileSnapshotsRepository } from './repositories/profile-snapshots.rep
 import { ProfileShowcaseItemsRepository } from './repositories/profile-showcase-items.repository';
 import { PublicProfilesRepository } from './repositories/public-profiles.repository';
 import { SteamProfilesRepository } from './repositories/steam-profiles.repository';
+import { TargetsRepository } from './repositories/targets.repository';
 import { AuthSessionsRepository } from './repositories/auth-sessions.repository';
 import { SyncRunsRepository } from './repositories/sync-runs.repository';
 import { UserPreferencesRepository } from './repositories/user-preferences.repository';
@@ -37,6 +39,7 @@ import { AppUsersDataService } from './services/app-users-data.service';
 import { AuthCallbackDataService } from './services/auth-callback-data.service';
 import { BadgesDataService } from './services/badges-data.service';
 import { ContentReportsDataService } from './services/content-reports-data.service';
+import { DashboardDataService } from './services/dashboard-data.service';
 import { GamesDataService } from './services/games-data.service';
 import { GuideCommentsDataService } from './services/guide-comments-data.service';
 import { GuideAchievementsDataService } from './services/guide-achievements-data.service';
@@ -59,6 +62,7 @@ import { ProfileShowcaseItemsDataService } from './services/profile-showcase-ite
 import { PublicProfilesDataService } from './services/public-profiles-data.service';
 import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
+import { TargetsDataService } from './services/targets-data.service';
 import { SyncRunsDataService } from './services/sync-runs-data.service';
 import { UserPreferencesDataService } from './services/user-preferences-data.service';
 import { UserSteamAccountsDataService } from './services/user-steam-accounts-data.service';
@@ -74,7 +78,9 @@ import { DatabaseService } from './database.service';
     AuthSessionsRepository,
     BadgesRepository,
     ContentReportsRepository,
+    DashboardRepository,
     SteamProfilesRepository,
+    TargetsRepository,
     AppUsersRepository,
     UserSteamAccountsRepository,
     UserPreferencesRepository,
@@ -103,8 +109,10 @@ import { DatabaseService } from './database.service';
     AuthCallbackDataService,
     BadgesDataService,
     ContentReportsDataService,
+    DashboardDataService,
     AppUsersDataService,
     SteamProfilesDataService,
+    TargetsDataService,
     UserSteamAccountsDataService,
     UserPreferencesDataService,
     PublicProfilesDataService,
@@ -138,8 +146,10 @@ import { DatabaseService } from './database.service';
     AuthCallbackDataService,
     BadgesDataService,
     ContentReportsDataService,
+    DashboardDataService,
     AppUsersDataService,
     SteamProfilesDataService,
+    TargetsDataService,
     GamesDataService,
     GuidesDataService,
     GuideCommentsDataService,
