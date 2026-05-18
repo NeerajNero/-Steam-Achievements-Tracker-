@@ -12,6 +12,49 @@ Interactive API documentation is available locally at:
 The generated OpenAPI contract is written to `docs/openapi/openapi.json`, and
 the frontend SDK is generated in `libs/client-sdk`.
 
+## Dashboard
+
+### `GET /dashboard/me`
+
+Authenticated, DB-only aggregate endpoint for the signed-in Hunter Command
+Center. It resolves the current user's linked primary Steam profile and does not
+call Steam Web API at request time.
+
+Operation ID: `getMyDashboard`
+
+Response shape:
+- `status`: `ready` or `link_required`
+- `viewer`: safe signed-in user identity
+- `profile`: linked Steam profile summary, or `null` when linking is required
+- `summary`: total games, completions, achievements, remaining count, average
+  completion
+- `latestSyncRuns`: recent stored sync runs
+- `nextTargets`: deterministic target cards with `type`, `reason`, `href`, and
+  game progress details
+- `recentActivity`: recent stored activity events
+- `milestones`: latest profile milestones
+- `badges`: latest earned badges
+- `sessions`: hosted, joined, and upcoming public sessions for owned games
+- `guides`: authored guides and suggested public guides for owned/recent games
+- `dataQuality`: metadata-only count, not-synced count, last sync time, and
+  examples
+- `activeTargets`: active saved game and achievement targets ordered by
+  priority, due date, and creation time
+
+Returns `401` when no auth session is present. Returns `status:
+link_required` with empty dashboard sections when the signed-in user does not
+have a linked primary Steam profile. The response must not expose auth cookies,
+raw session tokens, or session token hashes.
+
+Next-target ordering is deterministic:
+1. closest completion games;
+2. recently played incomplete games;
+3. high-playtime unfinished games;
+4. games with achievement metadata but unknown unlock state;
+5. games with achievement metadata not yet synced;
+6. games with guides available;
+7. upcoming sessions for owned games.
+
 ## Auth
 
 Auth is Steam-only and backend-owned. The frontend must not call Steam OpenID or
@@ -122,6 +165,88 @@ Reserved slugs are rejected: `admin`, `api`, `auth`, `account`, `profiles`,
 `games`, `settings`, `docs`, and `health`.
 
 Slug conflicts return `409 Conflict`.
+
+## Targets
+
+Targets are private account data for signed-in users. The backend resolves the
+current user's linked primary Steam profile, reads/writes stored database rows,
+and does not call Steam Web API.
+
+### `GET /account/targets`
+
+Operation ID: `listAccountTargets`
+
+Query parameters:
+- `status`: optional `active`, `paused`, `completed`, `ignored`, or `archived`
+- `type`: optional `game`, `achievement`, or `all`
+- `limit`: default `50`, max `100`
+- `offset`: default `0`
+
+Returns game and achievement targets with game/achievement metadata. Returns
+`401` when unauthenticated.
+
+### `POST /account/targets/games`
+
+Operation ID: `createGameTarget`
+
+Creates or reactivates a game target for a known Steam game.
+
+Request body:
+
+```json
+{
+  "steamAppId": 910001,
+  "priority": "medium",
+  "notes": "Finish cleanup",
+  "targetCompletionPercentage": 100,
+  "dueDate": "2026-06-01"
+}
+```
+
+Requires a linked primary Steam profile. Unknown games return `404`.
+
+### `PATCH /account/targets/games/:targetId`
+
+Operation ID: `updateGameTarget`
+
+Owner-only update for status, priority, notes, target completion percentage, and
+due date.
+
+### `DELETE /account/targets/games/:targetId`
+
+Operation ID: `archiveGameTarget`
+
+Soft-deletes a game target by setting `status = archived`.
+
+### `POST /account/targets/achievements`
+
+Operation ID: `createAchievementTarget`
+
+Creates or reactivates an achievement target for a known canonical achievement.
+The player unlock state does not need to be known.
+
+Request body:
+
+```json
+{
+  "achievementId": "3dd0928a-28f6-4e9b-a5ad-164d536b8d95",
+  "priority": "high",
+  "notes": "Practice route",
+  "dueDate": "2026-06-01"
+}
+```
+
+### `PATCH /account/targets/achievements/:targetId`
+
+Operation ID: `updateAchievementTarget`
+
+Owner-only update for status, priority, notes, and due date.
+
+### `DELETE /account/targets/achievements/:targetId`
+
+Operation ID: `archiveAchievementTarget`
+
+Soft-deletes an achievement target by setting `status = archived`.
 
 ## Public Profiles
 

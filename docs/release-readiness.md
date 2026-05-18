@@ -8,6 +8,7 @@ deployment.
 
 - Steam profile sync and queued sync history.
 - Public Steam profile dashboards and public profile slugs.
+- Signed-in Hunter Command Center dashboard at `/dashboard`.
 - Global Steam game browsing with achievements and tracked players.
 - Profile snapshots, milestones, badges, showcase, and leaderboards.
 - Game guides and achievement roadmaps.
@@ -106,6 +107,7 @@ metadata as “No achievements.”
 Check the main routes:
 
 - `/`
+- `/dashboard`
 - `/profiles/76561198000000000`
 - `/profiles/76561198000000000/games/910001`
 - `/games`
@@ -170,6 +172,7 @@ Intentionally deferred:
 - production deployment and production hardening;
 - real-time chat;
 - notifications and reminders;
+- AI recommendations in the Hunter Command Center;
 - uploads, Cloudinary, profile banners, and guide images;
 - generated share cards/gamercards;
 - moderation dashboard and moderation action workflows;

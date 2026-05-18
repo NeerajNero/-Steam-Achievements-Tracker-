@@ -7,6 +7,8 @@
 - Achievement metadata sync.
 - User achievement unlock sync.
 - Dashboard summary.
+- Signed-in Hunter Command Center dashboard composed from stored Steam profile
+  data.
 - Game library list.
 - Game details.
 - Nearest 100% games.
@@ -18,12 +20,15 @@
 - Advanced library filters and sorts.
 - Coherent dashboard navigation and shared frontend UI primitives across public
   profile, game, leaderboard, guide, session, and activity pages.
+- Deterministic command-center target rules that answer what to play, sync, or
+  review next without AI.
 - Global Steam game browsing.
 - Latest-snapshot leaderboard v1.
 - Basic Steam game guides and achievement roadmaps.
 - Basic Steam gaming sessions for co-op/multiplayer achievement boosting.
 - Public activity feed and snapshot-derived profile milestones.
 - Milestone-derived badges and owner-curated profile showcase items.
+- Private game and achievement targets surfaced in the Hunter Command Center.
 - Backlog optimization based on remaining achievements, rarity, and playtime.
 - Suggested next games to complete.
 - Suggested achievement targets for near-complete games.
@@ -33,6 +38,8 @@
 - Achievement goals.
 - Richer guide editing, comment moderation, nested threads, and voting analytics
   after the community foundation proves useful.
+- Target reminders, target history, and calendar planning after the private
+  targets foundation proves useful.
 - Session chat, reminders, notifications, calendar export, and no-show tracking
   after the session/community foundations prove useful.
 - Real-time activity, notifications, share cards, and milestone artwork after the
@@ -62,6 +69,8 @@
 ## Phase 5: AI And Backlog Intelligence
 
 - AI-assisted backlog explanations.
+- AI-assisted backlog explanations layered on top of the deterministic command
+  center rules, not replacing them.
 - AI-generated next-step plans for selected completion goals.
 - AI summaries of recent progress.
 - AI discovery for rare or interesting achievements.

@@ -24,6 +24,12 @@ export interface AchievementWithUnlockStateResponseDto {
      * @type {string}
      * @memberof AchievementWithUnlockStateResponseDto
      */
+    id: string;
+    /**
+     * 
+     * @type {string}
+     * @memberof AchievementWithUnlockStateResponseDto
+     */
     apiName: string;
     /**
      * 
@@ -103,6 +109,7 @@ export type AchievementWithUnlockStateResponseDtoUnlockStateEnum = typeof Achiev
  * Check if a given object implements the AchievementWithUnlockStateResponseDto interface.
  */
 export function instanceOfAchievementWithUnlockStateResponseDto(value: object): value is AchievementWithUnlockStateResponseDto {
+    if (!('id' in value) || value['id'] === undefined) return false;
     if (!('apiName' in value) || value['apiName'] === undefined) return false;
     if (!('hidden' in value) || value['hidden'] === undefined) return false;
     if (!('achieved' in value) || value['achieved'] === undefined) return false;
@@ -120,6 +127,7 @@ export function AchievementWithUnlockStateResponseDtoFromJSONTyped(json: any, ig
     }
     return {
         
+        'id': json['id'],
         'apiName': json['apiName'],
         'displayName': json['displayName'] == null ? undefined : json['displayName'],
         'description': json['description'] == null ? undefined : json['description'],
@@ -140,6 +148,7 @@ export function AchievementWithUnlockStateResponseDtoToJSON(value?: AchievementW
     }
     return {
         
+        'id': value['id'],
         'apiName': value['apiName'],
         'displayName': value['displayName'],
         'description': value['description'],

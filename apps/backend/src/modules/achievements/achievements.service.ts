@@ -86,6 +86,7 @@ function mapAchievementWithUnlockState(
   row: AchievementWithUnlockState,
 ): AchievementWithUnlockStateResponseDto {
   return {
+    id: row.achievement.id,
     apiName: row.achievement.apiName,
     displayName: row.achievement.displayName,
     description: row.achievement.description,

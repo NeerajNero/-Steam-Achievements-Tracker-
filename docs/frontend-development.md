@@ -114,6 +114,8 @@ Current SDK clients used by the frontend:
 - `SnapshotsApi`
 - `AchievementsApi`
 - `SyncApi`
+- `DashboardApi`
+- `TargetsApi`
 - `HealthApi`
 - `ShowcaseApi`
 
@@ -181,6 +183,26 @@ prompt, and signed-in users can update display fields, preferences, and public
 profile publishing settings. No frontend auth middleware is required for this
 step.
 
+Authenticated target planning lives at:
+
+```txt
+apps/web/src/app/account/targets/page.tsx
+apps/web/src/features/targets
+```
+
+Targets use SDK-backed React Query hooks around `TargetsApi`. Add Target
+buttons on game and achievement surfaces must call backend target endpoints
+through the generated SDK only. Unknown achievement unlock state is still
+targetable and must not be displayed as locked. Profile achievement rows with
+`unlockState = unlocked` must disable the target action and show an
+already-unlocked label. Global achievement rows can still show Add Target
+because they do not know the signed-in user's unlock state; handle backend
+conflicts with a friendly message instead of crashing.
+
+Automatic target completion after a later achievement sync is deferred. Until
+that workflow exists, the frontend only blocks known-unlocked rows and the
+backend enforces the final eligibility rule.
+
 ## App Structure
 
 Keep `apps/web` organized around route composition, feature modules, and shared
@@ -235,6 +257,33 @@ branding, names, assets, or layouts.
 Use `PageShell`, `PageHero`, `SectionCard`, `SummaryCard`, `StatusBadge`,
 `ProgressBar`, `DataToolbar`, and the shared loading/empty/error states before
 adding page-local card or table styling.
+
+## Hunter Command Center
+
+The signed-in dashboard lives at:
+
+```txt
+apps/web/src/app/dashboard/page.tsx
+apps/web/src/features/dashboard
+```
+
+It uses `DashboardApi.getMyDashboard` through `useMyDashboard`. The page is
+authenticated by data, not route middleware: guests see a Steam sign-in prompt,
+signed-in users without a linked profile see a link-required state, and linked
+users see their stored Steam command center.
+
+Dashboard sections:
+
+- welcome/profile summary with persona, Steam ID, public profile link, latest
+  sync state, and sync actions;
+- next best targets from deterministic backend rules;
+- recent activity, latest syncs, milestones, and badges;
+- hosted, joined, and relevant public sessions;
+- authored and suggested guides;
+- data-quality/sync attention for `metadata_only` and `not_synced` games.
+
+Sync actions enqueue backend jobs via generated SDK hooks. The frontend does not
+call Steam directly and does not duplicate target-ranking SQL.
 
 ## Public Dashboard Sections
 

@@ -12,6 +12,55 @@ The script prints safe counts and status codes only. It does not print
 `STEAM_API_KEY`, raw Steam URLs, cookies, session tokens, OpenID payloads, or
 cache values.
 
+## Proving Player Unlock-State Support
+
+Use a Steam64 ID for a profile that is intentionally public and whose game
+details are public. Do not add personal Steam IDs to source, seed data, tests, or
+docs. Pass the Steam64 ID only as a local command argument.
+
+1. Sync the profile and owned games so app selection is based on stored owned
+   games, not guesses:
+
+   ```sh
+   docker-compose exec -T backend pnpm real-sync:smoke -- <STEAM64_ID>
+   ```
+
+2. Choose one to three owned app IDs that have achievement metadata. Prefer
+   games returned by the owned-games sync and avoid app IDs that are not stored
+   for the profile.
+
+3. Sync selected achievements, then run diagnostics:
+
+   ```sh
+   docker-compose exec -T backend pnpm real-sync:smoke -- <STEAM64_ID> --app-ids=<APP1>,<APP2>
+   docker-compose exec -T backend pnpm steam:data-diagnostics -- <STEAM64_ID> --app-ids=<APP1>,<APP2>
+   ```
+
+Player unlock-state is proven for that profile/app combination when each tested
+app reports non-zero schema metadata, global percentages, player achievements,
+and persisted profile achievements:
+
+```txt
+app.<APP_ID>.schemaCount: 39
+app.<APP_ID>.schemaStatus: ok
+app.<APP_ID>.globalPercentageCount: 39
+app.<APP_ID>.globalPercentageStatus: ok
+app.<APP_ID>.playerAchievementCount: 39
+app.<APP_ID>.playerAchievementStatus: ok
+app.<APP_ID>.dbAchievementsCount: 39
+app.<APP_ID>.dbProfileAchievementsCount: 39
+app.<APP_ID>.dbProfileGameProgress: total=39 unlocked=4 completion=10.26
+```
+
+If `playerAchievementCount` is non-zero but `dbProfileAchievementsCount` stays
+zero after achievement sync, investigate mapping or persistence. If
+`playerAchievementStatus` is `steam_not_found_or_private`,
+`player_unlock_state_unavailable`, `steam_request_failed`, or
+`steam_rate_limited`, treat the app as not proven and inspect the safe status
+before changing code. HTTP 403/private/unavailable responses are Steam API
+availability limits for that profile/app unless another owned public profile
+shows the same endpoint succeeds but persistence fails.
+
 ## What It Checks
 
 - normalized owned games count;
@@ -53,6 +102,9 @@ cache values.
   `unknown` unlock state instead of locked.
 - Player achievement count is non-zero but profile achievement rows remain zero:
   the issue is in achievement persistence or progress refresh.
+- Player achievement count and profile achievement rows are both non-zero:
+  unlock state was fetched and persisted. The game should report
+  `unlock_state_synced`.
 - Database counts are correct but frontend is empty:
   inspect SDK regeneration, query hooks, and route rendering rather than Steam
   API access.
@@ -88,3 +140,9 @@ the UI does not treat missing data as a real zero:
 When `achievementMetadataCount > 0` and `knownUnlockStateCount = 0`, achievement
 lists should show names, icons, descriptions, and rarity with “Unknown unlock
 state.” They must not show every achievement as locked.
+
+When `achievementDataState` is `metadata_only`, progress numbers are not known
+for that profile/app even though metadata exists. The UI should show unknown
+progress and unknown unlock-state badges. When it is `unlock_state_synced`,
+`unlockedAchievements`, `remainingAchievements`, `completionPercentage`, and
+achievement `unlockState` values can be displayed as real player progress.

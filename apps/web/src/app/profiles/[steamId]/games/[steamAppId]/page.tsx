@@ -20,6 +20,7 @@ import { useEnqueueSync } from '@/features/profile/api/use-enqueue-sync';
 import { useProfileGame } from '@/features/profile/api/use-profile-game';
 import { AchievementList } from '@/features/profile/components/achievement-list';
 import { GameAchievementFilters } from '@/features/profile/components/game-achievement-filters';
+import { GameTargetButton } from '@/features/targets/components/target-button';
 import {
   DEFAULT_GAME_ACHIEVEMENT_FILTERS,
   parseGameAchievementFilters,
@@ -162,21 +163,24 @@ export default function GameDetailPage() {
                   Achievement metadata has not been synced for this game yet.
                 </div>
               ) : null}
-              {isOwner ? (
-                <button
-                  className="mt-4 rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-60"
-                  disabled={enqueueSync.isPending}
-                  onClick={() =>
-                    void enqueueSync.mutateAsync({
-                      scope: SyncRequestDtoScopeEnum.Achievements,
-                      appIds: [game.data.steamAppId],
-                    })
-                  }
-                  type="button"
-                >
-                  {enqueueSync.isPending ? 'Queueing sync...' : 'Sync this game achievements'}
-                </button>
-              ) : null}
+              <div className="mt-4 flex flex-wrap gap-2">
+                {isOwner ? (
+                  <button
+                    className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:opacity-60"
+                    disabled={enqueueSync.isPending}
+                    onClick={() =>
+                      void enqueueSync.mutateAsync({
+                        scope: SyncRequestDtoScopeEnum.Achievements,
+                        appIds: [game.data.steamAppId],
+                      })
+                    }
+                    type="button"
+                  >
+                    {enqueueSync.isPending ? 'Queueing sync...' : 'Sync this game achievements'}
+                  </button>
+                ) : null}
+                <GameTargetButton steamAppId={game.data.steamAppId} />
+              </div>
               <div className="mt-4 max-w-md">
                 {isMetadataOnly || isAchievementMetadataNotSynced ? (
                   <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-300">

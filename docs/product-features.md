@@ -15,6 +15,9 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Achievement metadata sync per game where Steam data is available.
 - User achievement unlock sync.
 - Dashboard summary with total games, completed games, total achievements, unlocked achievements, and completion percentage.
+- Signed-in Hunter Command Center at `/dashboard` that combines stored profile
+  summary, next targets, recent progress, milestones, badges, sessions, guides,
+  saved targets, and sync attention.
 - Game library list with completion stats.
 - Game details with achievements and unlock state.
 - Nearest 100% games based on remaining achievements.
@@ -32,6 +35,10 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Recently completed games and recently unlocked achievements.
 - Data freshness indicators per profile and per game.
 - Manual resync controls with clear status feedback.
+- Deterministic dashboard target explanations such as close completion,
+  recently played incomplete games, high-playtime unfinished games, metadata-only
+  achievement data, available guides, and upcoming sessions.
+- Private saved game and achievement targets for signed-in users.
 
 ### V2
 
@@ -55,6 +62,8 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Clear handling when achievement metadata is missing.
 - Sync failure state with safe, user-readable messages.
 - Dashboard reads from stored data instead of calling Steam live on every page load.
+- The signed-in dashboard also reads stored DB data only; sync buttons enqueue
+  backend jobs through the SDK.
 
 ### V1
 
@@ -148,6 +157,8 @@ The product can take inspiration from public profile/stat tracking, completion d
 - Backlog optimization using remaining achievements, rarity, and playtime.
 - Suggested next games to complete.
 - Suggested achievements to target in games already close to 100%.
+- Signed-in users can save games and achievements as active targets without AI
+  ranking or notification automation.
 - Basic authored roadmaps for game completion.
 - Scheduled Steam game sessions for co-op and multiplayer achievement boosting.
 - Snapshot-derived profile milestones for visible progress moments.
@@ -178,6 +189,8 @@ The product can take inspiration from public profile/stat tracking, completion d
 ### V1
 
 - No AI requirement. Focus on deterministic analytics first.
+- Hunter Command Center recommendations remain deterministic and rule-based; no
+  AI ranking or generated advice is included yet.
 
 ### V2
 

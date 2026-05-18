@@ -1,3 +1,4 @@
+import { GameTargetButton } from '@/features/targets/components/target-button';
 import type { ReactNode } from 'react';
 
 import type { GlobalGameMetadataResponseDto } from '@steam-achievement/client-sdk';
@@ -43,6 +44,9 @@ export function GlobalGameHeader({
           <p className="mt-1 text-sm text-slate-400">
             {achievementLabel}
           </p>
+          <div className="mt-4">
+            <GameTargetButton steamAppId={game.steamAppId} />
+          </div>
         </div>
       </div>
     </section>

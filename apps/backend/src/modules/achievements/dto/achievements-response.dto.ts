@@ -3,6 +3,9 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 export type AchievementUnlockState = 'unlocked' | 'locked' | 'unknown';
 
 export class AchievementWithUnlockStateResponseDto {
+  @ApiProperty({ type: String, example: '3dd0928a-28f6-4e9b-a5ad-164d536b8d95' })
+  id!: string;
+
   @ApiProperty({ type: String, example: 'ACH_WIN_ONE_GAME' })
   apiName!: string;
 

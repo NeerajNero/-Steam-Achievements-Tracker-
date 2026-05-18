@@ -16,6 +16,7 @@
     "session:auth-smoke": "tsx src/scripts/session-auth-smoke.ts",
     "community:auth-smoke": "tsx src/scripts/community-auth-smoke.ts",
     "badges:auth-smoke": "tsx src/scripts/badges-auth-smoke.ts",
+    "targets:auth-smoke": "tsx src/scripts/targets-auth-smoke.ts",
     "milestones:backfill-dev": "tsx src/scripts/backfill-milestones-dev.ts",
     "badges:backfill-dev": "tsx src/scripts/backfill-badges-dev.ts",
     "real-sync:smoke": "tsx src/scripts/real-steam-sync-smoke.ts",

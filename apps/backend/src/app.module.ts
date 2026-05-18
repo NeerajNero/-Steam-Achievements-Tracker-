@@ -16,10 +16,12 @@ import { PublicProfilesModule } from './modules/public-profiles/public-profiles.
 import { AuthModule } from './modules/auth/auth.module';
 import { BadgesModule } from './modules/badges/badges.module';
 import { CommunityModule } from './modules/community/community.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
 import { ShowcaseModule } from './modules/showcase/showcase.module';
 import { SteamModule } from './modules/steam/steam.module';
 import { SnapshotsModule } from './modules/snapshots/snapshots.module';
 import { SyncModule } from './modules/sync/sync.module';
+import { TargetsModule } from './modules/targets/targets.module';
 
 @Module({
   imports: [
@@ -38,6 +40,8 @@ import { SyncModule } from './modules/sync/sync.module';
     AuthModule,
     BadgesModule,
     CommunityModule,
+    DashboardModule,
+    TargetsModule,
     AccountModule,
     PublicProfilesModule,
     ShowcaseModule,
