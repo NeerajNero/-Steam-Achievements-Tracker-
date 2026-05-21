@@ -39,7 +39,7 @@ export function GuideList({
     <div className="grid gap-3">
       {items.map((guide) => (
         <article
-          className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-xl shadow-black/20"
+          className="rounded-[22px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-black/20"
           key={guide.id}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -50,10 +50,10 @@ export function GuideList({
               >
                 {guide.title}
               </Link>
-              <p className="mt-1 text-sm text-slate-400">
+              <p className="mt-2 text-sm leading-6 text-slate-400">
                 {guide.summary ?? 'No summary provided.'}
               </p>
-              <p className="mt-2 text-xs text-slate-500">
+              <p className="mt-3 text-xs text-slate-500">
                 By {guide.author.displayName ?? 'Steam user'} · Published{' '}
                 {formatDateTime(guide.publishedAt)}
               </p>

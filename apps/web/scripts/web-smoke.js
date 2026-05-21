@@ -56,7 +56,7 @@ const checks = [
   },
   {
     path: `/games/${DEMO_GAME_ID}/guides`,
-    marker: 'Steam game guides',
+    marker: 'Game Guides',
     label: 'game guides page',
   },
   {
@@ -76,7 +76,7 @@ const checks = [
   },
   {
     path: `/games/${DEMO_GAME_ID}/sessions`,
-    marker: 'Game sessions',
+    marker: 'Game Sessions',
     label: 'game sessions page',
   },
   {

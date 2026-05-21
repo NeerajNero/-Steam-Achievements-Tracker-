@@ -16,19 +16,19 @@ export function getUnlockStateBadgeClassName(
   unlockState: AchievementWithUnlockStateResponseDtoUnlockStateEnum,
 ): string {
   const base =
-    'inline-flex rounded-full px-2.5 py-1 text-xs font-semibold capitalize tracking-normal';
+    'inline-flex rounded-full border px-2.5 py-1 text-xs font-semibold tracking-normal';
 
   if (
     unlockState === AchievementWithUnlockStateResponseDtoUnlockStateEnum.Unlocked
   ) {
-    return `${base} bg-emerald-50 text-emerald-700`;
+    return `${base} border-emerald-300/25 bg-emerald-400/10 text-emerald-100`;
   }
 
   if (
     unlockState === AchievementWithUnlockStateResponseDtoUnlockStateEnum.Unknown
   ) {
-    return `${base} bg-amber-50 text-amber-800`;
+    return `${base} border-amber-300/25 bg-amber-400/10 text-amber-100`;
   }
 
-  return `${base} bg-slate-100 text-slate-700`;
+  return `${base} border-white/10 bg-white/10 text-slate-200`;
 }

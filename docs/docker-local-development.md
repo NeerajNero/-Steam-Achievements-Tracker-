@@ -11,6 +11,33 @@ This project is Docker-first. Local backend services should run in Docker contai
 
 ## Start Containers
 
+Run the Docker preflight before app-service startup:
+
+```sh
+pnpm docker:preflight
+docker-compose config --quiet
+```
+
+The default validated app-service command is:
+
+```sh
+docker-compose up -d postgres redis backend web
+```
+
+This repo's `backend` and `web` services are built from local Dockerfiles, so a
+working Compose v2 plus `buildx` is required for app-image builds.
+
+Compose keeps backend `dist` output and web `.next` output in named volumes so
+the container watch processes do not fight the bind-mounted workspace.
+
+Check the local Docker toolchain explicitly:
+
+```sh
+docker compose version
+docker buildx version
+docker-compose version
+```
+
 ```sh
 docker compose up
 ```
@@ -26,6 +53,26 @@ Run in the background:
 ```sh
 docker compose up -d
 ```
+
+If `docker-compose up -d postgres redis backend web` reports a message such as
+`Docker Compose requires buildx plugin to be installed`, Compose can still
+validate config and may still run prebuilt-image services, but local `backend`
+and `web` image builds are blocked until `buildx` is installed.
+
+## Buildx Requirement
+
+Supported local Docker setups:
+
+- Docker Desktop with Compose v2 and `buildx`
+- Docker Engine with the Compose v2 plugin and the `buildx` plugin
+- A compatible standalone `docker-compose` install that can delegate builds to
+  `buildx`
+
+If `docker buildx version` fails:
+
+- update Docker Desktop; or
+- install the Docker `buildx` plugin for the local Docker Engine; or
+- use the host-run fallback below until the local Docker install is fixed.
 
 ## Stop Containers
 
@@ -53,6 +100,10 @@ Or rebuild while starting:
 ```sh
 docker compose up --build
 ```
+
+If build commands fail before the repo Dockerfiles start, confirm `docker buildx version`
+works locally. A missing `buildx` plugin blocks `backend` and `web` image
+builds even when `docker-compose` itself is present.
 
 ## View Logs
 
@@ -241,8 +292,34 @@ A future dedicated migration service can still be added. It should:
 ## Local Prerequisites
 
 - Docker Desktop or Docker Engine with Compose v2.
-- If `docker compose` is unavailable, install the Docker Compose v2 plugin or use `docker-compose` until the local Docker installation is upgraded.
+- Docker `buildx` support for local `backend` and `web` image builds.
+- If `docker compose` is unavailable, install the Docker Compose v2 plugin or
+  use `docker-compose` until the local Docker installation is upgraded.
 - pnpm is only required on the host if you run backend scripts outside Docker.
+
+## Host Fallback
+
+Docker-first remains the default. If app-service builds are blocked by missing
+`buildx`, a safe temporary fallback is to run only PostgreSQL and Redis in
+Docker, then run the backend and web from the host.
+
+Start infra only:
+
+```sh
+POSTGRES_PORT=55432 REDIS_PORT=56379 docker-compose up -d postgres redis
+```
+
+Validated host commands:
+
+```sh
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/steam_tracker REDIS_HOST=localhost REDIS_PORT=56379 pnpm --filter @steam-achievement/backend migration:status
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/steam_tracker REDIS_HOST=localhost REDIS_PORT=56379 pnpm --filter @steam-achievement/backend seed:dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/steam_tracker REDIS_HOST=localhost REDIS_PORT=56379 pnpm --filter @steam-achievement/backend milestones:backfill-dev
+DATABASE_URL=postgresql://postgres:postgres@localhost:55432/steam_tracker REDIS_HOST=localhost REDIS_PORT=56379 pnpm --filter @steam-achievement/backend badges:backfill-dev
+```
+
+Then run the app processes from the host with matching localhost settings. Keep
+`NEXT_PUBLIC_API_BASE_URL=http://localhost:3000` for the browser SDK client.
 
 ## Redis Troubleshooting
 

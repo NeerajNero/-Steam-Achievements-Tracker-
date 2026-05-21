@@ -21,6 +21,7 @@ deployment.
 ## Local Startup
 
 ```sh
+pnpm docker:preflight
 docker-compose config --quiet
 docker-compose up -d postgres redis backend web
 docker-compose exec -T backend pnpm migration:status
@@ -28,6 +29,18 @@ docker-compose exec -T backend pnpm seed:dev
 docker-compose exec -T backend pnpm milestones:backfill-dev
 docker-compose exec -T backend pnpm badges:backfill-dev
 ```
+
+App-service startup requires Docker Compose plus `buildx` because `backend` and
+`web` are built from local Dockerfiles. Verify locally with:
+
+```sh
+docker compose version
+docker buildx version
+```
+
+If `buildx` is missing, do not mark Docker app-service validation as passed.
+Use the fallback path documented in `docs/docker-local-development.md`: run only
+`postgres` and `redis` in Docker, then run backend/web from the host.
 
 Local URLs:
 
@@ -75,6 +88,10 @@ pnpm --filter @steam-achievement/web type-check
 pnpm --filter @steam-achievement/web test
 pnpm --filter @steam-achievement/web build
 ```
+
+The backend OpenAPI coverage test is expected to bootstrap only the lightweight
+document module. It does not connect to PostgreSQL or Redis and uses a
+spec-local timeout instead of increasing the global Vitest timeout.
 
 ## Real Steam Sync Checklist
 
@@ -187,6 +204,8 @@ Intentionally deferred:
 
 The app is release-ready for a local/dev demo when:
 
+- `pnpm docker:preflight` passes, or a documented host fallback is used while a
+  local Docker `buildx` fix is pending;
 - all migrations are applied;
 - seed/backfill commands complete;
 - backend and web type-check/build/test commands pass;

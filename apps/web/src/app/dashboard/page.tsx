@@ -13,6 +13,7 @@ import type { ReactNode } from 'react';
 import { PageHero } from '@/components/layout/page-hero';
 import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ResponsiveTwoColumn } from '@/components/ui/responsive-two-column';
 import { buildSignInUrl } from '@/features/auth/components/auth-status';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { dashboardQueryKeys } from '@/features/dashboard/api/dashboard-query-keys';
@@ -185,53 +186,57 @@ function DashboardReadyView({
     <PageShell>
       <div className="space-y-6">
         <DashboardHero dashboard={dashboard} />
-        <QuickActions
-          latestSync={dashboard.latestSyncRuns[0] ?? null}
-          onSync={(scope) => void enqueue(scope)}
-          pendingScope={pendingScope}
-          publicSlug={
-            profile.publicProfileIsPublished ? profile.publicSlug : undefined
+        <ResponsiveTwoColumn
+          aside={
+            <>
+              <QuickActions
+                latestSync={dashboard.latestSyncRuns[0] ?? null}
+                onSync={(scope) => void enqueue(scope)}
+                pendingScope={pendingScope}
+                publicSlug={
+                  profile.publicProfileIsPublished ? profile.publicSlug : undefined
+                }
+                queuedSync={queuedSync}
+                steamId={profile.steamId}
+              />
+              <SyncAttention
+                dataQuality={dashboard.dataQuality}
+                steamId={profile.steamId}
+              />
+              <DashboardSessions
+                hosted={dashboard.sessions.hosted}
+                joined={dashboard.sessions.joined}
+                upcomingForOwnedGames={dashboard.sessions.upcomingForOwnedGames}
+              />
+              <DashboardGuides
+                authored={dashboard.guides.authored}
+                suggested={dashboard.guides.suggested}
+              />
+            </>
           }
-          queuedSync={queuedSync}
-          steamId={profile.steamId}
-        />
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.8fr)]">
+          layout="content-heavy"
+        >
+          <TargetList
+            actionHref="/account/targets"
+            actionLabel="Manage Targets"
+            compact
+            emptyMessage="No active targets yet. Add games or achievements to build the list you want sync to manage for you."
+            targets={[
+              ...dashboard.activeTargets.games,
+              ...dashboard.activeTargets.achievements,
+            ]}
+            title="Active Targets"
+          />
           <div className="space-y-6">
             <NextTargets targets={dashboard.nextTargets} />
-            <TargetList
-              actionHref="/account/targets"
-              actionLabel="Manage Targets"
-              compact
-              emptyMessage="No targets yet. Add games or achievements to build an active completion list."
-              targets={[
-                ...dashboard.activeTargets.games,
-                ...dashboard.activeTargets.achievements,
-              ]}
-              title="Active Targets"
-            />
             <RecentProgress
               activity={dashboard.recentActivity}
               badges={dashboard.badges}
               milestones={dashboard.milestones}
               syncRuns={dashboard.latestSyncRuns}
             />
-            <DashboardSessions
-              hosted={dashboard.sessions.hosted}
-              joined={dashboard.sessions.joined}
-              upcomingForOwnedGames={dashboard.sessions.upcomingForOwnedGames}
-            />
           </div>
-          <aside className="space-y-6">
-            <SyncAttention
-              dataQuality={dashboard.dataQuality}
-              steamId={profile.steamId}
-            />
-            <DashboardGuides
-              authored={dashboard.guides.authored}
-              suggested={dashboard.guides.suggested}
-            />
-          </aside>
-        </section>
+        </ResponsiveTwoColumn>
       </div>
     </PageShell>
   );

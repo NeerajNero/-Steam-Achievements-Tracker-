@@ -12,7 +12,7 @@ export function SessionCard({
   session: GamingSessionSummaryResponseDto;
 }>): ReactNode {
   return (
-    <article className="rounded-2xl border border-white/10 bg-slate-950/70 p-4 shadow-xl shadow-black/20">
+    <article className="rounded-[22px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-black/20">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <Link
@@ -21,10 +21,10 @@ export function SessionCard({
           >
             {session.title}
           </Link>
-          <p className="mt-1 text-sm text-slate-400">
+          <p className="mt-2 text-sm leading-6 text-slate-400">
             {session.description ?? 'No description provided.'}
           </p>
-          <p className="mt-2 text-xs text-slate-500">
+          <p className="mt-3 text-xs text-slate-500">
             {session.gameName} · {formatDateTime(session.scheduledStartAt)}
             {session.timezone ? ` · ${session.timezone}` : ''}
           </p>
@@ -47,6 +47,14 @@ export function SessionCard({
           <dd>{session.host.displayName ?? 'Steam user'}</dd>
         </div>
       </dl>
+      <div className="mt-4">
+        <Link
+          className="inline-flex rounded-full border border-lime-300/25 px-3 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"
+          href={`/sessions/${session.id}`}
+        >
+          Open session
+        </Link>
+      </div>
     </article>
   );
 }

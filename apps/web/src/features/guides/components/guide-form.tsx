@@ -47,7 +47,16 @@ export function GuideForm({
     'rounded-xl border border-white/10 bg-slate-950/80 px-3 py-2 text-sm text-slate-100 outline-none placeholder:text-slate-600 focus:border-lime-400';
 
   return (
-    <form className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20" onSubmit={submit}>
+    <form
+      className="grid gap-5 rounded-[24px] border border-white/10 bg-slate-950/75 p-6 shadow-xl shadow-black/20"
+      onSubmit={submit}
+    >
+      <div>
+        <h2 className="text-lg font-semibold text-white">Guide details</h2>
+        <p className="mt-1 text-sm text-slate-400">
+          Explain what the route is for, how hard it is, and how much spoiler risk it carries.
+        </p>
+      </div>
       <label className={labelClassName}>
         Title
         <input
@@ -148,13 +157,18 @@ export function GuideForm({
         Spoiler heavy
       </label>
 
-      <button
-        className="w-fit rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
-        disabled={isSubmitting}
-        type="submit"
-      >
-        {isSubmitting ? 'Saving...' : submitLabel}
-      </button>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+        <p className="text-sm text-slate-500">
+          Public and unlisted guides become readable from the game hub once published.
+        </p>
+        <button
+          className="w-fit rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
+          disabled={isSubmitting}
+          type="submit"
+        >
+          {isSubmitting ? 'Saving...' : submitLabel}
+        </button>
+      </div>
     </form>
   );
 }

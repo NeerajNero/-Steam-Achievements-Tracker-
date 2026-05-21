@@ -45,7 +45,10 @@ export function DashboardHero({
               </span>
             </p>
             <p className="text-slate-400">
-              Latest profile sync: {formatDateTime(profile?.lastSyncedAt)}
+              Latest stored sync: {formatDateTime(profile?.lastSyncedAt)}
+            </p>
+            <p className="text-slate-400">
+              Focus first on active targets, then deterministic next targets and sync attention.
             </p>
           </div>
         </div>

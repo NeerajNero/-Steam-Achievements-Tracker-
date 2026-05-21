@@ -75,7 +75,7 @@ function LeaderboardPageContent() {
       <div className="mb-6">
         <PageHero eyebrow="Leaderboard" title={getLeaderboardLabel(type)}>
           <p>
-          {getLeaderboardDescription(type)}
+            {getLeaderboardDescription(type)}
           </p>
         </PageHero>
       </div>
@@ -101,6 +101,10 @@ function LeaderboardPageContent() {
         isLoading={leaderboard.isLoading}
         items={leaderboard.data?.items}
       />
+      <p className="text-sm text-slate-400">
+        Score explanation: this leaderboard ranks the stored snapshot value shown in
+        the score column. Snapshot timestamps show when that profile was last captured.
+      </p>
 
       {leaderboard.data && leaderboard.data.items.length > 0 ? (
         <nav

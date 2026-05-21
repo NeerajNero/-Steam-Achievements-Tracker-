@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import type { GlobalGameItemResponseDto } from '@steam-achievement/client-sdk';
 
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { MetadataStateBadge } from '@/components/ui/metadata-state-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
 import { SectionCard } from '@/components/ui/section-card';
 import {
@@ -58,63 +59,79 @@ export function GlobalGamesList({
       ) : null}
 
       {items && items.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-white/10 text-left text-sm">
-            <thead className="bg-white/5 text-xs uppercase text-slate-400">
-              <tr>
-                <th className="px-4 py-3">Game</th>
-                <th className="px-4 py-3">Achievements</th>
-                <th className="px-4 py-3">Tracked Players</th>
-                <th className="px-4 py-3">Average</th>
-                <th className="px-4 py-3">Completed</th>
-                <th className="px-4 py-3">Playtime</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-white/10">
-              {items.map((game) => (
-                <tr key={game.steamAppId}>
-                  <td className="px-4 py-3">
-                    <div className="flex items-center gap-3">
-                      {game.iconUrl ? (
-                        <img
-                          alt=""
-                          className="h-10 w-10 rounded-xl border border-white/10"
-                          src={game.iconUrl}
-                        />
-                      ) : (
-                        <div className="h-10 w-10 rounded-xl border border-white/10 bg-white/5" />
-                      )}
-                      <div>
-                        <Link
-                          className="font-medium text-lime-200 hover:text-lime-100"
-                          href={`/games/${game.steamAppId}`}
-                        >
-                          {game.name}
-                        </Link>
-                        <div className="text-xs text-slate-500">
-                          App {game.steamAppId}
-                        </div>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">
-                    {formatAchievementMetadata(game)}
-                  </td>
-                  <td className="px-4 py-3">{formatNumber(game.trackedPlayers)}</td>
-                  <td className="px-4 py-3">
-                    {formatPercent(game.averageCompletionPercentage)}
-                    <div className="mt-2">
-                      <ProgressBar value={game.averageCompletionPercentage} />
-                    </div>
-                  </td>
-                  <td className="px-4 py-3">{formatNumber(game.completedPlayers)}</td>
-                  <td className="px-4 py-3">
+        <div className="grid gap-3 xl:grid-cols-2">
+          {items.map((game) => (
+            <article
+              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"
+              key={game.steamAppId}
+            >
+              <div className="flex items-start gap-3">
+                {game.iconUrl ? (
+                  <img
+                    alt=""
+                    className="h-12 w-12 rounded-xl border border-white/10"
+                    src={game.iconUrl}
+                  />
+                ) : (
+                  <div className="h-12 w-12 rounded-xl border border-white/10 bg-white/5" />
+                )}
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <MetadataStateBadge state={game.achievementDataState} />
+                    <span className="text-xs text-slate-500">
+                      {formatAchievementMetadata(game)}
+                    </span>
+                  </div>
+                  <Link
+                    className="mt-2 block text-lg font-semibold text-white hover:text-lime-100"
+                    href={`/games/${game.steamAppId}`}
+                  >
+                    {game.name}
+                  </Link>
+                  <p className="mt-1 text-xs text-slate-500">App {game.steamAppId}</p>
+                </div>
+              </div>
+              <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                    Tracked Players
+                  </p>
+                  <p className="mt-1 font-semibold text-white">
+                    {formatNumber(game.trackedPlayers)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                    Completed Players
+                  </p>
+                  <p className="mt-1 font-semibold text-white">
+                    {formatNumber(game.completedPlayers)}
+                  </p>
+                </div>
+                <div className="sm:col-span-2">
+                  <div className="flex items-center justify-between gap-3">
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                      Average Completion
+                    </p>
+                    <span className="font-semibold text-lime-100">
+                      {formatPercent(game.averageCompletionPercentage)}
+                    </span>
+                  </div>
+                  <div className="mt-2">
+                    <ProgressBar value={game.averageCompletionPercentage} />
+                  </div>
+                </div>
+                <div className="sm:col-span-2">
+                  <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                    Total Playtime
+                  </p>
+                  <p className="mt-1 font-semibold text-white">
                     {formatPlaytime(game.totalPlaytimeMinutes)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+                  </p>
+                </div>
+              </div>
+            </article>
+          ))}
         </div>
       ) : null}
     </SectionCard>

@@ -86,7 +86,7 @@ export function AchievementList({
               <div className="md:text-right">
                 <UnlockStateBadge unlockState={achievement.unlockState} />
                 {achievement.unlockState === 'unknown' ? (
-                  <p className="mt-1 text-xs text-amber-800">
+                  <p className="mt-1 text-xs text-amber-100">
                     Unknown unlock state from Steam API availability.
                   </p>
                 ) : null}

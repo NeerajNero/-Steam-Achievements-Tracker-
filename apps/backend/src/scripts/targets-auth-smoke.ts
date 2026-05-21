@@ -8,8 +8,12 @@ import { DatabaseModule } from '../db/database.module';
 import { DatabaseService } from '../db/database.service';
 import { AuthCallbackRepository } from '../db/repositories/auth-callback.repository';
 import { AuthSessionsRepository } from '../db/repositories/auth-sessions.repository';
+import { ProfileAchievementsRepository } from '../db/repositories/profile-achievements.repository';
+import { ProfileGamesRepository } from '../db/repositories/profile-games.repository';
+import { TargetsRepository } from '../db/repositories/targets.repository';
 import { AuthCallbackDataService } from '../db/services/auth-callback-data.service';
 import { AuthSessionsDataService } from '../db/services/auth-sessions-data.service';
+import { TargetCompletionDataService } from '../db/services/target-completion-data.service';
 import {
   achievementTargets,
   achievements,
@@ -28,7 +32,6 @@ class TargetsAuthSmokeModule {}
 
 const DEFAULT_API_BASE_URL = 'http://localhost:3000';
 const DEMO_STEAM_ID = '76561198000000000';
-const DEMO_APP_ID = 910001;
 const DEMO_APP_IDS = [910001, 910002, 910003, 910004, 910005, 910006];
 
 interface AccountTarget {
@@ -61,12 +64,19 @@ async function main(): Promise<void> {
     logger: ['error'],
   });
   const databaseService = app.get(DatabaseService);
+  const targetCompletionDataService = new TargetCompletionDataService(
+    new TargetsRepository(databaseService),
+  );
   const sessionService = new SessionService(
     new AuthSessionsDataService(new AuthSessionsRepository(databaseService)),
   );
   const authCallbackDataService = new AuthCallbackDataService(
     new AuthCallbackRepository(databaseService),
   );
+  const profileAchievementsRepository = new ProfileAchievementsRepository(
+    databaseService,
+  );
+  const profileGamesRepository = new ProfileGamesRepository(databaseService);
   let sessionToken: string | null = null;
 
   try {
@@ -102,7 +112,7 @@ async function main(): Promise<void> {
         method: 'POST',
         cookieHeader,
         body: {
-          steamAppId: DEMO_APP_ID,
+          steamAppId: seedData.steamAppId,
           priority: 'medium',
           notes: 'Targets auth smoke game target.',
           targetCompletionPercentage: 100,
@@ -142,30 +152,41 @@ async function main(): Promise<void> {
       'Achievement target was not present in account target list.',
     );
 
-    const updatedGameTarget = await requestJson<AccountTarget>(
-      apiBaseUrl,
-      `/account/targets/games/${gameTarget.id}`,
-      {
-        method: 'PATCH',
-        cookieHeader,
-        body: {
-          status: 'active',
-          priority: 'high',
-        },
-      },
-      isAccountTarget,
+    await profileAchievementsRepository.upsertProfileAchievement({
+      profileId: seedData.profileId,
+      achievementId: seedData.achievementId,
+      achieved: true,
+      unlockedAt: new Date('2026-05-20T00:00:00.000Z'),
+    });
+    await profileGamesRepository.upsertProfileGame({
+      profileId: seedData.profileId,
+      gameId: seedData.gameId,
+      totalAchievements: 10,
+      unlockedAchievements: 10,
+      completionPercentage: 100,
+    });
+    await targetCompletionDataService.completeActiveAchievementTargetsForProfileGames(
+      seedData.profileId,
+      [seedData.steamAppId],
     );
-    assert(updatedGameTarget.priority === 'high', 'Game priority was not updated.');
+    await targetCompletionDataService.completeActiveGameTargetsForProfileGames(
+      seedData.profileId,
+      [seedData.steamAppId],
+    );
 
-    const archivedAchievementTarget = await requestJson<AccountTarget>(
+    const completedTargets = await requestJson<AccountTargetsList>(
       apiBaseUrl,
-      `/account/targets/achievements/${achievementTarget.id}`,
-      { method: 'DELETE', cookieHeader },
-      isAccountTarget,
+      '/account/targets?status=completed&type=all&limit=20',
+      { method: 'GET', cookieHeader },
+      isAccountTargetsList,
     );
     assert(
-      archivedAchievementTarget.status === 'archived',
-      'Achievement target was not archived.',
+      completedTargets.items.some((target) => target.id === gameTarget.id),
+      'Completed target list did not include the completed game target.',
+    );
+    assert(
+      completedTargets.items.some((target) => target.id === achievementTarget.id),
+      'Completed target list did not include the completed achievement target.',
     );
 
     const dashboard = await requestJson<DashboardResponse>(
@@ -175,8 +196,14 @@ async function main(): Promise<void> {
       isDashboardResponse,
     );
     assert(
-      dashboard.activeTargets.games.some((target) => target.id === gameTarget.id),
-      'Dashboard did not include the active game target.',
+      dashboard.activeTargets.games.every((target) => target.id !== gameTarget.id),
+      'Dashboard still included the completed game target as active.',
+    );
+    assert(
+      dashboard.activeTargets.achievements.every(
+        (target) => target.id !== achievementTarget.id,
+      ),
+      'Dashboard still included the completed achievement target as active.',
     );
 
     const dbSummary = await getSafeDbSummary(
@@ -190,9 +217,11 @@ async function main(): Promise<void> {
     console.log(`gameTargetId: ${gameTarget.id}`);
     console.log(`achievementTargetId: ${achievementTarget.id}`);
     console.log(`listed target count: ${listedTargets.total}`);
-    console.log(`updated game priority: ${updatedGameTarget.priority}`);
-    console.log(`archived achievement status: ${archivedAchievementTarget.status}`);
+    console.log(`completed target count: ${completedTargets.total}`);
     console.log(`dashboard active game targets: ${dashboard.activeTargets.games.length}`);
+    console.log(
+      `dashboard active achievement targets: ${dashboard.activeTargets.achievements.length}`,
+    );
     console.log(`db game target count: ${dbSummary.gameTargetCount}`);
     console.log(`db achievement target count: ${dbSummary.achievementTargetCount}`);
   } finally {
@@ -205,7 +234,7 @@ async function main(): Promise<void> {
 
 async function assertSeedData(
   databaseService: DatabaseService,
-): Promise<{ gameId: string; achievementId: string }> {
+): Promise<{ profileId: string; gameId: string; steamAppId: number; achievementId: string }> {
   const [profile] = await databaseService.db
     .select({ id: steamProfiles.id })
     .from(steamProfiles)
@@ -216,18 +245,8 @@ async function assertSeedData(
     throw new Error('Seed data missing: run pnpm seed:dev before targets:auth-smoke.');
   }
 
-  const [game] = await databaseService.db
-    .select({ id: games.id })
-    .from(games)
-    .where(eq(games.steamAppId, DEMO_APP_ID))
-    .limit(1);
-
-  if (game === undefined) {
-    throw new Error(`Seed data missing: app ${DEMO_APP_ID} is not present.`);
-  }
-
   const [achievement] = await databaseService.db
-    .select({ id: achievements.id })
+    .select({ id: achievements.id, steamAppId: achievements.steamAppId })
     .from(achievements)
     .leftJoin(
       profileAchievements,
@@ -249,10 +268,25 @@ async function assertSeedData(
     .limit(1);
 
   if (achievement === undefined) {
-    throw new Error(`Seed data missing: app ${DEMO_APP_ID} has no achievements.`);
+    throw new Error('Seed data missing: demo apps have no targetable achievements.');
   }
 
-  return { gameId: game.id, achievementId: achievement.id };
+  const [game] = await databaseService.db
+    .select({ id: games.id })
+    .from(games)
+    .where(eq(games.steamAppId, achievement.steamAppId))
+    .limit(1);
+
+  if (game === undefined) {
+    throw new Error(`Seed data missing: app ${achievement.steamAppId} is not present.`);
+  }
+
+  return {
+    profileId: profile.id,
+    gameId: game.id,
+    steamAppId: achievement.steamAppId,
+    achievementId: achievement.id,
+  };
 }
 
 async function getSafeDbSummary(

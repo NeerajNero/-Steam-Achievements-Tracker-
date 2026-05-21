@@ -65,10 +65,11 @@ function GameSessionsPageContent() {
           </Link>
         }
         eyebrow={`Steam App ${steamAppId}`}
-        title="Game sessions"
+        title="Game Sessions"
       >
         <p>
-            Find or create public sessions for app {steamAppId}.
+          Find or create public sessions for app {steamAppId}, check participant
+          counts, and move from browsing into scheduling without leaving the game hub.
         </p>
       </PageHero>
 

@@ -175,13 +175,17 @@ achievement data per game.
 6. If player unlock state is available, upsert profile-specific
    `profile_achievements` and call
    `refresh_profile_game_achievement_progress(profile_id, steam_app_id)`.
-7. If player unlock state is unavailable, preserve existing
+7. After authoritative progress is refreshed for that game, auto-complete any
+   matching active achievement targets with `achieved = true`, and auto-complete
+   matching active game targets whose stored progress meets their threshold.
+8. If player unlock state is unavailable, preserve existing
    `profile_achievements` and `profile_games` progress instead of guessing
    locked state or resetting completion to 0%.
-8. For confirmed zero-achievement games, call
+9. For confirmed zero-achievement games, call
    `refresh_profile_game_achievement_progress(profile_id, steam_app_id)` so the
-   game is marked as having no achievements.
-9. Mark the sync run:
+   game is marked as having no achievements, then auto-complete only game
+   targets whose threshold is explicitly `0`.
+10. Mark the sync run:
    - `success` when all requested games are `full_success` or
      `no_achievements`;
    - `partial_success` when any game is `metadata_only`, or when at least one
@@ -200,6 +204,14 @@ Steam games with confirmed zero achievements are treated as successful syncs
 with zero progress. Missing or private player achievement state does not delete
 existing achievement data, does not create fake locked rows, and does not reset
 profile progress.
+
+Target auto-completion is intentionally conservative:
+- achievement targets require a persisted `profile_achievements.achieved = true`
+  row;
+- unknown unlock state never auto-completes an achievement target;
+- game targets default to a `100%` threshold when none is stored;
+- games with no achievements auto-complete only when the target explicitly uses
+  a `0%` threshold.
 
 Read endpoints derive display state from PostgreSQL rows:
 - canonical `achievements` rows drive `achievementMetadataCount`;

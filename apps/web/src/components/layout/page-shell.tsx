@@ -7,6 +7,9 @@ export function PageShell({
   children: ReactNode;
   maxWidth?: string;
 }>): ReactNode {
-  return <main className={`mx-auto w-full ${maxWidth} px-4 py-6 md:px-6`}>{children}</main>;
+  return (
+    <main className={`mx-auto flex w-full flex-col gap-6 ${maxWidth} px-4 py-8 md:px-6`}>
+      {children}
+    </main>
+  );
 }
-

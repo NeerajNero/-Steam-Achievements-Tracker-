@@ -30,6 +30,7 @@ import {
   type SyncRun,
 } from '../../db/services/sync-runs-data.service';
 import { CachedSteamApiClient } from '../steam/cached-steam-api.client';
+import { TargetCompletionService } from '../targets/target-completion.service';
 import {
   SteamApiConfigError,
   SteamApiNotFoundOrPrivateError,
@@ -65,6 +66,7 @@ export class SyncWorkflowService {
     private readonly profileBadgesDataService: ProfileBadgesDataService,
     private readonly activityEventsDataService: ActivityEventsDataService,
     private readonly achievementSyncDataService: AchievementSyncDataService,
+    private readonly targetCompletionService: TargetCompletionService,
     private readonly syncRunsDataService: SyncRunsDataService,
   ) {}
 
@@ -436,6 +438,10 @@ export class SyncWorkflowService {
           profileAchievements: [],
           lastSyncedAt: syncedAt,
         });
+        await this.targetCompletionService.completeAfterAchievementSync(
+          profileId,
+          appId,
+        );
 
         return {
           category: 'no_achievements',
@@ -485,6 +491,10 @@ export class SyncWorkflowService {
         profileAchievements: profileAchievementStates,
         lastSyncedAt: new Date(),
       });
+      await this.targetCompletionService.completeAfterAchievementSync(
+        profileId,
+        appId,
+      );
 
       return {
         category: 'full_success',

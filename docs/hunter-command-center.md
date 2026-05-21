@@ -23,6 +23,8 @@ link_required` with empty dashboard sections.
 The response also includes `activeTargets.games` and
 `activeTargets.achievements`, which are the signed-in user's saved private
 completion targets from `game_targets` and `achievement_targets`.
+Only `status = active` rows are returned here, so completed targets disappear
+from the dashboard after sync confirms completion.
 
 ## Deterministic Target Rules
 
@@ -42,6 +44,9 @@ or `Recently played and incomplete`. There are no AI recommendations yet.
 Saved active targets are not AI recommendations. They are explicit user choices
 and are ordered high priority first, due date soon first, then recently created
 first.
+Completed targets remain available through the account targets list by filtering
+for `status = completed`; they are intentionally excluded from the dashboard's
+active target section.
 
 ## Data Quality States
 
@@ -68,7 +73,8 @@ Supported actions:
 - Sync Achievements
 
 After enqueueing a sync, the page refreshes the dashboard query so new sync runs
-and updated progress can appear.
+and updated progress can appear. This includes active targets dropping out when
+sync auto-completes a saved game or achievement target.
 
 ## Smoke Coverage
 

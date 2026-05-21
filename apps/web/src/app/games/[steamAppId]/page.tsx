@@ -6,6 +6,7 @@ import { Suspense, useEffect, useMemo, useState } from 'react';
 
 import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { ResponsiveGrid } from '@/components/ui/responsive-grid';
 import { SectionCard } from '@/components/ui/section-card';
 import { useGameActivity } from '@/features/activity/api/use-game-activity';
 import { ActivityFeed } from '@/features/activity/components/activity-feed';
@@ -165,55 +166,59 @@ function GlobalGameDetailPageContent() {
       {game.data ? (
         <div className="grid gap-6">
           <GlobalGameHeader game={game.data.game} />
-          <SectionCard
-            actions={
-              <>
-                <Link
-                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-                  href={`/games/${steamAppId}/guides`}
-                >
-                  View guides
-                </Link>
-                <Link
-                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
-                  href={`/games/${steamAppId}/guides/new`}
-                >
-                  New guide
-                </Link>
-              </>
-            }
-            description="View public guides or create a draft roadmap for this Steam game."
-            title="Guides and roadmaps"
-          >
-            <p className="text-sm text-slate-400">
-              Public guides are published roadmaps attached to this Steam game.
-            </p>
-          </SectionCard>
-          <SectionCard
-            actions={
-              <>
-                <Link
-                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-                  href={`/games/${steamAppId}/sessions`}
-                >
-                  View sessions
-                </Link>
-                <Link
-                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
-                  href={`/games/${steamAppId}/sessions/new`}
-                >
-                  New session
-                </Link>
-              </>
-            }
-            description="Schedule or join public co-op and achievement boosting sessions."
-            title="Gaming sessions"
-          >
-            <p className="text-sm text-slate-400">
-              Sessions are scheduled community events for co-op and multiplayer achievements.
-            </p>
-          </SectionCard>
           <GlobalGameStats stats={game.data.stats} />
+          <ResponsiveGrid min="minmax(260px,1fr)">
+            <SectionCard
+              actions={
+                <>
+                  <Link
+                    className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                    href={`/games/${steamAppId}/guides`}
+                  >
+                    View guides
+                  </Link>
+                  <Link
+                    className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                    href={`/games/${steamAppId}/guides/new`}
+                  >
+                    Create guide
+                  </Link>
+                </>
+              }
+              description="Read published roadmaps or create a new draft guide for this game."
+              title="Guides"
+            >
+              <p className="text-sm leading-6 text-slate-400">
+                Use guides to explain route order, cleanup, difficulty, and which
+                achievements a roadmap is trying to cover.
+              </p>
+            </SectionCard>
+            <SectionCard
+              actions={
+                <>
+                  <Link
+                    className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                    href={`/games/${steamAppId}/sessions`}
+                  >
+                    View sessions
+                  </Link>
+                  <Link
+                    className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                    href={`/games/${steamAppId}/sessions/new`}
+                  >
+                    Create session
+                  </Link>
+                </>
+              }
+              description="Host or join public boosting and co-op runs attached to this game."
+              title="Sessions"
+            >
+              <p className="text-sm leading-6 text-slate-400">
+                Sessions keep roster size, timing, and target achievements visible
+                before players commit.
+              </p>
+            </SectionCard>
+          </ResponsiveGrid>
           <GlobalGameAchievements
             error={achievements.error}
             filters={achievementFilters}

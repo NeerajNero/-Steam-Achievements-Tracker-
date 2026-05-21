@@ -3,8 +3,10 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { PageHero } from '@/components/layout/page-hero';
 import { EmptyState, ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { ProgressBar } from '@/components/ui/progress-bar';
+import { ResponsiveTwoColumn } from '@/components/ui/responsive-two-column';
 import { SectionCard } from '@/components/ui/section-card';
 import { SummaryCard } from '@/components/ui/summary-card';
 import { asPublicProfileSettings } from '@/features/account/utils/settings';
@@ -59,7 +61,7 @@ export function PublicProfileView({
 
   return (
     <div className="space-y-6">
-      <section className="rounded-3xl border border-white/10 bg-[radial-gradient(circle_at_top_left,rgba(34,197,94,0.2),transparent_34%),linear-gradient(135deg,rgba(15,23,42,0.98),rgba(2,6,23,0.96))] p-6 shadow-2xl shadow-black/30 md:p-8">
+      <PageHero eyebrow="Public showcase" title={displayName}>
         <div className="flex flex-wrap items-center gap-4">
           {data.steamProfile.avatarUrl ? (
             <img
@@ -69,20 +71,19 @@ export function PublicProfileView({
             />
           ) : null}
           <div>
-            <h1 className="text-3xl font-semibold tracking-normal text-white md:text-5xl">
-              {displayName}
-            </h1>
-            <p className="mt-2 text-sm text-slate-300">
-              Public profile: /u/{data.publicProfile.slug}
-            </p>
+            <p className="text-sm text-slate-300">Public profile: /u/{data.publicProfile.slug}</p>
             {data.steamProfile.steamId ? (
               <p className="mt-1 text-sm text-slate-400">
                 Steam ID: {data.steamProfile.steamId}
               </p>
             ) : null}
+            <p className="mt-1 text-sm text-slate-400">
+              Shareable public view with settings-respected stats, showcase items,
+              badges, milestones, and recent activity.
+            </p>
           </div>
         </div>
-      </section>
+      </PageHero>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <SummaryCard label="Games" value={String(data.summary.totalGames)} />
@@ -100,67 +101,94 @@ export function PublicProfileView({
         />
       </section>
 
-      <SectionCard title="Nearest Completions">
-        {data.nearestCompletions.length === 0 ? (
-          <EmptyState message="No near-completion games found." />
-        ) : (
-          <div className="divide-y divide-white/10">
-            {data.nearestCompletions.map((game) => (
-              <div
-                className="flex flex-wrap items-center justify-between gap-3 py-3"
-                key={game.steamAppId}
+      <ResponsiveTwoColumn
+        aside={
+          <>
+            {data.steamProfile.steamId ? (
+              <Link
+                className="inline-flex rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                href={`/profiles/${data.steamProfile.steamId}`}
               >
-                <div>
-                  <Link
-                    className="font-medium text-lime-200 hover:text-lime-100"
-                    href={`/games/${game.steamAppId}`}
-                  >
-                    {game.name}
-                  </Link>
-                  <p className="text-sm text-slate-400">
-                    {game.remainingAchievements} remaining
-                  </p>
-                </div>
-                <span className="text-sm font-semibold text-slate-200">
-                  {game.completionPercentage}%
-                </span>
-                <div className="w-32">
-                  <ProgressBar value={game.completionPercentage} />
-                </div>
+                Open full profile
+              </Link>
+            ) : null}
+            <SectionCard description="How this profile compares at a glance." title="Showcase Summary">
+              <div className="grid gap-3">
+                <SummaryCard
+                  label="Games"
+                  value={String(data.summary.totalGames)}
+                />
+                <SummaryCard
+                  label="Completed"
+                  value={String(data.summary.completedGames)}
+                />
               </div>
-            ))}
-          </div>
-        )}
-      </SectionCard>
-
-      {settings.showRarestAchievements === false ? null : (
-        <SectionCard title="Rarest Achievements">
-          {data.rarestAchievements.length === 0 ? (
-            <EmptyState message="No rare unlocked achievements available yet." />
+            </SectionCard>
+          </>
+        }
+      >
+        <SectionCard title="Nearest Completions">
+          {data.nearestCompletions.length === 0 ? (
+            <EmptyState message="No near-completion games found." />
           ) : (
             <div className="divide-y divide-white/10">
-              {data.rarestAchievements.map((achievement) => (
+              {data.nearestCompletions.map((game) => (
                 <div
                   className="flex flex-wrap items-center justify-between gap-3 py-3"
-                  key={`${achievement.steamAppId}-${achievement.apiName}`}
+                  key={game.steamAppId}
                 >
                   <div>
-                    <p className="font-medium text-white">
-                      {achievement.displayName ?? achievement.apiName}
-                    </p>
+                    <Link
+                      className="font-medium text-lime-200 hover:text-lime-100"
+                      href={`/games/${game.steamAppId}`}
+                    >
+                      {game.name}
+                    </Link>
                     <p className="text-sm text-slate-400">
-                      App {achievement.steamAppId}
+                      {game.remainingAchievements} remaining
                     </p>
                   </div>
-                  <span className="text-sm font-semibold text-lime-100">
-                    {achievement.globalPercentage}%
+                  <span className="text-sm font-semibold text-slate-200">
+                    {game.completionPercentage}%
                   </span>
+                  <div className="w-32">
+                    <ProgressBar value={game.completionPercentage} />
+                  </div>
                 </div>
               ))}
             </div>
           )}
         </SectionCard>
-      )}
+
+        {settings.showRarestAchievements === false ? null : (
+          <SectionCard title="Rarest Achievements">
+            {data.rarestAchievements.length === 0 ? (
+              <EmptyState message="No rare unlocked achievements available yet." />
+            ) : (
+              <div className="divide-y divide-white/10">
+                {data.rarestAchievements.map((achievement) => (
+                  <div
+                    className="flex flex-wrap items-center justify-between gap-3 py-3"
+                    key={`${achievement.steamAppId}-${achievement.apiName}`}
+                  >
+                    <div>
+                      <p className="font-medium text-white">
+                        {achievement.displayName ?? achievement.apiName}
+                      </p>
+                      <p className="text-sm text-slate-400">
+                        App {achievement.steamAppId}
+                      </p>
+                    </div>
+                    <span className="text-sm font-semibold text-lime-100">
+                      {achievement.globalPercentage}%
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </SectionCard>
+        )}
+      </ResponsiveTwoColumn>
 
       {data.steamProfile.steamId ? (
         <>
@@ -194,14 +222,6 @@ export function PublicProfileView({
         </>
       ) : null}
 
-      {data.steamProfile.steamId ? (
-        <Link
-          className="inline-flex rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-          href={`/profiles/${data.steamProfile.steamId}`}
-        >
-          Open full dashboard
-        </Link>
-      ) : null}
     </div>
   );
 }

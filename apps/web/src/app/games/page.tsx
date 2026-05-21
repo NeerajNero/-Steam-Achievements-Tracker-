@@ -76,38 +76,35 @@ function GamesPageContent() {
 
   return (
     <PageShell>
-      <div className="mb-6">
-        <PageHero eyebrow="Global game browser" title="Steam Games">
-          <p>
-          Browse Steam games already discovered through profile syncs. These pages are
-          database-backed and do not call Steam directly from the browser.
-          </p>
-        </PageHero>
-      </div>
+      <PageHero eyebrow="Global game browser" title="Steam Games">
+        <p>
+          Browse tracked Steam games already discovered through synced profiles.
+          This view is database-backed, highlights metadata state clearly, and keeps
+          search, sorting, tracked-player counts, and average completion in one place.
+        </p>
+      </PageHero>
 
-      <div className="grid gap-6">
-        <GlobalGamesFilters
-          filters={filters}
-          onHasAchievementsChange={(hasAchievements) =>
-            updateFilters({ ...filters, hasAchievements, offset: 0 })
-          }
-          onLimitChange={(limit) => updateFilters({ ...filters, limit, offset: 0 })}
-          onOrderChange={(order) => updateFilters({ ...filters, order })}
-          onPageChange={(offset) => updateFilters({ ...filters, offset })}
-          onSearchChange={setSearchInput}
-          onSortChange={(sort) => updateFilters({ ...filters, sort, offset: 0 })}
-          onSubmitSearch={onSubmitSearch}
-          searchInput={searchInput}
-          total={total}
-        />
-        <GlobalGamesList
-          error={games.error}
-          isError={games.isError}
-          isLoading={games.isLoading}
-          items={games.data?.items}
-          total={games.data?.total}
-        />
-      </div>
+      <GlobalGamesFilters
+        filters={filters}
+        onHasAchievementsChange={(hasAchievements) =>
+          updateFilters({ ...filters, hasAchievements, offset: 0 })
+        }
+        onLimitChange={(limit) => updateFilters({ ...filters, limit, offset: 0 })}
+        onOrderChange={(order) => updateFilters({ ...filters, order })}
+        onPageChange={(offset) => updateFilters({ ...filters, offset })}
+        onSearchChange={setSearchInput}
+        onSortChange={(sort) => updateFilters({ ...filters, sort, offset: 0 })}
+        onSubmitSearch={onSubmitSearch}
+        searchInput={searchInput}
+        total={total}
+      />
+      <GlobalGamesList
+        error={games.error}
+        isError={games.isError}
+        isLoading={games.isLoading}
+        items={games.data?.items}
+        total={games.data?.total}
+      />
     </PageShell>
   );
 }

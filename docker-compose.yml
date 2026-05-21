@@ -79,6 +79,7 @@ services:
       - .:/workspace
       - root-node-modules:/workspace/node_modules
       - backend-node-modules:/workspace/apps/backend/node_modules
+      - backend-dist:/workspace/apps/backend/dist
     command: pnpm dev
 
   web:
@@ -111,11 +112,14 @@ services:
       - root-node-modules:/workspace/node_modules
       - web-node-modules:/workspace/apps/web/node_modules
       - client-sdk-node-modules:/workspace/libs/client-sdk/node_modules
+      - web-next:/workspace/apps/web/.next
     command: sh -c "pnpm --filter @steam-achievement/client-sdk build && pnpm dev"
 
 volumes:
   postgres-data:
   root-node-modules:
   backend-node-modules:
+  backend-dist:
   web-node-modules:
   client-sdk-node-modules:
+  web-next:

@@ -185,6 +185,9 @@ Query parameters:
 Returns game and achievement targets with game/achievement metadata. Returns
 `401` when unauthenticated.
 
+Auto-completed targets are returned through the same endpoint with
+`status=completed`. Dashboard reads still use only `status=active`.
+
 ### `POST /account/targets/games`
 
 Operation ID: `createGameTarget`
@@ -247,6 +250,20 @@ Owner-only update for status, priority, notes, and due date.
 Operation ID: `archiveAchievementTarget`
 
 Soft-deletes an achievement target by setting `status = archived`.
+
+## Target Completion Behavior
+
+No separate completion endpoint exists for saved targets. Sync workflows update
+target status in PostgreSQL when stored Steam progress proves completion:
+
+- achievement targets complete after achievement sync only when a matching
+  `profile_achievements` row exists with `achieved = true`;
+- unknown or unavailable unlock state does not complete an achievement target;
+- game targets complete when stored `profile_games.completion_percentage`
+  reaches the target threshold;
+- `targetCompletionPercentage = null` behaves as `100`;
+- zero-achievement games auto-complete only when the target explicitly uses a
+  `0` threshold.
 
 ## Public Profiles
 

@@ -56,7 +56,74 @@ export function LeaderboardTable({
 
   return (
     <SectionCard title="Rankings">
-      <div className="overflow-x-auto">
+      <div className="grid gap-3 lg:hidden">
+        {items.map((item) => (
+          <article
+            className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"
+            key={`${item.rank}-${item.steamId}-mobile`}
+          >
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="grid h-12 w-12 place-items-center rounded-2xl border border-lime-300/20 bg-lime-400/10 font-semibold text-lime-100">
+                  #{item.rank}
+                </div>
+                <Link
+                  className="flex items-center gap-3 text-white hover:text-lime-200"
+                  href={getLeaderboardProfileHref(item)}
+                >
+                  {item.avatarUrl ? (
+                    <img
+                      alt=""
+                      className="h-10 w-10 rounded-xl"
+                      src={item.avatarUrl}
+                    />
+                  ) : (
+                    <span className="h-10 w-10 rounded-xl bg-white/10" />
+                  )}
+                  <span>
+                    <span className="block font-medium">
+                      {item.personaName ?? item.steamId}
+                    </span>
+                    <span className="block text-xs text-slate-500">
+                      {item.publicSlug ? `/u/${item.publicSlug}` : item.steamId}
+                    </span>
+                  </span>
+                </Link>
+              </div>
+              <span className="font-semibold text-lime-100">
+                {formatLeaderboardScore(item)}
+              </span>
+            </div>
+            <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                  Completed
+                </p>
+                <p className="mt-1">
+                  {formatNumber(item.snapshot.completedGames)} /{' '}
+                  {formatNumber(item.snapshot.totalGames)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                  Achievements
+                </p>
+                <p className="mt-1">
+                  {formatNumber(item.snapshot.unlockedAchievements)} /{' '}
+                  {formatNumber(item.snapshot.totalAchievements)}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                  Snapshot
+                </p>
+                <p className="mt-1">{formatDateTime(item.snapshot.createdAt)}</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+      <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full divide-y divide-white/10 text-sm">
           <thead className="bg-white/5 text-left text-xs font-semibold uppercase tracking-normal text-slate-400">
             <tr>

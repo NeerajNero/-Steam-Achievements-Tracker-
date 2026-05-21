@@ -14,6 +14,7 @@ import { useArchiveAchievementTarget } from '../api/use-archive-achievement-targ
 import { useArchiveGameTarget } from '../api/use-archive-game-target';
 import {
   getStatusLabel,
+  getStatusTone,
   getTargetSubtitle,
   getTargetTitle,
 } from '../utils/target-labels';
@@ -46,12 +47,14 @@ export function TargetCard({
   }
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+    <article className="rounded-[22px] border border-white/10 bg-white/[0.03] p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
             <PriorityBadge priority={target.priority} />
-            <StatusBadge tone="info">{getStatusLabel(target.status)}</StatusBadge>
+            <StatusBadge tone={getStatusTone(target.status)}>
+              {getStatusLabel(target.status)}
+            </StatusBadge>
             {target.type === AccountTargetResponseDtoTypeEnum.Achievement ? (
               <StatusBadge tone="default">Achievement</StatusBadge>
             ) : (
@@ -64,7 +67,7 @@ export function TargetCard({
           >
             {getTargetTitle(target)}
           </Link>
-          <p className="mt-1 text-sm leading-6 text-slate-400">
+          <p className="mt-2 text-sm leading-6 text-slate-400">
             {getTargetSubtitle(target)}
           </p>
         </div>
@@ -77,14 +80,22 @@ export function TargetCard({
           {isPending ? 'Archiving...' : 'Archive'}
         </button>
       </div>
-      {target.notes ? <p className="mt-3 text-sm text-slate-300">{target.notes}</p> : null}
-      <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
+      {target.notes ? <p className="mt-3 text-sm leading-6 text-slate-300">{target.notes}</p> : null}
+      <div className="mt-4 flex flex-wrap gap-3 text-xs text-slate-500">
         {target.targetCompletionPercentage !== undefined &&
         target.targetCompletionPercentage !== null ? (
           <span>Target: {target.targetCompletionPercentage}%</span>
         ) : null}
         {target.dueDate ? <span>Due: {formatDate(target.dueDate)}</span> : null}
         <span>Created: {formatDate(target.createdAt)}</span>
+      </div>
+      <div className="mt-3">
+        <Link
+          className="inline-flex text-sm font-medium text-lime-200 hover:text-lime-100"
+          href={gameHref}
+        >
+          Open {target.game.name}
+        </Link>
       </div>
       {compact ? null : <TargetForm target={target} />}
     </article>

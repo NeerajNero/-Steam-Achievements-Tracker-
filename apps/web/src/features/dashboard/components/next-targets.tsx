@@ -17,7 +17,7 @@ export function NextTargets({
 }>): ReactNode {
   return (
     <SectionCard
-      description="Deterministic suggestions from your stored Steam progress, guides, and sessions."
+      description="Deterministic suggestions from your stored Steam progress, guides, sessions, and metadata state."
       title="Next Best Targets"
     >
       {targets.length === 0 ? (
@@ -29,7 +29,7 @@ export function NextTargets({
         <div className="grid gap-3 xl:grid-cols-2">
           {targets.map((target) => (
             <Link
-              className="rounded-2xl border border-white/10 bg-white/[0.03] p-4 transition hover:border-lime-300/40 hover:bg-lime-300/5"
+              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 transition hover:border-lime-300/40 hover:bg-lime-300/5"
               href={target.href}
               key={`${target.type}-${target.href}`}
             >
@@ -57,7 +57,7 @@ export function NextTargets({
                   <h3 className="mt-2 truncate font-semibold text-white">
                     {target.game.name}
                   </h3>
-                  <p className="mt-1 text-sm text-slate-400">
+                  <p className="mt-1 text-sm leading-6 text-slate-400">
                     {getTargetReason(target)}
                   </p>
                   {target.game.achievementDataState === 'unlock_state_synced' ? (

@@ -12,14 +12,13 @@ export default function LeaderboardsPage() {
 
   return (
     <PageShell>
-      <div className="mb-6">
-        <PageHero eyebrow="Snapshot rankings" title="Steam Leaderboards">
-          <p>
-          Leaderboards use stored profile snapshots, so ranking pages remain fast
-          and stable without recomputing every profile from raw progress rows.
-          </p>
-        </PageHero>
-      </div>
+      <PageHero eyebrow="Snapshot rankings" title="Steam Leaderboards">
+        <p>
+          Leaderboards rank stored profile snapshots, not live Steam calls. That keeps
+          score comparisons stable and lets each ranking page explain exactly what its
+          score means before you drill into the table.
+        </p>
+      </PageHero>
 
       {leaderboards.isLoading ? (
         <LoadingState message="Loading leaderboard types..." />
