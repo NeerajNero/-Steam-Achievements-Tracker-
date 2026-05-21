@@ -12,6 +12,7 @@ export function TargetList({
   actionHref,
   actionLabel,
   compact = false,
+  emptyTitle = 'No active targets',
   emptyMessage = 'No targets yet. Add games or achievements to build a completion to-do list.',
   error,
   isError = false,
@@ -22,6 +23,7 @@ export function TargetList({
   actionHref?: string;
   actionLabel?: string;
   compact?: boolean;
+  emptyTitle?: string;
   emptyMessage?: string;
   error?: unknown;
   isError?: boolean;
@@ -41,13 +43,13 @@ export function TargetList({
           </Link>
         ) : null
       }
-      description="Saved completion targets for games and achievements."
+      description="Saved completion targets for games and achievements. Active targets drop out of the dashboard after sync confirms completion."
       title={title}
     >
       {isLoading ? <LoadingState message="Loading targets..." /> : null}
       {isError ? <ErrorState message={getErrorMessage(error)} /> : null}
       {targets !== undefined && targets.length === 0 ? (
-        <EmptyState message={emptyMessage} title="No active targets" />
+        <EmptyState message={emptyMessage} title={emptyTitle} />
       ) : null}
       {targets !== undefined && targets.length > 0 ? (
         <div className="grid gap-3">

@@ -33,8 +33,8 @@ export function QuickActions({
 }>): ReactNode {
   return (
     <SectionCard
-      description="Queue refresh work and jump to the core hunter views."
-      title="Quick Actions"
+      description="Run queued refresh jobs and jump into the places that usually need attention first."
+      title="Sync And Quick Actions"
     >
       <div className="flex flex-wrap gap-2">
         {syncActions.map((action) => (
@@ -62,9 +62,15 @@ export function QuickActions({
         >
           Browse Games
         </Link>
+        <Link
+          className="rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+          href="/account/targets"
+        >
+          Manage Targets
+        </Link>
       </div>
 
-      <div className="mt-4 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
+      <div className="mt-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm">
         <div className="font-semibold text-white">Latest sync status</div>
         {latestSync ? (
           <div className="mt-2 flex flex-wrap items-center gap-2 text-slate-300">

@@ -29,7 +29,7 @@ export function GuideDetail({
           </div>
           <GuideStatusBadge status={guide.status} />
         </div>
-        <dl className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-4">
+        <dl className="mt-5 grid gap-3 text-sm text-slate-300 sm:grid-cols-2 xl:grid-cols-4">
           <div>
             <dt className="font-medium text-slate-500">Difficulty</dt>
             <dd>{guide.estimatedDifficulty ?? 'Not set'}</dd>
@@ -49,7 +49,7 @@ export function GuideDetail({
         </dl>
       </section>
 
-      <SectionCard title="Roadmap sections">
+      <SectionCard description="Read the route, cleanup order, and any spoiler notes section by section." title="Roadmap Sections">
         {guide.sections.length === 0 ? (
           <EmptyState message="This guide has no sections yet." />
         ) : (
@@ -68,7 +68,7 @@ export function GuideDetail({
         )}
       </SectionCard>
 
-      <SectionCard title="Covered achievements">
+      <SectionCard description="Achievements attached to this guide stay visible while planning routes or cleanup passes." title="Covered Achievements">
         {guide.achievements.length === 0 ? (
           <EmptyState message="No achievements are attached to this guide yet." />
         ) : (

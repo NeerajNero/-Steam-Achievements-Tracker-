@@ -9,15 +9,17 @@ export function SummaryCard({
   hint?: string;
   label: string;
   loading?: boolean;
-  value: string;
+  value: ReactNode;
 }>): ReactNode {
   return (
-    <article className="rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20">
-      <div className="text-sm font-medium text-slate-400">{label}</div>
-      <div className="mt-2 text-2xl font-semibold text-white">
+    <article className="rounded-[22px] border border-white/10 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] p-5 shadow-xl shadow-black/20">
+      <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+        {label}
+      </div>
+      <div className="mt-3 text-2xl font-semibold tracking-tight text-white">
         {loading ? '...' : value}
       </div>
-      {hint ? <p className="mt-1 text-xs text-slate-500">{hint}</p> : null}
+      {hint ? <p className="mt-2 text-xs leading-5 text-slate-500">{hint}</p> : null}
     </article>
   );
 }

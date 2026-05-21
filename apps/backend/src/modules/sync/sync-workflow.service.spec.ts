@@ -18,6 +18,7 @@ import type {
 import type { CachedSteamApiClient } from '../steam/cached-steam-api.client';
 import { SteamApiRequestError } from '../steam/steam-api.errors';
 import type { SteamOwnedGame } from '../steam/steam-api.types';
+import type { TargetCompletionService } from '../targets/target-completion.service';
 import { SyncWorkflowService } from './sync-workflow.service';
 
 describe('SyncWorkflowService', () => {
@@ -374,6 +375,10 @@ describe('SyncWorkflowService', () => {
         progress: expect.any(Object),
       }),
     );
+    expect(mocks.targetCompletionService.completeAfterAchievementSync).toHaveBeenCalledWith(
+      'profile-id',
+      910001,
+    );
   });
 
   it('achievement workflow persists metadata when player achievements are unavailable', async () => {
@@ -432,6 +437,9 @@ describe('SyncWorkflowService', () => {
     expect(
       mocks.achievementSyncRepository.applyGameAchievementSync,
     ).not.toHaveBeenCalled();
+    expect(
+      mocks.targetCompletionService.completeAfterAchievementSync,
+    ).not.toHaveBeenCalled();
   });
 
   it('achievement workflow handles zero-achievement game as success', async () => {
@@ -478,6 +486,10 @@ describe('SyncWorkflowService', () => {
     expect(
       mocks.achievementSyncRepository.applyGameAchievementMetadata,
     ).not.toHaveBeenCalled();
+    expect(mocks.targetCompletionService.completeAfterAchievementSync).toHaveBeenCalledWith(
+      'profile-id',
+      910002,
+    );
   });
 
   it('achievement workflow handles one success and one failure as partial_success', async () => {
@@ -637,6 +649,9 @@ interface SyncWorkflowMocks {
     applyGameAchievementSync: ReturnType<typeof vi.fn>;
     delete?: ReturnType<typeof vi.fn>;
   };
+  targetCompletionService: {
+    completeAfterAchievementSync: ReturnType<typeof vi.fn>;
+  };
   syncRunsRepository: {
     assignProfile: ReturnType<typeof vi.fn>;
     markSuccess: ReturnType<typeof vi.fn>;
@@ -656,6 +671,7 @@ function createService(mocks: SyncWorkflowMocks): SyncWorkflowService {
     mocks.profileBadgesRepository as unknown as ProfileBadgesDataService,
     mocks.activityEventsRepository as unknown as ActivityEventsDataService,
     mocks.achievementSyncRepository as unknown as AchievementSyncDataService,
+    mocks.targetCompletionService as unknown as TargetCompletionService,
     mocks.syncRunsRepository as unknown as SyncRunsDataService,
   );
 }
@@ -729,6 +745,12 @@ function createMocks(): SyncWorkflowMocks {
             ).length ?? 0,
           completionPercentage: 0,
         },
+      })),
+    },
+    targetCompletionService: {
+      completeAfterAchievementSync: vi.fn(async () => ({
+        achievementTargetsCompleted: 0,
+        gameTargetsCompleted: 0,
       })),
     },
     syncRunsRepository: {

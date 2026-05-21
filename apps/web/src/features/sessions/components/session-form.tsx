@@ -45,9 +45,17 @@ export function SessionForm({
 
   return (
     <form
-      className="grid gap-4 rounded-2xl border border-white/10 bg-slate-950/70 p-5 shadow-xl shadow-black/20"
+      className="grid gap-5 rounded-[24px] border border-white/10 bg-slate-950/75 p-6 shadow-xl shadow-black/20"
       onSubmit={handleSubmit}
     >
+      <div>
+        <h2 className="text-lg font-semibold text-white">
+          {mode === 'create' ? 'Session details' : 'Edit session details'}
+        </h2>
+        <p className="mt-1 text-sm text-slate-400">
+          Keep timing, roster size, visibility, and voice coordination clear before players join.
+        </p>
+      </div>
       <label className={labelClassName}>
         Title
         <input
@@ -195,7 +203,10 @@ export function SessionForm({
         />
       </label>
 
-      <div>
+      <div className="flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+        <p className="text-sm text-slate-500">
+          Authenticated players can join, leave, or manage the session from the detail page.
+        </p>
         <button
           className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:opacity-60"
           disabled={isSubmitting}

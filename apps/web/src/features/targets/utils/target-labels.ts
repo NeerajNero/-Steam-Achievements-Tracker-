@@ -5,6 +5,8 @@ import {
   type AccountTargetResponseDto,
 } from '@steam-achievement/client-sdk';
 
+import type { StatusTone } from '@/components/ui/status-badge';
+
 export function getPriorityLabel(
   priority: AccountTargetResponseDtoPriorityEnum,
 ): string {
@@ -37,6 +39,28 @@ export function getStatusLabel(status: AccountTargetResponseDtoStatusEnum): stri
   }
 
   return 'Archived';
+}
+
+export function getStatusTone(
+  status: AccountTargetResponseDtoStatusEnum,
+): StatusTone {
+  if (status === AccountTargetResponseDtoStatusEnum.Completed) {
+    return 'success';
+  }
+
+  if (status === AccountTargetResponseDtoStatusEnum.Paused) {
+    return 'warning';
+  }
+
+  if (status === AccountTargetResponseDtoStatusEnum.Ignored) {
+    return 'danger';
+  }
+
+  if (status === AccountTargetResponseDtoStatusEnum.Active) {
+    return 'info';
+  }
+
+  return 'default';
 }
 
 export function getTargetTitle(target: AccountTargetResponseDto): string {

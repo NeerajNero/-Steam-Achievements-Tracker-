@@ -73,6 +73,25 @@ Active targets are ordered by:
 These saved targets are separate from deterministic `nextTargets`, which remain
 rule-based suggestions derived from synced Steam progress.
 
+## Auto-Completion After Sync
+
+Target completion is DB-backed and deterministic.
+
+- After achievement sync persists `profile_achievements` for a game, active
+  `achievement_targets` for the same `steam_profile_id` and Steam app are marked
+  `completed` only when a matching persisted row has `achieved = true`.
+- Missing `profile_achievements` rows and rows with `achieved = false` do not
+  complete achievement targets. Unknown unlock state stays targetable and stays
+  active.
+- Only `status = active` targets auto-complete. Paused, ignored, archived, and
+  already-completed rows are left unchanged.
+- After `refresh_profile_game_achievement_progress(profile_id, steam_app_id)`
+  runs, active `game_targets` auto-complete when stored
+  `profile_games.completion_percentage` meets or exceeds the target threshold.
+- `game_targets.target_completion_percentage = null` defaults to `100`.
+- Games with `total_achievements = 0` do not auto-complete unless the target
+  explicitly stores `target_completion_percentage = 0`.
+
 ## Frontend
 
 The frontend consumes `TargetsApi` from `@steam-achievement/client-sdk`.
@@ -80,6 +99,7 @@ The frontend consumes `TargetsApi` from `@steam-achievement/client-sdk`.
 Routes and integrations:
 
 - `/account/targets` shows active private targets.
+- `/account/targets?status=completed` shows completed private targets.
 - `/dashboard` surfaces active targets in the Hunter Command Center.
 - Global and profile game pages include Add Target actions.
 - Achievement lists include Add Target actions when the API returns an
@@ -94,12 +114,8 @@ achievement rows do not know the signed-in user's unlock state, so they still
 show Add Target and render a friendly conflict message if the backend rejects
 the request.
 
-## Deferred Automation
-
-Future achievement sync can auto-complete active achievement targets when a
-newly persisted `profile_achievements` row has `achieved = true`. That behavior
-is deferred for now; this step only blocks creating or reactivating already
-unlocked achievements as active targets.
+Notifications, activity-feed entries for target completion, calendar automation,
+and AI suggestions remain deferred.
 
 ## Smoke
 

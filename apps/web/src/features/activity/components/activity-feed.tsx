@@ -8,12 +8,14 @@ import { getErrorMessage } from '@/lib/format';
 import { ActivityEventCard } from './activity-event-card';
 
 export function ActivityFeed({
+  description,
   error,
   isError,
   isLoading,
   items,
   title = 'Recent activity',
 }: Readonly<{
+  description?: string;
   error?: unknown;
   isError?: boolean;
   isLoading?: boolean;
@@ -21,7 +23,7 @@ export function ActivityFeed({
   title?: string;
 }>): ReactNode {
   return (
-    <SectionCard title={title}>
+    <SectionCard description={description} title={title}>
       {isLoading ? <LoadingState message="Loading activity..." /> : null}
       {isError ? (
         <ErrorState message={getErrorMessage(error)} title="Activity unavailable" />
@@ -30,7 +32,7 @@ export function ActivityFeed({
         <EmptyState message="No public activity has been recorded yet." />
       ) : null}
       {(items?.length ?? 0) > 0 ? (
-        <div className="mt-4 grid gap-3">
+        <div className="grid gap-3">
           {items?.map((event) => <ActivityEventCard event={event} key={event.id} />)}
         </div>
       ) : null}

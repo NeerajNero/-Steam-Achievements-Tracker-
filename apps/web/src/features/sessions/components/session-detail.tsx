@@ -85,7 +85,7 @@ export function SessionDetail({
               </button>
             </>
           ) : (
-            <p className="text-sm text-slate-400">
+            <p className="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-slate-400">
               Sign in with Steam to join this session.
             </p>
           )}
@@ -110,17 +110,17 @@ export function SessionDetail({
         </div>
       </SectionCard>
 
-      <SectionCard>
-        <div className="border-b border-white/10 p-4">
-          <h2 className="font-semibold text-white">Participants</h2>
-        </div>
+      <SectionCard
+        description="See who is hosting, who has joined, and whether the roster is already full."
+        title="Participants"
+      >
         <SessionParticipants participants={session.participants} />
       </SectionCard>
 
-      <SectionCard>
-        <div className="border-b border-white/10 p-4">
-          <h2 className="font-semibold text-white">Target achievements</h2>
-        </div>
+      <SectionCard
+        description="These are the planned achievement unlocks or cleanup targets for the session."
+        title="Target Achievements"
+      >
         {session.achievements.length === 0 ? (
           <EmptyState message="No achievements are attached to this session yet." />
         ) : (

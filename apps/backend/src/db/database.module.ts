@@ -62,6 +62,7 @@ import { ProfileShowcaseItemsDataService } from './services/profile-showcase-ite
 import { PublicProfilesDataService } from './services/public-profiles-data.service';
 import { AuthSessionsDataService } from './services/auth-sessions-data.service';
 import { SteamProfilesDataService } from './services/steam-profiles-data.service';
+import { TargetCompletionDataService } from './services/target-completion-data.service';
 import { TargetsDataService } from './services/targets-data.service';
 import { SyncRunsDataService } from './services/sync-runs-data.service';
 import { UserPreferencesDataService } from './services/user-preferences-data.service';
@@ -112,6 +113,7 @@ import { DatabaseService } from './database.service';
     DashboardDataService,
     AppUsersDataService,
     SteamProfilesDataService,
+    TargetCompletionDataService,
     TargetsDataService,
     UserSteamAccountsDataService,
     UserPreferencesDataService,
@@ -149,6 +151,7 @@ import { DatabaseService } from './database.service';
     DashboardDataService,
     AppUsersDataService,
     SteamProfilesDataService,
+    TargetCompletionDataService,
     TargetsDataService,
     GamesDataService,
     GuidesDataService,

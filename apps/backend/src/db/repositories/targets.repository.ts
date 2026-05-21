@@ -86,6 +86,10 @@ export interface AchievementTargetRow {
   profileAchievement: ProfileAchievement | null;
 }
 
+export interface CompletedTargetRow extends Record<string, unknown> {
+  id: string;
+}
+
 @Injectable()
 export class TargetsRepository {
   constructor(private readonly databaseService: DatabaseService) {}
@@ -337,6 +341,69 @@ export class TargetsRepository {
 
     return rows[0] ?? null;
   }
+
+  async completeActiveAchievementTargetsForProfileGames(
+    steamProfileId: string,
+    steamAppIds: number[],
+  ): Promise<number> {
+    if (steamAppIds.length === 0) {
+      return 0;
+    }
+
+    const rows = await this.databaseService.db.execute<CompletedTargetRow>(sql`
+      UPDATE achievement_targets AS target
+      SET
+        status = 'completed',
+        updated_at = now()
+      FROM achievements AS achievement
+      INNER JOIN profile_achievements AS profile_achievement
+        ON profile_achievement.achievement_id = achievement.id
+       AND profile_achievement.profile_id = ${steamProfileId}::uuid
+       AND profile_achievement.achieved = true
+      WHERE target.steam_profile_id = ${steamProfileId}::uuid
+        AND target.status = 'active'
+        AND target.achievement_id = achievement.id
+        AND achievement.steam_app_id IN (${joinSteamAppIds(steamAppIds)})
+      RETURNING target.id
+    `);
+
+    return rows.rows.length;
+  }
+
+  async completeActiveGameTargetsForProfileGames(
+    steamProfileId: string,
+    steamAppIds: number[],
+  ): Promise<number> {
+    if (steamAppIds.length === 0) {
+      return 0;
+    }
+
+    const rows = await this.databaseService.db.execute<CompletedTargetRow>(sql`
+      UPDATE game_targets AS target
+      SET
+        status = 'completed',
+        updated_at = now()
+      FROM games AS game
+      INNER JOIN profile_games AS profile_game
+        ON profile_game.game_id = game.id
+       AND profile_game.profile_id = ${steamProfileId}::uuid
+      WHERE target.steam_profile_id = ${steamProfileId}::uuid
+        AND target.status = 'active'
+        AND target.game_id = game.id
+        AND game.steam_app_id IN (${joinSteamAppIds(steamAppIds)})
+        AND profile_game.completion_percentage >= COALESCE(
+          target.target_completion_percentage,
+          100
+        )
+        AND (
+          profile_game.total_achievements > 0
+          OR target.target_completion_percentage = 0
+        )
+      RETURNING target.id
+    `);
+
+    return rows.rows.length;
+  }
 }
 
 function buildGameTargetConditions(
@@ -396,7 +463,14 @@ const knownUnlockStateCountSql = sql<number>`(
   select cast(count(*) as int)
   from ${profileAchievements}
   inner join ${achievements}
-    on ${achievements.id} = ${profileAchievements.achievementId}
+  on ${achievements.id} = ${profileAchievements.achievementId}
   where ${profileAchievements.profileId} = ${gameTargets.steamProfileId}
     and ${achievements.steamAppId} = ${games.steamAppId}
 )`;
+
+function joinSteamAppIds(steamAppIds: number[]): SQL {
+  return sql.join(
+    steamAppIds.map((steamAppId) => sql`${steamAppId}`),
+    sql`, `,
+  );
+}

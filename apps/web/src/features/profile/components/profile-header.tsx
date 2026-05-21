@@ -2,6 +2,7 @@ import type {
   ProfileDetailResponseDto,
   ProfileSummaryResponseDto,
 } from '@steam-achievement/client-sdk';
+import Link from 'next/link';
 
 import { formatDateTime } from '@/lib/format';
 import { StatusBadge } from '@/components/ui/status-badge';
@@ -57,6 +58,14 @@ export function ProfileHeader({
           <p className="text-sm text-slate-400">
             Last synced: {formatDateTime(profile.lastSyncedAt)}
           </p>
+          <div className="mt-4 flex flex-wrap gap-2">
+            <Link
+              className="rounded-full border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              href={`/profiles/${profile.steamId}/games`}
+            >
+              Open game library
+            </Link>
+          </div>
         </div>
         {profile.avatarUrl ? (
           <img

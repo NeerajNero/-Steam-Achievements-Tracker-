@@ -32,10 +32,12 @@ export default function GameGuidesPage() {
             </Link>
           }
           eyebrow={`Steam App ${steamAppId}`}
-          title="Steam game guides"
+          title="Game Guides"
         >
           <p>
-            Published public roadmaps for Steam App {steamAppId}.
+            Published public roadmaps for Steam App {steamAppId}. Use guides to
+            understand route order, cleanup, difficulty, and which achievements a
+            guide is trying to cover.
           </p>
         </PageHero>
       </div>

@@ -12,16 +12,15 @@ export default function ActivityPage(): ReactNode {
 
   return (
     <PageShell maxWidth="max-w-5xl">
-      <div className="mb-6">
-        <PageHero eyebrow="Public platform feed" title="Steam Activity">
-          <p>
-          Public platform events from synced Steam profiles, guides, sessions, and
-          milestones.
-          </p>
-        </PageHero>
-      </div>
-
+      <PageHero eyebrow="Public platform feed" title="Steam Activity">
+        <p>
+          Public events from synced Steam profiles, guides, sessions, milestones,
+          and badge unlock moments. Use this page to see what changed recently and
+          jump back into the relevant profile, game, guide, or session.
+        </p>
+      </PageHero>
       <ActivityFeed
+        description="Recent public platform events with links back to their related profiles and games."
         error={activity.error}
         isError={activity.isError}
         isLoading={activity.isLoading}

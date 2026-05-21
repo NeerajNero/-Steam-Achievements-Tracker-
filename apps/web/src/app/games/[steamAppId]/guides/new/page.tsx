@@ -48,7 +48,8 @@ export default function NewGameGuidePage() {
         eyebrow={`Steam App ${steamAppId}`}
         title="Create guide"
       >
-        Draft a roadmap for achievements, collectibles, or co-op completion.
+        Draft a roadmap for achievements, collectibles, or co-op completion. Guide
+        creation requires a Steam sign-in and stays private until you publish it.
       </PageHero>
       <div className="mt-6">
       {currentUser.isLoading ? <LoadingState message="Checking sign-in status..." /> : null}

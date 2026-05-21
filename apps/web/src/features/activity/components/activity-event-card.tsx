@@ -2,6 +2,8 @@ import type { ActivityEventResponseDto } from '@steam-achievement/client-sdk';
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 
+import { StatusBadge } from '@/components/ui/status-badge';
+
 const eventLabels: Record<ActivityEventResponseDto['eventType'], string> = {
   profile_synced: 'Profile synced',
   game_completed: 'Game completed',
@@ -35,13 +37,18 @@ export function ActivityEventCard({
         ? `/profiles/${event.steamProfile.steamId}`
         : null;
   const metadataTitle = getStringMetadata(event.metadata, 'title');
+  const appHref = event.steamAppId ? `/games/${event.steamAppId}` : null;
 
   return (
-    <article className="rounded-2xl border border-white/10 bg-white/5 p-4">
+    <article className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 shadow-lg shadow-black/10">
       <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <StatusBadge tone="info">{eventLabels[event.eventType]}</StatusBadge>
-          <p className="mt-2 text-sm text-slate-300">
+        <div className="flex min-w-0 gap-3">
+          <div className="grid h-10 w-10 shrink-0 place-items-center rounded-2xl border border-cyan-300/20 bg-cyan-400/10 text-sm font-semibold text-cyan-100">
+            {getEventGlyph(event.eventType)}
+          </div>
+          <div className="min-w-0">
+            <StatusBadge tone="info">{eventLabels[event.eventType]}</StatusBadge>
+            <p className="mt-2 text-sm leading-6 text-slate-300">
             {actorHref ? (
               <Link className="font-medium text-lime-200 hover:text-lime-100" href={actorHref}>
                 {actorName}
@@ -49,16 +56,17 @@ export function ActivityEventCard({
             ) : (
               actorName
             )}
-            {metadataTitle ? ` - ${metadataTitle}` : null}
-          </p>
-          {event.steamAppId ? (
-            <Link
-              className="mt-2 inline-flex text-xs font-medium text-lime-200 hover:text-lime-100"
-              href={`/games/${event.steamAppId}`}
-            >
-              App {event.steamAppId}
-            </Link>
-          ) : null}
+              {metadataTitle ? ` · ${metadataTitle}` : null}
+            </p>
+            <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
+              {appHref ? (
+                <Link className="font-medium text-lime-200 hover:text-lime-100" href={appHref}>
+                  App {event.steamAppId}
+                </Link>
+              ) : null}
+              <span>{eventLabels[event.eventType]}</span>
+            </div>
+          </div>
         </div>
         <time className="text-xs text-slate-500" dateTime={event.occurredAt}>
           {formatDateTime(event.occurredAt)}
@@ -83,4 +91,27 @@ function formatDateTime(value: string): string {
     timeStyle: 'short',
   }).format(new Date(value));
 }
-import { StatusBadge } from '@/components/ui/status-badge';
+
+function getEventGlyph(eventType: ActivityEventResponseDto['eventType']): string {
+  if (eventType === 'game_completed') {
+    return '100';
+  }
+
+  if (eventType === 'rare_achievement_synced') {
+    return 'RA';
+  }
+
+  if (eventType === 'guide_published' || eventType === 'guide_commented') {
+    return 'GD';
+  }
+
+  if (eventType === 'session_created' || eventType === 'session_joined') {
+    return 'SQ';
+  }
+
+  if (eventType === 'badge_earned' || eventType === 'milestone_reached') {
+    return 'XP';
+  }
+
+  return 'ST';
+}

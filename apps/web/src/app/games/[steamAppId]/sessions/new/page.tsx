@@ -60,16 +60,16 @@ export default function NewSessionPage() {
         />
       ) : null}
       {currentUser.data ? (
-        <>
+        <div className="grid gap-4">
           <SessionForm
             isSubmitting={createSession.isPending}
             mode="create"
             onSubmit={(values) => void submit(values)}
           />
           {errorMessage ? (
-            <p className="mt-3 text-sm text-red-300">{errorMessage}</p>
+            <ErrorState message={errorMessage} title="Session not saved" />
           ) : null}
-        </>
+        </div>
       ) : null}
       </div>
     </PageShell>

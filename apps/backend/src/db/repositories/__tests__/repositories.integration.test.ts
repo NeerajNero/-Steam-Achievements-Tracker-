@@ -13,14 +13,17 @@ import { ProfileGamesRepository } from '../profile-games.repository';
 import { PublicProfilesRepository } from '../public-profiles.repository';
 import { SteamProfilesRepository } from '../steam-profiles.repository';
 import { SyncRunsRepository } from '../sync-runs.repository';
+import { TargetsRepository } from '../targets.repository';
 import { UserPreferencesRepository } from '../user-preferences.repository';
 import { UserSteamAccountsRepository } from '../user-steam-accounts.repository';
 import { DatabaseService } from '../../database.service';
 import {
+  achievementTargets,
   achievements,
   appUsers,
   authSessions,
   games,
+  gameTargets,
   profileAchievements,
   profileGames,
   publicProfiles,
@@ -48,6 +51,7 @@ let appUsersRepository: AppUsersRepository;
 let userSteamAccountsRepository: UserSteamAccountsRepository;
 let userPreferencesRepository: UserPreferencesRepository;
 let publicProfilesRepository: PublicProfilesRepository;
+let targetsRepository: TargetsRepository;
 
 interface TestIdentity {
   suffix: string;
@@ -70,6 +74,7 @@ describe('Drizzle repositories integration', () => {
     userSteamAccountsRepository = new UserSteamAccountsRepository(databaseService);
     userPreferencesRepository = new UserPreferencesRepository(databaseService);
     publicProfilesRepository = new PublicProfilesRepository(databaseService);
+    targetsRepository = new TargetsRepository(databaseService);
   });
 
   afterEach(async () => {
@@ -536,6 +541,310 @@ describe('Drizzle repositories integration', () => {
     });
   });
 
+  describe('TargetsRepository completion', () => {
+    it('completes only active achievement targets with achieved=true rows', async () => {
+      const identity = createIdentity();
+      const profile = await createProfile(identity, 'Target Completion Profile');
+      const user = await createTargetUser('Achievement Completion');
+      await createGame(identity.appId, 'Targeted Achievement Game');
+      const achievedAchievement = await createAchievement(
+        identity.appId,
+        'ACH_COMPLETED',
+        10,
+      );
+      const unknownAchievement = await createAchievement(
+        identity.appId,
+        'ACH_UNKNOWN',
+        20,
+      );
+      const lockedAchievement = await createAchievement(
+        identity.appId,
+        'ACH_LOCKED',
+        30,
+      );
+      const pausedAchievement = await createAchievement(
+        identity.appId,
+        'ACH_PAUSED',
+        40,
+      );
+      const ignoredAchievement = await createAchievement(
+        identity.appId,
+        'ACH_IGNORED',
+        50,
+      );
+      const archivedAchievement = await createAchievement(
+        identity.appId,
+        'ACH_ARCHIVED',
+        60,
+      );
+
+      const activeCompletedTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: achievedAchievement.id,
+        priority: 'high',
+      });
+      const activeUnknownTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: unknownAchievement.id,
+        priority: 'medium',
+      });
+      const activeLockedTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: lockedAchievement.id,
+        priority: 'medium',
+      });
+      const pausedTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: pausedAchievement.id,
+        priority: 'medium',
+      });
+      const ignoredTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: ignoredAchievement.id,
+        priority: 'medium',
+      });
+      const archivedTarget = await targetsRepository.upsertAchievementTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        achievementId: archivedAchievement.id,
+        priority: 'medium',
+      });
+
+      await targetsRepository.updateAchievementTargetForUser(user.id, pausedTarget.id, {
+        status: 'paused',
+      });
+      await targetsRepository.updateAchievementTargetForUser(
+        user.id,
+        ignoredTarget.id,
+        {
+          status: 'ignored',
+        },
+      );
+      await targetsRepository.updateAchievementTargetForUser(
+        user.id,
+        archivedTarget.id,
+        {
+          status: 'archived',
+        },
+      );
+
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: achievedAchievement.id,
+        achieved: true,
+        unlockedAt: new Date('2026-01-01T00:00:00.000Z'),
+      });
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: lockedAchievement.id,
+        achieved: false,
+      });
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: pausedAchievement.id,
+        achieved: true,
+      });
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: ignoredAchievement.id,
+        achieved: true,
+      });
+      await profileAchievementsRepository.upsertProfileAchievement({
+        profileId: profile.id,
+        achievementId: archivedAchievement.id,
+        achieved: true,
+      });
+
+      await expect(
+        targetsRepository.completeActiveAchievementTargetsForProfileGames(
+          profile.id,
+          [identity.appId],
+        ),
+      ).resolves.toBe(1);
+
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(
+          user.id,
+          activeCompletedTarget.id,
+        ),
+      ).resolves.toMatchObject({
+        target: { status: 'completed' },
+      });
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(
+          user.id,
+          activeUnknownTarget.id,
+        ),
+      ).resolves.toMatchObject({
+        target: { status: 'active' },
+      });
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(
+          user.id,
+          activeLockedTarget.id,
+        ),
+      ).resolves.toMatchObject({
+        target: { status: 'active' },
+      });
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(user.id, pausedTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'paused' },
+      });
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(user.id, ignoredTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'ignored' },
+      });
+      await expect(
+        targetsRepository.findAchievementTargetByIdForUser(
+          user.id,
+          archivedTarget.id,
+        ),
+      ).resolves.toMatchObject({
+        target: { status: 'archived' },
+      });
+    });
+
+    it('completes game targets at threshold, defaults null threshold to 100, and is idempotent', async () => {
+      const identity = createIdentity();
+      const profile = await createProfile(identity, 'Game Target Completion Profile');
+      const user = await createTargetUser('Game Completion');
+      const thresholdGame = await createGame(identity.appId, 'Threshold Game');
+      const defaultGame = await createGame(identity.appId + 1, 'Default Threshold Game');
+      const pendingGame = await createGame(identity.appId + 2, 'Pending Threshold Game');
+
+      await profileGamesRepository.upsertProfileGame({
+        profileId: profile.id,
+        gameId: thresholdGame.id,
+        totalAchievements: 10,
+        unlockedAchievements: 8,
+        completionPercentage: 80,
+      });
+      await profileGamesRepository.upsertProfileGame({
+        profileId: profile.id,
+        gameId: defaultGame.id,
+        totalAchievements: 5,
+        unlockedAchievements: 5,
+        completionPercentage: 100,
+      });
+      await profileGamesRepository.upsertProfileGame({
+        profileId: profile.id,
+        gameId: pendingGame.id,
+        totalAchievements: 10,
+        unlockedAchievements: 7,
+        completionPercentage: 70,
+      });
+
+      const thresholdTarget = await targetsRepository.upsertGameTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        gameId: thresholdGame.id,
+        priority: 'high',
+        targetCompletionPercentage: 75,
+      });
+      const defaultTarget = await targetsRepository.upsertGameTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        gameId: defaultGame.id,
+        priority: 'medium',
+        targetCompletionPercentage: null,
+      });
+      const pendingTarget = await targetsRepository.upsertGameTarget({
+        userId: user.id,
+        steamProfileId: profile.id,
+        gameId: pendingGame.id,
+        priority: 'medium',
+        targetCompletionPercentage: 80,
+      });
+
+      await expect(
+        targetsRepository.completeActiveGameTargetsForProfileGames(profile.id, [
+          identity.appId,
+          identity.appId + 1,
+          identity.appId + 2,
+        ]),
+      ).resolves.toBe(2);
+
+      await expect(
+        targetsRepository.findGameTargetByIdForUser(user.id, thresholdTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'completed' },
+      });
+      await expect(
+        targetsRepository.findGameTargetByIdForUser(user.id, defaultTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'completed' },
+      });
+      await expect(
+        targetsRepository.findGameTargetByIdForUser(user.id, pendingTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'active' },
+      });
+
+      await expect(
+        targetsRepository.completeActiveGameTargetsForProfileGames(profile.id, [
+          identity.appId,
+          identity.appId + 1,
+          identity.appId + 2,
+        ]),
+      ).resolves.toBe(0);
+    });
+
+    it('does not complete no-achievement game targets unless the threshold is explicitly 0', async () => {
+      const identity = createIdentity();
+      const profile = await createProfile(identity, 'Zero Achievement Target Profile');
+      const defaultUser = await createTargetUser('Zero Achievement Default');
+      const zeroUser = await createTargetUser('Zero Achievement Zero');
+      const zeroGame = await createGame(identity.appId, 'Zero Achievement Target Game');
+
+      await profileGamesRepository.upsertProfileGame({
+        profileId: profile.id,
+        gameId: zeroGame.id,
+        totalAchievements: 0,
+        unlockedAchievements: 0,
+        completionPercentage: 0,
+      });
+
+      const defaultTarget = await targetsRepository.upsertGameTarget({
+        userId: defaultUser.id,
+        steamProfileId: profile.id,
+        gameId: zeroGame.id,
+        priority: 'medium',
+        targetCompletionPercentage: null,
+      });
+      const zeroTarget = await targetsRepository.upsertGameTarget({
+        userId: zeroUser.id,
+        steamProfileId: profile.id,
+        gameId: zeroGame.id,
+        priority: 'high',
+        targetCompletionPercentage: 0,
+      });
+
+      await expect(
+        targetsRepository.completeActiveGameTargetsForProfileGames(profile.id, [
+          identity.appId,
+        ]),
+      ).resolves.toBe(1);
+
+      await expect(
+        targetsRepository.findGameTargetByIdForUser(defaultUser.id, defaultTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'active', targetCompletionPercentage: null },
+      });
+      await expect(
+        targetsRepository.findGameTargetByIdForUser(zeroUser.id, zeroTarget.id),
+      ).resolves.toMatchObject({
+        target: { status: 'completed', targetCompletionPercentage: 0 },
+      });
+    });
+  });
+
   describe('SyncRunsRepository', () => {
     it('creates and updates sync runs and finds latest runs newest first', async () => {
       const identity = createIdentity();
@@ -842,6 +1151,13 @@ function createAuthSessionInput(sessionTokenHash: string) {
   };
 }
 
+async function createTargetUser(label: string) {
+  return appUsersRepository.create({
+    displayName: `Integration Target ${label}`,
+    avatarUrl: null,
+  });
+}
+
 async function cleanupTestData(): Promise<void> {
   const testProfiles = databaseService.db
     .select({ id: steamProfiles.id })
@@ -874,6 +1190,28 @@ async function cleanupTestData(): Promise<void> {
     .where(
       sql`${profileAchievements.profileId} IN ${testProfiles}
         OR ${profileAchievements.achievementId} IN ${testAchievements}`,
+    );
+  await databaseService.db
+    .delete(achievementTargets)
+    .where(
+      sql`${achievementTargets.steamProfileId} IN ${testProfiles}
+        OR ${achievementTargets.achievementId} IN ${testAchievements}
+        OR ${achievementTargets.userId} IN (
+          select ${appUsers.id}
+          from ${appUsers}
+          where ${appUsers.displayName} like 'Integration Target%'
+        )`,
+    );
+  await databaseService.db
+    .delete(gameTargets)
+    .where(
+      sql`${gameTargets.steamProfileId} IN ${testProfiles}
+        OR ${gameTargets.gameId} IN ${testGames}
+        OR ${gameTargets.userId} IN (
+          select ${appUsers.id}
+          from ${appUsers}
+          where ${appUsers.displayName} like 'Integration Target%'
+        )`,
     );
   await databaseService.db
     .delete(profileGames)
@@ -923,7 +1261,8 @@ async function cleanupTestData(): Promise<void> {
     .delete(appUsers)
     .where(
       sql`${appUsers.displayName} like 'Integration Auth%'
-        or ${appUsers.displayName} like 'Integration Callback%'`,
+        or ${appUsers.displayName} like 'Integration Callback%'
+        or ${appUsers.displayName} like 'Integration Target%'`,
     );
   await databaseService.db
     .delete(steamProfiles)

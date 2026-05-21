@@ -4,6 +4,16 @@ These checks are for local Docker development and MVP backend smoke validation.
 
 ## Service Health
 
+Run the Docker preflight first when debugging local startup:
+
+```sh
+pnpm docker:preflight
+docker-compose config --quiet
+```
+
+If app-service startup fails with a `buildx` message, the safe fallback is to
+run only `postgres` and `redis` in Docker and run backend/web from the host.
+
 ```sh
 docker-compose ps
 docker-compose logs -f backend

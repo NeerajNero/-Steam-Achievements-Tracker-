@@ -84,7 +84,7 @@ export default function EditSessionPage() {
             onSubmit={(values) => void submit(values)}
           />
           {errorMessage ? (
-            <p className="text-sm text-red-300">{errorMessage}</p>
+            <ErrorState message={errorMessage} title="Session not saved" />
           ) : null}
           <SectionCard>
             <h2 className="font-semibold text-white">Attach achievements</h2>

@@ -26,7 +26,7 @@ export function StatusBadge({
 }>): ReactNode {
   return (
     <span
-      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-semibold ${toneClassName[tone]}`}
+      className={`inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] ${toneClassName[tone]}`}
     >
       {children}
     </span>

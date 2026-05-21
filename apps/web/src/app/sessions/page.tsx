@@ -46,7 +46,8 @@ function SessionsPageContent() {
     <div className="grid gap-6">
       <PageHero eyebrow="Community scheduling" title="Steam sessions">
         <p>
-            Browse upcoming public co-op and achievement boosting sessions.
+          Browse upcoming public co-op and achievement boosting sessions, check
+          roster pressure, and see which game communities already have scheduled runs.
         </p>
       </PageHero>
 

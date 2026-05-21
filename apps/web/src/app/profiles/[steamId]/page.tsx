@@ -12,8 +12,10 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { PageShell } from '@/components/layout/page-shell';
 import { EmptyState, ErrorState } from '@/components/ui/panel-state';
+import { ResponsiveTwoColumn } from '@/components/ui/responsive-two-column';
 import { useProfileActivity } from '@/features/activity/api/use-profile-activity';
 import { ActivityFeed } from '@/features/activity/components/activity-feed';
+import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { useProfileBadges } from '@/features/badges/api/use-profile-badges';
 import { BadgeGrid } from '@/features/badges/components/badge-grid';
 import { useProfileMilestones } from '@/features/milestones/api/use-profile-milestones';
@@ -114,6 +116,7 @@ export default function ProfilePage() {
   const milestones = useProfileMilestones(steamId, { limit: 5, offset: 0 });
   const badges = useProfileBadges(steamId);
   const showcase = useProfileShowcase(steamId);
+  const currentUser = useCurrentUser();
   const enqueueSync = useEnqueueSync(steamId);
   const refetchSyncRuns = syncRuns.refetch;
 
@@ -123,6 +126,7 @@ export default function ProfilePage() {
   const profileMissing =
     getHttpStatus(profile.error) === 404 ||
     getHttpStatus(summary.error) === 404;
+  const isOwner = currentUser.data?.steamAccount?.steamId === steamId;
   const totalGames = games.data?.total ?? 0;
 
   useEffect(() => {
@@ -196,7 +200,7 @@ export default function ProfilePage() {
 
       {profileMissing ? (
         <EmptyState
-          action={
+          action={isOwner ? (
             <button
               className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300 disabled:cursor-not-allowed disabled:bg-slate-700 disabled:text-slate-400"
               disabled={pendingScope === SyncRequestDtoScopeEnum.Profile}
@@ -207,8 +211,12 @@ export default function ProfilePage() {
                 ? 'Queueing...'
                 : 'Sync Profile'}
             </button>
+          ) : undefined}
+          message={
+            isOwner
+              ? 'Profile not synced yet. This Steam ID is not in the local database.'
+              : 'Profile not synced yet in the local database.'
           }
-          message="Profile not synced yet. This Steam ID is not in the local database."
           title="Profile not synced yet"
         />
       ) : null}
@@ -221,16 +229,85 @@ export default function ProfilePage() {
 
       <ProfileSummaryGrid isLoading={summary.isLoading} summary={summary.data} />
 
-      <SyncActions
-        actions={syncActions}
-        error={enqueueSync.error}
-        onSync={(scope) => void enqueue(scope)}
-        pendingScope={pendingScope}
-        queuedSync={queuedSync}
-        latestSync={latestSyncRun}
-      />
-
-      <section className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(320px,1fr)]">
+      <ResponsiveTwoColumn
+        aside={
+          <>
+            {isOwner ? (
+              <SyncActions
+                actions={syncActions}
+                error={enqueueSync.error}
+                onSync={(scope) => void enqueue(scope)}
+                pendingScope={pendingScope}
+                queuedSync={queuedSync}
+                latestSync={latestSyncRun}
+              />
+            ) : null}
+            <ProfileShowcase
+              error={showcase.error}
+              isError={showcase.isError}
+              isLoading={showcase.isLoading}
+              items={showcase.data?.items}
+            />
+            <RecentGames
+              error={recentGames.error}
+              isError={recentGames.isError}
+              isLoading={recentGames.isLoading}
+              items={recentGames.data?.items}
+              steamId={steamId}
+            />
+            <NearestCompletions
+              error={nearestCompletions.error}
+              isError={nearestCompletions.isError}
+              isLoading={nearestCompletions.isLoading}
+              items={nearestCompletions.data?.items}
+              steamId={steamId}
+            />
+            <RarestAchievements
+              error={rarestAchievements.error}
+              isError={rarestAchievements.isError}
+              isLoading={rarestAchievements.isLoading}
+              items={rarestAchievements.data?.items}
+              steamId={steamId}
+            />
+            <BadgeGrid
+              badges={badges.data?.items}
+              error={badges.error}
+              isError={badges.isError}
+              isLoading={badges.isLoading}
+              title="Badges"
+            />
+            <SyncRunsList
+              error={syncRuns.error}
+              isError={syncRuns.isError}
+              isLoading={syncRuns.isLoading}
+              isPolling={isPollingSyncRuns}
+              runs={syncRuns.data?.items}
+            />
+            <ProfileSnapshotsList
+              error={snapshots.error}
+              isError={snapshots.isError}
+              isLoading={snapshots.isLoading}
+              snapshots={snapshots.data?.items}
+            />
+            <MilestonesList
+              error={milestones.error}
+              isError={milestones.isError}
+              isLoading={milestones.isLoading}
+              milestones={milestones.data?.items}
+              title="Recent milestones"
+            />
+            <ActivityFeed
+              description="Public profile events, sync moments, and recent progress snapshots."
+              error={activity.error}
+              isError={activity.isError}
+              isLoading={activity.isLoading}
+              items={activity.data?.items}
+              title="Recent activity"
+            />
+          </>
+        }
+        layout="content-heavy"
+      >
         <div className="grid gap-6">
           <GameLibraryFilters
             filters={filters}
@@ -266,71 +343,7 @@ export default function ProfilePage() {
             total={games.data?.total}
           />
         </div>
-
-        <aside className="grid content-start gap-6">
-          <RecentGames
-            error={recentGames.error}
-            isError={recentGames.isError}
-            isLoading={recentGames.isLoading}
-            items={recentGames.data?.items}
-            steamId={steamId}
-          />
-          <NearestCompletions
-            error={nearestCompletions.error}
-            isError={nearestCompletions.isError}
-            isLoading={nearestCompletions.isLoading}
-            items={nearestCompletions.data?.items}
-            steamId={steamId}
-          />
-          <RarestAchievements
-            error={rarestAchievements.error}
-            isError={rarestAchievements.isError}
-            isLoading={rarestAchievements.isLoading}
-            items={rarestAchievements.data?.items}
-            steamId={steamId}
-          />
-          <ProfileShowcase
-            error={showcase.error}
-            isError={showcase.isError}
-            isLoading={showcase.isLoading}
-            items={showcase.data?.items}
-          />
-          <BadgeGrid
-            badges={badges.data?.items}
-            error={badges.error}
-            isError={badges.isError}
-            isLoading={badges.isLoading}
-            title="Badges"
-          />
-          <SyncRunsList
-            error={syncRuns.error}
-            isError={syncRuns.isError}
-            isLoading={syncRuns.isLoading}
-            isPolling={isPollingSyncRuns}
-            runs={syncRuns.data?.items}
-          />
-          <ProfileSnapshotsList
-            error={snapshots.error}
-            isError={snapshots.isError}
-            isLoading={snapshots.isLoading}
-            snapshots={snapshots.data?.items}
-          />
-          <MilestonesList
-            error={milestones.error}
-            isError={milestones.isError}
-            isLoading={milestones.isLoading}
-            milestones={milestones.data?.items}
-            title="Recent milestones"
-          />
-          <ActivityFeed
-            error={activity.error}
-            isError={activity.isError}
-            isLoading={activity.isLoading}
-            items={activity.data?.items}
-            title="Recent activity"
-          />
-        </aside>
-      </section>
+      </ResponsiveTwoColumn>
     </PageShell>
   );
 }

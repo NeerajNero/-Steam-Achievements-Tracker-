@@ -32,7 +32,10 @@ export function LeaderboardTabs({
             href={`/leaderboards/${item.type}`}
             key={item.type}
           >
-            <div className="font-semibold">{getLeaderboardLabel(item.type)}</div>
+            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Leaderboard
+            </div>
+            <div className="mt-3 font-semibold">{getLeaderboardLabel(item.type)}</div>
             <p className="mt-1 text-sm leading-5 text-slate-400">
               {getLeaderboardDescription(item.type)}
             </p>
