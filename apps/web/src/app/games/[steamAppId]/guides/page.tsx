@@ -37,7 +37,7 @@ export default function GameGuidesPage() {
           <p>
             Published public roadmaps for Steam App {steamAppId}. Use guides to
             understand route order, cleanup, difficulty, and which achievements a
-            guide is trying to cover.
+            guide is trying to cover before you commit to the run.
           </p>
         </PageHero>
       </div>

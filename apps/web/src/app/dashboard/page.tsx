@@ -199,6 +199,7 @@ function DashboardReadyView({
                 queuedSync={queuedSync}
                 steamId={profile.steamId}
               />
+              <NextTargets targets={dashboard.nextTargets} />
               <SyncAttention
                 dataQuality={dashboard.dataQuality}
                 steamId={profile.steamId}
@@ -220,22 +221,19 @@ function DashboardReadyView({
             actionHref="/account/targets"
             actionLabel="Manage Targets"
             compact
-            emptyMessage="No active targets yet. Add games or achievements to build the list you want sync to manage for you."
+            emptyMessage="No active targets yet. Add games or achievements from a game page to make the dashboard prioritize them."
             targets={[
               ...dashboard.activeTargets.games,
               ...dashboard.activeTargets.achievements,
             ]}
             title="Active Targets"
           />
-          <div className="space-y-6">
-            <NextTargets targets={dashboard.nextTargets} />
-            <RecentProgress
-              activity={dashboard.recentActivity}
-              badges={dashboard.badges}
-              milestones={dashboard.milestones}
-              syncRuns={dashboard.latestSyncRuns}
-            />
-          </div>
+          <RecentProgress
+            activity={dashboard.recentActivity}
+            badges={dashboard.badges}
+            milestones={dashboard.milestones}
+            syncRuns={dashboard.latestSyncRuns}
+          />
         </ResponsiveTwoColumn>
       </div>
     </PageShell>

@@ -75,6 +75,7 @@ export function SessionForm({
         <textarea
           className={`${inputClassName} min-h-24`}
           maxLength={1000}
+          placeholder="What is the session for, what should players bring, and which achievements are the focus?"
           onChange={(event) =>
             setValues((current) => ({
               ...current,
@@ -192,6 +193,7 @@ export function SessionForm({
         Voice URL
         <input
           className={inputClassName}
+          placeholder="https://discord.gg/..."
           onChange={(event) =>
             setValues((current) => ({
               ...current,

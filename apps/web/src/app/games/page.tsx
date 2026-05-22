@@ -79,8 +79,9 @@ function GamesPageContent() {
       <PageHero eyebrow="Global game browser" title="Steam Games">
         <p>
           Browse tracked Steam games already discovered through synced profiles.
-          This view is database-backed, highlights metadata state clearly, and keeps
-          search, sorting, tracked-player counts, and average completion in one place.
+          This database-backed view keeps metadata state, tracked-player counts,
+          playtime, and average completion in one place so you can decide which game
+          hub is worth opening next.
         </p>
       </PageHero>
 

@@ -59,7 +59,7 @@ export default function EditGuidePage() {
         eyebrow="Author tools"
         title="Edit guide"
       >
-        Manage guide metadata, publishing status, sections, and attached Steam achievements.
+        Manage guide metadata, publishing status, sections, and attached Steam achievements from one authoring surface.
       </PageHero>
 
       <div className="mt-6">

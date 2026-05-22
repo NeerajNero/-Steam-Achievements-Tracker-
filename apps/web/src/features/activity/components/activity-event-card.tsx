@@ -38,6 +38,20 @@ export function ActivityEventCard({
         : null;
   const metadataTitle = getStringMetadata(event.metadata, 'title');
   const appHref = event.steamAppId ? `/games/${event.steamAppId}` : null;
+  const relatedLinks = [
+    actorHref
+      ? {
+          href: actorHref,
+          label: event.actor?.publicSlug ? 'Public profile' : 'Steam profile',
+        }
+      : null,
+    appHref
+      ? {
+          href: appHref,
+          label: `Game ${event.steamAppId}`,
+        }
+      : null,
+  ].filter((value): value is { href: string; label: string } => value !== null);
 
   return (
     <article className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 shadow-lg shadow-black/10">
@@ -49,23 +63,33 @@ export function ActivityEventCard({
           <div className="min-w-0">
             <StatusBadge tone="info">{eventLabels[event.eventType]}</StatusBadge>
             <p className="mt-2 text-sm leading-6 text-slate-300">
-            {actorHref ? (
-              <Link className="font-medium text-lime-200 hover:text-lime-100" href={actorHref}>
-                {actorName}
-              </Link>
-            ) : (
-              actorName
-            )}
+              {actorHref ? (
+                <Link className="font-medium text-lime-200 hover:text-lime-100" href={actorHref}>
+                  {actorName}
+                </Link>
+              ) : (
+                actorName
+              )}
               {metadataTitle ? ` · ${metadataTitle}` : null}
             </p>
-            <div className="mt-2 flex flex-wrap gap-3 text-xs text-slate-500">
-              {appHref ? (
-                <Link className="font-medium text-lime-200 hover:text-lime-100" href={appHref}>
-                  App {event.steamAppId}
-                </Link>
-              ) : null}
+            <div className="mt-3 flex flex-wrap items-center gap-2 text-xs text-slate-500">
+              <span>{event.entityType}</span>
+              <span>·</span>
               <span>{eventLabels[event.eventType]}</span>
             </div>
+            {relatedLinks.length > 0 ? (
+              <div className="mt-3 flex flex-wrap gap-2">
+                {relatedLinks.map((link) => (
+                  <Link
+                    className="rounded-full border border-white/10 px-2.5 py-1 text-xs font-semibold text-slate-300 hover:border-lime-300/30 hover:text-lime-100"
+                    href={link.href}
+                    key={`${event.id}-${link.href}`}
+                  >
+                    {link.label}
+                  </Link>
+                ))}
+              </div>
+            ) : null}
           </div>
         </div>
         <time className="text-xs text-slate-500" dateTime={event.occurredAt}>

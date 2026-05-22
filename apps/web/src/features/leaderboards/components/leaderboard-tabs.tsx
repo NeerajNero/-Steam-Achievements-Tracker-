@@ -32,8 +32,15 @@ export function LeaderboardTabs({
             href={`/leaderboards/${item.type}`}
             key={item.type}
           >
-            <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-              Leaderboard
+            <div className="flex items-center justify-between gap-3">
+              <div className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Leaderboard
+              </div>
+              {isActive ? (
+                <span className="rounded-full border border-lime-300/30 bg-lime-400/10 px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-lime-100">
+                  Active
+                </span>
+              ) : null}
             </div>
             <div className="mt-3 font-semibold">{getLeaderboardLabel(item.type)}</div>
             <p className="mt-1 text-sm leading-5 text-slate-400">

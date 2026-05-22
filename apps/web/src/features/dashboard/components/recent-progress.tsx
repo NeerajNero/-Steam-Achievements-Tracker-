@@ -48,7 +48,7 @@ export function RecentProgress({
 
   return (
     <SectionCard
-      description="Recent Steam progress, sync activity, milestones, and badges."
+      description="The latest visible movement across sync runs, activity, milestones, and earned badges."
       title="Recent Progress"
     >
       {!hasProgress ? (
@@ -60,7 +60,7 @@ export function RecentProgress({
         <div className="grid gap-4 lg:grid-cols-2">
           <div className="space-y-3">
             <h3 className="text-sm font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Activity
+              Latest activity
             </h3>
             {activity.length === 0 ? (
               <p className="rounded-xl border border-white/10 bg-white/[0.03] p-4 text-sm text-slate-400">
@@ -68,17 +68,14 @@ export function RecentProgress({
               </p>
             ) : (
               activity.map((item) => (
-                <article
-                  className="rounded-xl border border-white/10 bg-white/[0.03] p-4"
-                  key={item.id}
-                >
+                <article className="rounded-xl border border-white/10 bg-white/[0.03] p-4" key={item.id}>
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone="info">{item.eventType}</StatusBadge>
                     <span className="text-xs text-slate-500">
                       {formatDateTime(item.occurredAt)}
                     </span>
                   </div>
-                  <p className="mt-2 text-sm text-slate-300">{item.entityType}</p>
+                  <p className="mt-2 text-sm font-medium text-slate-200">{item.entityType}</p>
                   {formatActivityMetadata(item.metadata) ? (
                     <p className="mt-1 text-xs text-slate-500">
                       {formatActivityMetadata(item.metadata)}
@@ -98,7 +95,7 @@ export function RecentProgress({
                 meta: run.status,
                 time: run.finishedAt ?? run.startedAt,
               }))}
-              title="Syncs"
+              title="Sync runs"
             />
             <ProgressList
               emptyMessage="No milestones earned yet."

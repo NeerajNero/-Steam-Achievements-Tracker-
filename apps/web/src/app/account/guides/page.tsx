@@ -21,7 +21,12 @@ export default function AccountGuidesPage() {
       </div>
 
       <div className="mb-6">
-        <PageHero eyebrow="Author dashboard" title="Your guides" />
+        <PageHero eyebrow="Author dashboard" title="Your guides">
+          <p>
+            Published, draft, and archived guides you authored. Use this page as the
+            control room for keeping game roadmaps readable and current.
+          </p>
+        </PageHero>
       </div>
 
       {guides.isLoading ? <LoadingState message="Loading your guides..." /> : null}
@@ -57,6 +62,14 @@ export default function AccountGuidesPage() {
                   </p>
                 </div>
                 <GuideStatusBadge status={guide.status} />
+              </div>
+              <div className="mt-4">
+                <Link
+                  className="inline-flex text-sm font-semibold text-lime-200 hover:text-lime-100"
+                  href={`/guides/${guide.id}/edit`}
+                >
+                  Edit guide
+                </Link>
               </div>
             </article>
           ))}

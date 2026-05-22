@@ -26,14 +26,15 @@ export function GuideCommunitySection({
 
   return (
     <section className="grid gap-6">
-      <GuideVoteControls guideId={guideId} />
-
       <SectionCard>
         <div className="border-b border-white/10 p-4">
-          <h2 className="font-semibold text-white">Comments</h2>
+          <h2 className="font-semibold text-white">Guide feedback</h2>
           <p className="mt-1 text-sm text-slate-400">
-            Keep comments focused on Steam achievement help.
+            Votes signal usefulness. Comments should stay focused on route clarity, missables, and achievement help.
           </p>
+          <div className="mt-4">
+            <GuideVoteControls guideId={guideId} />
+          </div>
         </div>
         <div className="border-b border-white/10 p-4">
           {currentUser.data ? (

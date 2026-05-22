@@ -48,7 +48,7 @@ export default function NewSessionPage() {
         eyebrow={`Steam App ${steamAppId}`}
         title="New session"
       >
-        Schedule a Steam achievement session and coordinate the target unlocks.
+        Schedule a Steam achievement session and coordinate the target unlocks, roster size, and voice link in one pass.
       </PageHero>
 
       <div className="mt-6">

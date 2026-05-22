@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import { GameTargetButton } from '@/features/targets/components/target-button';
 import type { ReactNode } from 'react';
 
@@ -35,8 +36,32 @@ export function GlobalGameHeader({
           <p className="mt-1 text-sm text-slate-400">
             {getAchievementMetadataStateDescription(game.achievementDataState)}
           </p>
-          <div className="mt-4">
+          <div className="mt-4 flex flex-wrap gap-2">
             <GameTargetButton steamAppId={game.steamAppId} />
+            <Link
+              className="rounded-full border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              href={`/games/${game.steamAppId}/guides`}
+            >
+              View guides
+            </Link>
+            <Link
+              className="rounded-full border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+              href={`/games/${game.steamAppId}/sessions`}
+            >
+              View sessions
+            </Link>
+            <Link
+              className="rounded-full border border-lime-300/30 px-3 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"
+              href={`/games/${game.steamAppId}/guides/new`}
+            >
+              Create guide
+            </Link>
+            <Link
+              className="rounded-full border border-lime-300/30 px-3 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"
+              href={`/games/${game.steamAppId}/sessions/new`}
+            >
+              Create session
+            </Link>
           </div>
         </div>
       </div>

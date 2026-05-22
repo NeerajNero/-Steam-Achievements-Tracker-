@@ -52,7 +52,7 @@ export function TargetList({
         <EmptyState message={emptyMessage} title={emptyTitle} />
       ) : null}
       {targets !== undefined && targets.length > 0 ? (
-        <div className="grid gap-3">
+        <div className={compact ? 'grid gap-3' : 'grid gap-3'}>
           {targets.map((target) => (
             <TargetCard compact={compact} key={target.id} target={target} />
           ))}

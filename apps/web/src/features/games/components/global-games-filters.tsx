@@ -43,7 +43,11 @@ export function GlobalGamesFilters({
     filters.hasAchievements === undefined ? 'all' : String(filters.hasAchievements);
 
   return (
-    <DataToolbar>
+    <DataToolbar
+      description="Filter the tracked Steam catalog by achievement support, sort order, and search query."
+      results={total === 0 ? '0 games' : `${filters.offset + 1}-${Math.min(filters.offset + filters.limit, total)} of ${total}`}
+      title="Browse Filters"
+    >
       <form
         className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_0.6fr_0.7fr]"
         onSubmit={(event) => {

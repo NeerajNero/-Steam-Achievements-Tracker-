@@ -51,7 +51,10 @@ function SessionsPageContent() {
         </p>
       </PageHero>
 
-      <DataToolbar>
+      <DataToolbar
+        description="Filter the session board by roster state and page size."
+        title="Session Filters"
+      >
         <div className="flex flex-wrap gap-3">
           <label className="grid gap-1 text-sm font-medium text-slate-300">
             Status

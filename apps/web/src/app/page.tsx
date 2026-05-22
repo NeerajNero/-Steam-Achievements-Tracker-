@@ -5,17 +5,22 @@ import Link from 'next/link';
 import type { FormEvent } from 'react';
 import { useState } from 'react';
 
+import { ActionPanel } from '@/components/ui/action-panel';
 import { PageHero } from '@/components/layout/page-hero';
 import { PageShell } from '@/components/layout/page-shell';
 import { EntityLinkCard } from '@/components/ui/entity-link-card';
 import { SectionCard } from '@/components/ui/section-card';
 import { StatusBadge } from '@/components/ui/status-badge';
+import { SummaryCard } from '@/components/ui/summary-card';
+import { useCurrentUser } from '@/features/auth/api/use-current-user';
+import { buildSignInUrl } from '@/features/auth/components/auth-status';
 
 const DEMO_STEAM_ID = '76561198000000000';
 
 export default function HomePage() {
   const router = useRouter();
   const [steamId, setSteamId] = useState(DEMO_STEAM_ID);
+  const currentUser = useCurrentUser();
 
   function handleSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
@@ -31,17 +36,26 @@ export default function HomePage() {
       <PageHero
         actions={
           <>
-            <Link
-              className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
-              href="/dashboard"
-            >
-              Open dashboard
-            </Link>
+            {currentUser.data ? (
+              <Link
+                className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                href="/dashboard"
+              >
+                Open dashboard
+              </Link>
+            ) : (
+              <a
+                className="rounded-xl bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                href={buildSignInUrl('/dashboard')}
+              >
+                Sign in with Steam
+              </a>
+            )}
             <Link
               className="rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
               href={`/profiles/${DEMO_STEAM_ID}`}
             >
-              Try demo profile
+              Open demo profile
             </Link>
           </>
         }
@@ -49,21 +63,46 @@ export default function HomePage() {
         title="Track completions, plan targets, and decide the next 100% faster."
       >
         <p>
-          This Steam-only dashboard keeps synced profiles, tracked games, targets,
-          leaderboards, guides, sessions, activity, milestones, badges, and public
-          showcase pages in one place. It is built to answer what to do next, what
-          data is still missing, and which actions require sign-in.
+          Steam-only profile sync, game metadata, targets, leaderboards, guides,
+          sessions, activity, badges, and showcase pages stay in one dark command
+          center. Every route is meant to answer what this page is for, the most
+          useful stat right now, the next action, and whether missing data is a Steam
+          limitation or simply not synced yet.
         </p>
         <div className="mt-4 flex flex-wrap gap-2">
           <StatusBadge tone="accent">Steam-only</StatusBadge>
           <StatusBadge tone="info">Queued sync runs</StatusBadge>
           <StatusBadge tone="warning">Unknown unlock state stays unknown</StatusBadge>
+          <StatusBadge tone="success">Public showcase pages</StatusBadge>
         </div>
       </PageHero>
 
-      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.25fr)_minmax(320px,0.75fr)]">
+      <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <SummaryCard
+          hint="Paste a Steam ID or use the seeded demo profile."
+          label="Public entry point"
+          value="Profiles + game hubs"
+        />
+        <SummaryCard
+          hint="Dashboard, targets, guide authoring, and session participation."
+          label="Sign-in unlocks"
+          value="Private hunter tools"
+        />
+        <SummaryCard
+          hint="Metadata-only stays distinct from locked; unsynced stays distinct from no achievements."
+          label="Data clarity"
+          value="State explained"
+        />
+        <SummaryCard
+          hint="Routes are tuned for Steam profile tracking only."
+          label="Platform scope"
+          value="Steam only"
+        />
+      </section>
+
+      <section className="grid gap-6 lg:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
         <SectionCard
-          description="Paste a stored Steam ID, open the seeded demo profile, or jump into the signed-in command center."
+          description="Paste a stored Steam ID, open the seeded demo profile, or move straight into the signed-in dashboard."
           title="Find A Steam Profile"
         >
           <form className="grid gap-3 md:grid-cols-[1fr_auto]" onSubmit={handleSubmit}>
@@ -80,10 +119,11 @@ export default function HomePage() {
             </label>
             <div className="flex items-end">
               <button
+                aria-label="Open Steam profile"
                 className="h-12 w-full rounded-xl bg-lime-400 px-5 text-sm font-semibold text-slate-950 hover:bg-lime-300 md:w-auto"
                 type="submit"
               >
-                Open Profile
+                Open profile
               </button>
             </div>
           </form>
@@ -93,7 +133,7 @@ export default function HomePage() {
               onClick={() => setSteamId(DEMO_STEAM_ID)}
               type="button"
             >
-              Use demo profile
+              Use demo Steam ID
             </button>
             <button
               className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10"
@@ -105,16 +145,58 @@ export default function HomePage() {
           </div>
         </SectionCard>
 
-        <SectionCard
-          description="What this app will and will not assume from Steam."
-          title="How The Data Reads"
-        >
-          <ul className="space-y-3 text-sm leading-6 text-slate-300">
-            <li>Full achievement progress depends on Steam exposing player unlock state.</li>
-            <li>Metadata-only achievements are explained as unknown, never shown as locked.</li>
-            <li>Targets, dashboard actions, and account pages require a Steam sign-in.</li>
-          </ul>
-        </SectionCard>
+        <div className="grid gap-4">
+          <ActionPanel
+            actions={
+              <>
+                <Link
+                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                  href="/games"
+                >
+                  Browse games
+                </Link>
+                <Link
+                  className="rounded-xl border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                  href="/leaderboards"
+                >
+                  View leaderboards
+                </Link>
+              </>
+            }
+            eyebrow="Steam-only focus"
+            title="What this app makes explicit"
+          >
+            <ul className="space-y-2">
+              <li>Full achievement progress depends on Steam exposing player unlock state.</li>
+              <li>Metadata-only games are explained as unknown progress, not locked progress.</li>
+              <li>Targets, dashboard actions, comments, and publishing flows require Steam sign-in.</li>
+            </ul>
+          </ActionPanel>
+          <ActionPanel
+            actions={
+              currentUser.data ? (
+                <Link
+                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                  href="/dashboard"
+                >
+                  Open your command center
+                </Link>
+              ) : (
+                <a
+                  className="rounded-xl bg-lime-400 px-3 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+                  href={buildSignInUrl('/dashboard')}
+                >
+                  Sign in for dashboard tools
+                </a>
+              )
+            }
+            eyebrow="Next step"
+            title="Signed-in command center"
+          >
+            Dashboard keeps active targets, next targets, sync attention, recent activity,
+            session suggestions, and guide suggestions in one place.
+          </ActionPanel>
+        </div>
       </section>
 
       <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -125,7 +207,7 @@ export default function HomePage() {
           title="Games"
         />
         <EntityLinkCard
-          description="Rank stored profile snapshots by completion, unlocked achievements, and more."
+          description="Rank stored profile snapshots by completion, unlocked achievements, and rare unlock prestige."
           eyebrow="Compare"
           href="/leaderboards"
           title="Leaderboards"

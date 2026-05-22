@@ -53,7 +53,7 @@ export default function EditSessionPage() {
         eyebrow="Host tools"
         title="Edit session"
       >
-        Update schedule, visibility, capacity, status, and target achievements.
+        Update schedule, visibility, capacity, status, and target achievements from one host view.
       </PageHero>
 
       <div className="mt-6">

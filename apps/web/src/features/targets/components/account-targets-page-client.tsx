@@ -10,6 +10,7 @@ import type { ReactNode } from 'react';
 import { PageHero } from '@/components/layout/page-hero';
 import { PageShell } from '@/components/layout/page-shell';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
+import { SummaryCard } from '@/components/ui/summary-card';
 import { useCurrentUser } from '@/features/auth/api/use-current-user';
 import { buildSignInUrl } from '@/features/auth/components/auth-status';
 import { useAccountTargets } from '@/features/targets/api/use-account-targets';
@@ -101,10 +102,28 @@ export function AccountTargetsPageClient({
         >
           <p>
             Keep a focused list of Steam games and achievements you are actively
-            hunting. Active targets stay visible in the dashboard until sync confirms
-            they are completed.
+            hunting. Active targets stay pinned in the dashboard until sync confirms
+            they are completed, while completed targets remain here as proof of the
+            plan paying off.
           </p>
         </PageHero>
+        <section className="grid gap-3 md:grid-cols-3">
+          <SummaryCard
+            hint="Top-priority work that should still appear on the dashboard."
+            label="Active tab"
+            value="Live hunting queue"
+          />
+          <SummaryCard
+            hint="Targets disappear from the dashboard but remain visible here."
+            label="Completed tab"
+            value="Confirmed by sync"
+          />
+          <SummaryCard
+            hint="Unknown unlock state achievements can still be planned."
+            label="Rules"
+            value="No fake locked state"
+          />
+        </section>
         <div className="flex flex-wrap gap-2">
           {TARGET_FILTERS.map((filter) => (
             <Link
@@ -133,9 +152,14 @@ export function AccountTargetsPageClient({
             they were unlocked. Unknown unlock state remains targetable and does
             not auto-complete the target.
           </p>
-          <Link className="mt-3 inline-flex text-lime-200 hover:text-lime-100" href="/dashboard">
-            Return to dashboard
-          </Link>
+          <div className="mt-3 flex flex-wrap gap-3">
+            <Link className="inline-flex text-lime-200 hover:text-lime-100" href="/dashboard">
+              Return to dashboard
+            </Link>
+            <Link className="inline-flex text-lime-200 hover:text-lime-100" href="/games">
+              Find more games to target
+            </Link>
+          </div>
         </div>
       </div>
     </PageShell>

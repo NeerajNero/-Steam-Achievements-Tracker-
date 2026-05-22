@@ -21,8 +21,8 @@ export function SyncAttention({
 
   return (
     <SectionCard
-      description="Steam can expose achievement metadata without player unlock state. These games need attention or another sync pass."
-      title="Data Quality / Sync Attention"
+      description="Steam can expose achievement metadata without player unlock state. These games need another sync pass or a clearer data-state explanation."
+      title="Sync Attention"
     >
       {!hasAttention ? (
         <EmptyState

@@ -74,6 +74,7 @@ export function GuideForm({
         <textarea
           className={`${inputClassName} min-h-24`}
           maxLength={500}
+          placeholder="What kind of run is this guide for, and what should a hunter expect?"
           onChange={(event) => setValues({ ...values, summary: event.target.value })}
           value={values.summary}
         />
@@ -148,6 +149,7 @@ export function GuideForm({
 
       <label className="flex items-center gap-2 text-sm font-medium text-slate-300">
         <input
+          aria-label="Mark guide as spoiler heavy"
           checked={values.isSpoilerHeavy}
           onChange={(event) =>
             setValues({ ...values, isSpoilerHeavy: event.target.checked })

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import type { MyDashboardResponseDto } from '@steam-achievement/client-sdk';
 import { PageHero } from '@/components/layout/page-hero';
+import { StatusBadge } from '@/components/ui/status-badge';
 import { SummaryCard } from '@/components/ui/summary-card';
 import { formatDateTime, formatNumber, formatPercent } from '@/lib/format';
 
@@ -17,14 +18,22 @@ export function DashboardHero({
     <div className="space-y-5">
       <PageHero
         actions={
-          profile?.publicSlug && profile.publicProfileIsPublished ? (
+          <>
             <Link
-              className="rounded-full border border-lime-300/40 px-4 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"
-              href={`/u/${profile.publicSlug}`}
+              className="rounded-full bg-lime-400 px-4 py-2 text-sm font-semibold text-slate-950 hover:bg-lime-300"
+              href="/account/targets"
             >
-              View Public Profile
+              Manage Targets
             </Link>
-          ) : null
+            {profile?.publicSlug && profile.publicProfileIsPublished ? (
+              <Link
+                className="rounded-full border border-lime-300/40 px-4 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"
+                href={`/u/${profile.publicSlug}`}
+              >
+                View Public Profile
+              </Link>
+            ) : null}
+          </>
         }
         eyebrow="Hunter command center"
         title={`Welcome${profile?.personaName ? `, ${profile.personaName}` : ''}`}
@@ -38,6 +47,22 @@ export function DashboardHero({
             />
           ) : null}
           <div>
+            <div className="flex flex-wrap gap-2">
+              <StatusBadge tone="accent">Steam hunter profile</StatusBadge>
+              <StatusBadge
+                tone={
+                  dashboard.dataQuality.metadataOnlyGames + dashboard.dataQuality.notSyncedGames >
+                  0
+                    ? 'warning'
+                    : 'success'
+                }
+              >
+                {dashboard.dataQuality.metadataOnlyGames + dashboard.dataQuality.notSyncedGames >
+                0
+                  ? 'Sync attention needed'
+                  : 'Sync state clean'}
+              </StatusBadge>
+            </div>
             <p>
               Steam ID:{' '}
               <span className="font-mono text-lime-200">
@@ -48,7 +73,8 @@ export function DashboardHero({
               Latest stored sync: {formatDateTime(profile?.lastSyncedAt)}
             </p>
             <p className="text-slate-400">
-              Focus first on active targets, then deterministic next targets and sync attention.
+              Focus first on saved active targets, then deterministic next targets, then the
+              sync-attention queue.
             </p>
           </div>
         </div>
@@ -56,27 +82,26 @@ export function DashboardHero({
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryCard
-          label="Games"
-          value={formatNumber(dashboard.summary.totalGames)}
           hint={`${formatNumber(dashboard.summary.completedGames)} completed`}
+          label="Tracked games"
+          value={formatNumber(dashboard.summary.totalGames)}
         />
         <SummaryCard
-          label="Achievements"
-          value={`${formatNumber(dashboard.summary.unlockedAchievements)} / ${formatNumber(dashboard.summary.totalAchievements)}`}
           hint={`${formatNumber(dashboard.summary.remainingAchievements)} remaining`}
+          label="Unlocked achievements"
+          value={`${formatNumber(dashboard.summary.unlockedAchievements)} / ${formatNumber(dashboard.summary.totalAchievements)}`}
         />
         <SummaryCard
-          label="Average Completion"
-          value={formatPercent(dashboard.summary.averageCompletionPercentage)}
           hint="Across stored Steam games"
+          label="Average completion"
+          value={formatPercent(dashboard.summary.averageCompletionPercentage)}
         />
         <SummaryCard
-          label="Sync Attention"
+          hint={`${formatNumber(dashboard.activeTargets.games.length + dashboard.activeTargets.achievements.length)} saved / ${formatNumber(dashboard.nextTargets.length)} suggestions`}
+          label="Targets in focus"
           value={formatNumber(
-            dashboard.dataQuality.metadataOnlyGames +
-              dashboard.dataQuality.notSyncedGames,
+            dashboard.activeTargets.games.length + dashboard.activeTargets.achievements.length,
           )}
-          hint="Metadata-only or not synced"
         />
       </div>
     </div>

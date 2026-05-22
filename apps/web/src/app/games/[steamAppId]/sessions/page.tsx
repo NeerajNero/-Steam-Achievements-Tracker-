@@ -73,7 +73,10 @@ function GameSessionsPageContent() {
         </p>
       </PageHero>
 
-      <DataToolbar>
+      <DataToolbar
+        description="Filter the session board by roster state."
+        title="Session Filters"
+      >
         <label className="grid gap-1 text-sm font-medium text-slate-300">
           Status
           <select
