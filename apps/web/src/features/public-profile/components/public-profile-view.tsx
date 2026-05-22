@@ -18,6 +18,7 @@ import { useProfileMilestones } from '@/features/milestones/api/use-profile-mile
 import { MilestonesList } from '@/features/milestones/components/milestones-list';
 import { useProfileShowcase } from '@/features/showcase/api/use-profile-showcase';
 import { ProfileShowcase } from '@/features/showcase/components/profile-showcase';
+import { formatNumber, formatPercent } from '@/lib/format';
 
 import { usePublicProfile } from '../api/use-public-profile';
 
@@ -79,54 +80,81 @@ export function PublicProfileView({
             ) : null}
             <p className="mt-1 text-sm text-slate-400">
               Shareable public view with settings-respected stats, showcase items,
-              badges, milestones, and recent activity.
+              nearest completions, rare unlock highlights, milestones, badges, and
+              recent activity.
             </p>
           </div>
         </div>
       </PageHero>
 
       <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <SummaryCard label="Games" value={String(data.summary.totalGames)} />
         <SummaryCard
+          hint="Tracked in stored sync snapshots"
+          label="Games"
+          value={formatNumber(data.summary.totalGames)}
+        />
+        <SummaryCard
+          hint="100% completions reached"
           label="Completed"
-          value={String(data.summary.completedGames)}
+          value={formatNumber(data.summary.completedGames)}
         />
         <SummaryCard
+          hint="Known unlock rows shown publicly"
           label="Achievements"
-          value={`${data.summary.unlockedAchievements}/${data.summary.totalAchievements}`}
+          value={`${formatNumber(data.summary.unlockedAchievements)}/${formatNumber(data.summary.totalAchievements)}`}
         />
         <SummaryCard
+          hint="Average completion across tracked games"
           label="Average"
-          value={`${data.summary.averageCompletionPercentage}%`}
+          value={formatPercent(data.summary.averageCompletionPercentage)}
         />
       </section>
 
       <ResponsiveTwoColumn
         aside={
           <>
-            {data.steamProfile.steamId ? (
-              <Link
-                className="inline-flex rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
-                href={`/profiles/${data.steamProfile.steamId}`}
-              >
-                Open full profile
-              </Link>
-            ) : null}
-            <SectionCard description="How this profile compares at a glance." title="Showcase Summary">
-              <div className="grid gap-3">
-                <SummaryCard
-                  label="Games"
-                  value={String(data.summary.totalGames)}
-                />
-                <SummaryCard
-                  label="Completed"
-                  value={String(data.summary.completedGames)}
-                />
+            <SectionCard
+              description="This shareable page keeps owner-only controls out of the way and focuses on visible Steam progress."
+              title="Public Profile Notes"
+            >
+              <div className="space-y-3 text-sm leading-6 text-slate-300">
+                <p>
+                  Use this route as the showcase link. It respects public-profile
+                  settings and keeps private planning data off the page.
+                </p>
+                {data.steamProfile.steamId ? (
+                  <Link
+                    className="inline-flex rounded-xl border border-white/10 px-4 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
+                    href={`/profiles/${data.steamProfile.steamId}`}
+                  >
+                    Open full profile
+                  </Link>
+                ) : null}
               </div>
             </SectionCard>
+            <BadgeGrid
+              badges={badges.data?.items}
+              error={badges.error}
+              isError={badges.isError}
+              isLoading={badges.isLoading}
+              title="Badges"
+            />
+            <MilestonesList
+              error={milestones.error}
+              isError={milestones.isError}
+              isLoading={milestones.isLoading}
+              milestones={milestones.data?.items}
+              title="Milestones"
+            />
           </>
         }
       >
+        <ProfileShowcase
+          error={showcase.error}
+          isError={showcase.isError}
+          isLoading={showcase.isLoading}
+          items={showcase.data?.items}
+        />
         <SectionCard title="Nearest Completions">
           {data.nearestCompletions.length === 0 ? (
             <EmptyState message="No near-completion games found." />
@@ -149,7 +177,7 @@ export function PublicProfileView({
                     </p>
                   </div>
                   <span className="text-sm font-semibold text-slate-200">
-                    {game.completionPercentage}%
+                    {formatPercent(game.completionPercentage)}
                   </span>
                   <div className="w-32">
                     <ProgressBar value={game.completionPercentage} />
@@ -180,7 +208,10 @@ export function PublicProfileView({
                       </p>
                     </div>
                     <span className="text-sm font-semibold text-lime-100">
-                      {achievement.globalPercentage}%
+                      {achievement.globalPercentage === null ||
+                      achievement.globalPercentage === undefined
+                        ? 'Unknown'
+                        : formatPercent(achievement.globalPercentage)}
                     </span>
                   </div>
                 ))}
@@ -188,39 +219,14 @@ export function PublicProfileView({
             )}
           </SectionCard>
         )}
+        <ActivityFeed
+          error={activity.error}
+          isError={activity.isError}
+          isLoading={activity.isLoading}
+          items={activity.data?.items}
+          title="Recent activity"
+        />
       </ResponsiveTwoColumn>
-
-      {data.steamProfile.steamId ? (
-        <>
-          <ProfileShowcase
-            error={showcase.error}
-            isError={showcase.isError}
-            isLoading={showcase.isLoading}
-            items={showcase.data?.items}
-          />
-          <BadgeGrid
-            badges={badges.data?.items}
-            error={badges.error}
-            isError={badges.isError}
-            isLoading={badges.isLoading}
-            title="Badges"
-          />
-          <MilestonesList
-            error={milestones.error}
-            isError={milestones.isError}
-            isLoading={milestones.isLoading}
-            milestones={milestones.data?.items}
-            title="Milestones"
-          />
-          <ActivityFeed
-            error={activity.error}
-            isError={activity.isError}
-            isLoading={activity.isLoading}
-            items={activity.data?.items}
-            title="Recent activity"
-          />
-        </>
-      ) : null}
 
     </div>
   );

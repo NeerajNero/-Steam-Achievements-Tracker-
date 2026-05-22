@@ -39,7 +39,7 @@ export function GuideList({
     <div className="grid gap-3">
       {items.map((guide) => (
         <article
-          className="rounded-[22px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-black/20"
+          className="rounded-[22px] border border-white/10 bg-slate-950/75 p-5 shadow-xl shadow-black/20 transition hover:border-lime-300/30 hover:bg-slate-900"
           key={guide.id}
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
@@ -53,12 +53,21 @@ export function GuideList({
               <p className="mt-2 text-sm leading-6 text-slate-400">
                 {guide.summary ?? 'No summary provided.'}
               </p>
-              <p className="mt-3 text-xs text-slate-500">
-                By {guide.author.displayName ?? 'Steam user'} · Published{' '}
-                {formatDateTime(guide.publishedAt)}
-              </p>
+              <div className="mt-3 flex flex-wrap gap-3 text-xs text-slate-500">
+                <span>By {guide.author.displayName ?? 'Steam user'}</span>
+                <span>Published {formatDateTime(guide.publishedAt)}</span>
+                <span>Steam App {guide.steamAppId}</span>
+              </div>
             </div>
             <GuideStatusBadge status={guide.status} />
+          </div>
+          <div className="mt-4">
+            <Link
+              className="inline-flex text-sm font-semibold text-lime-200 hover:text-lime-100"
+              href={`/games/${guide.steamAppId}/guides/${guide.slug}`}
+            >
+              Open guide
+            </Link>
           </div>
         </article>
       ))}

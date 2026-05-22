@@ -23,7 +23,10 @@ export function ActivityFeed({
   title?: string;
 }>): ReactNode {
   return (
-    <SectionCard description={description} title={title}>
+    <SectionCard
+      description={description ?? 'Recent public activity with links back to the related Steam profile, guide, game, or session.'}
+      title={title}
+    >
       {isLoading ? <LoadingState message="Loading activity..." /> : null}
       {isError ? (
         <ErrorState message={getErrorMessage(error)} title="Activity unavailable" />

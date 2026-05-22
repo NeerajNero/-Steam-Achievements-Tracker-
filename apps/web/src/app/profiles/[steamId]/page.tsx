@@ -242,6 +242,15 @@ export default function ProfilePage() {
                 latestSync={latestSyncRun}
               />
             ) : null}
+            {isOwner ? (
+              <SyncRunsList
+                error={syncRuns.error}
+                isError={syncRuns.isError}
+                isLoading={syncRuns.isLoading}
+                isPolling={isPollingSyncRuns}
+                runs={syncRuns.data?.items}
+              />
+            ) : null}
             <ProfileShowcase
               error={showcase.error}
               isError={showcase.isError}
@@ -275,34 +284,6 @@ export default function ProfilePage() {
               isError={badges.isError}
               isLoading={badges.isLoading}
               title="Badges"
-            />
-            <SyncRunsList
-              error={syncRuns.error}
-              isError={syncRuns.isError}
-              isLoading={syncRuns.isLoading}
-              isPolling={isPollingSyncRuns}
-              runs={syncRuns.data?.items}
-            />
-            <ProfileSnapshotsList
-              error={snapshots.error}
-              isError={snapshots.isError}
-              isLoading={snapshots.isLoading}
-              snapshots={snapshots.data?.items}
-            />
-            <MilestonesList
-              error={milestones.error}
-              isError={milestones.isError}
-              isLoading={milestones.isLoading}
-              milestones={milestones.data?.items}
-              title="Recent milestones"
-            />
-            <ActivityFeed
-              description="Public profile events, sync moments, and recent progress snapshots."
-              error={activity.error}
-              isError={activity.isError}
-              isLoading={activity.isLoading}
-              items={activity.data?.items}
-              title="Recent activity"
             />
           </>
         }
@@ -341,6 +322,27 @@ export default function ProfilePage() {
             onSyncGames={() => void enqueue(SyncRequestDtoScopeEnum.Games)}
             steamId={steamId}
             total={games.data?.total}
+          />
+          <MilestonesList
+            error={milestones.error}
+            isError={milestones.isError}
+            isLoading={milestones.isLoading}
+            milestones={milestones.data?.items}
+            title="Recent milestones"
+          />
+          <ActivityFeed
+            description="Public profile events, sync moments, and recent progress snapshots."
+            error={activity.error}
+            isError={activity.isError}
+            isLoading={activity.isLoading}
+            items={activity.data?.items}
+            title="Recent activity"
+          />
+          <ProfileSnapshotsList
+            error={snapshots.error}
+            isError={snapshots.isError}
+            isLoading={snapshots.isLoading}
+            snapshots={snapshots.data?.items}
           />
         </div>
       </ResponsiveTwoColumn>

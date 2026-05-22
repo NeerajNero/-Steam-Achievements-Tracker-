@@ -53,17 +53,19 @@ export function ProfileHeader({
           </h1>
           <p className="text-sm text-slate-300">Steam ID: {profile.steamId}</p>
           <p className="text-sm text-slate-400">
-            {profile.isPrivate ? ' (not fully public data)' : ''}
-          </p>
-          <p className="text-sm text-slate-400">
             Last synced: {formatDateTime(profile.lastSyncedAt)}
+          </p>
+          <p className="max-w-3xl text-sm leading-6 text-slate-400">
+            {profile.isPrivate
+              ? 'Steam privacy limits some public progress data on this profile. Missing sections may reflect Steam visibility, not a frontend error.'
+              : 'This page is the public Steam profile overview: core stats first, then game progress, milestones, badges, and recent activity.'}
           </p>
           <div className="mt-4 flex flex-wrap gap-2">
             <Link
               className="rounded-full border border-white/10 px-3 py-2 text-sm font-semibold text-slate-200 hover:bg-white/10"
               href={`/profiles/${profile.steamId}/games`}
             >
-              Open game library
+              Open full game library
             </Link>
           </div>
         </div>

@@ -3,6 +3,7 @@ import type { ReactNode } from 'react';
 
 import type { DashboardNextTargetResponseDto } from '@steam-achievement/client-sdk';
 import { EmptyState } from '@/components/ui/panel-state';
+import { MetadataStateBadge } from '@/components/ui/metadata-state-badge';
 import { SectionCard } from '@/components/ui/section-card';
 import { StatusBadge } from '@/components/ui/status-badge';
 import { ProgressBar } from '@/components/ui/progress-bar';
@@ -17,16 +18,16 @@ export function NextTargets({
 }>): ReactNode {
   return (
     <SectionCard
-      description="Deterministic suggestions from your stored Steam progress, guides, sessions, and metadata state."
+      description="Deterministic suggestions from stored Steam progress, guide availability, session activity, and data-quality state."
       title="Next Best Targets"
     >
       {targets.length === 0 ? (
         <EmptyState
-          message="No targets yet. Sync achievements to find close completions."
+          message="No suggestions yet. Sync achievements and library data so the dashboard can rank close completions and unfinished games."
           title="No targets found"
         />
       ) : (
-        <div className="grid gap-3 xl:grid-cols-2">
+        <div className="grid gap-3">
           {targets.map((target) => (
             <Link
               className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 transition hover:border-lime-300/40 hover:bg-lime-300/5"
@@ -50,6 +51,7 @@ export function NextTargets({
                     <StatusBadge tone="accent">
                       {getTargetTypeLabel(target.type)}
                     </StatusBadge>
+                    <MetadataStateBadge state={target.game.achievementDataState} />
                     <span className="text-xs text-slate-500">
                       {formatPlaytime(target.game.playtimeMinutes)}
                     </span>
@@ -68,7 +70,11 @@ export function NextTargets({
                         <span>{target.game.remainingAchievements} remaining</span>
                       </div>
                     </div>
-                  ) : null}
+                  ) : (
+                    <p className="mt-3 text-xs leading-5 text-slate-500">
+                      Progress is withheld here because unlock state is not fully synced yet.
+                    </p>
+                  )}
                 </div>
               </div>
             </Link>

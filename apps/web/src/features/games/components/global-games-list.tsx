@@ -41,7 +41,7 @@ export function GlobalGamesList({
 }>): ReactNode {
   return (
     <SectionCard
-      description={`Showing ${items?.length ?? 0} of ${total ?? 0} games.`}
+      description={`Showing ${items?.length ?? 0} of ${total ?? 0} tracked games with explicit achievement metadata state.`}
       title="Tracked Game Library"
     >
 
@@ -62,7 +62,7 @@ export function GlobalGamesList({
         <div className="grid gap-3 xl:grid-cols-2">
           {items.map((game) => (
             <article
-              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"
+              className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4 transition hover:border-lime-300/30 hover:bg-lime-300/5"
               key={game.steamAppId}
             >
               <div className="flex items-start gap-3">
@@ -91,6 +91,15 @@ export function GlobalGamesList({
                   <p className="mt-1 text-xs text-slate-500">App {game.steamAppId}</p>
                 </div>
               </div>
+              <p className="mt-3 text-sm leading-6 text-slate-400">
+                {game.achievementDataState === 'unlock_state_synced'
+                  ? 'Tracked player progress is available for this game.'
+                  : game.achievementDataState === 'metadata_only'
+                    ? 'Achievement definitions are stored, but player unlock state is still unknown.'
+                    : game.achievementDataState === 'not_synced'
+                      ? 'Achievement metadata has not been synced yet.'
+                      : 'This game is confirmed to have no achievements.'}
+              </p>
               <div className="mt-4 grid gap-3 text-sm text-slate-300 sm:grid-cols-2">
                 <div>
                   <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
@@ -129,6 +138,14 @@ export function GlobalGamesList({
                     {formatPlaytime(game.totalPlaytimeMinutes)}
                   </p>
                 </div>
+              </div>
+              <div className="mt-4">
+                <Link
+                  className="inline-flex text-sm font-semibold text-lime-200 hover:text-lime-100"
+                  href={`/games/${game.steamAppId}`}
+                >
+                  Open game hub
+                </Link>
               </div>
             </article>
           ))}

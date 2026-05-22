@@ -47,6 +47,19 @@ export function GuideDetail({
             <dd>{formatDateTime(guide.publishedAt)}</dd>
           </div>
         </dl>
+        <div className="mt-5 flex flex-wrap gap-2">
+          <span className="rounded-full border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+            Roadmap
+          </span>
+          <span className="rounded-full border border-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-300">
+            Cleanup planning
+          </span>
+          {guide.isSpoilerHeavy ? (
+            <span className="rounded-full border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-amber-100">
+              Spoiler heavy
+            </span>
+          ) : null}
+        </div>
       </section>
 
       <SectionCard description="Read the route, cleanup order, and any spoiler notes section by section." title="Roadmap Sections">

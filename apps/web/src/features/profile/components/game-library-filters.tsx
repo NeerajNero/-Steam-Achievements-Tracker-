@@ -54,7 +54,11 @@ export function GameLibraryFilters({
   const canGoNext = filters.offset + filters.limit <= maxOffset;
 
   return (
-    <DataToolbar>
+    <DataToolbar
+      description="Search and sort the stored Steam library, then drill into game-level achievement progress."
+      results={totalGames === 0 ? '0 games' : `${filters.offset + 1}-${Math.min(filters.offset + filters.limit, totalGames)} of ${totalGames}`}
+      title="Library Filters"
+    >
       <form
         className="grid w-full gap-4 md:grid-cols-2 lg:grid-cols-[1.6fr_0.8fr_0.8fr_0.8fr_0.6fr_0.6fr]"
         onSubmit={(event) => {
@@ -176,7 +180,8 @@ export function GameLibraryFilters({
             </button>
           </div>
           <small className="text-xs text-slate-500">
-            Showing {filters.offset + 1}–{Math.min(filters.offset + filters.limit, totalGames)} of {totalGames}
+            Showing {totalGames === 0 ? 0 : filters.offset + 1}–
+            {Math.min(filters.offset + filters.limit, totalGames)} of {totalGames}
           </small>
         </label>
       </form>

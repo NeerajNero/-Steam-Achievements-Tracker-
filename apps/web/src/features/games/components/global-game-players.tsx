@@ -169,8 +169,83 @@ export function GlobalGamePlayers({
       ) : null}
 
       {items && items.length > 0 ? (
-        <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-white/10 text-left text-sm">
+        <>
+          <div className="grid gap-3 lg:hidden">
+            {items.map((player) => (
+              <article
+                className="rounded-[22px] border border-white/10 bg-white/[0.03] p-4"
+                key={`mobile-${player.steamId}`}
+              >
+                <div className="flex items-start gap-3">
+                  {player.avatarUrl ? (
+                    <img
+                      alt=""
+                      className="h-10 w-10 rounded-xl border border-white/10"
+                      src={player.avatarUrl}
+                    />
+                  ) : (
+                    <div className="h-10 w-10 rounded-xl border border-white/10 bg-white/5" />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <Link
+                      className="font-semibold text-lime-200 hover:text-lime-100"
+                      href={getGlobalGamePlayerHref(player)}
+                    >
+                      {player.personaName ?? player.steamId}
+                    </Link>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {player.publicSlug ? `/u/${player.publicSlug}` : player.steamId}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                      Progress
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white">
+                      {formatPercent(player.completionPercentage)}
+                    </p>
+                    <div className="mt-2">
+                      <ProgressBar value={player.completionPercentage} />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                      Playtime
+                    </p>
+                    <p className="mt-1 text-sm font-semibold text-white">
+                      {formatPlaytime(player.playtimeMinutes)}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {player.playtimeTwoWeeksMinutes > 0
+                        ? `${formatPlaytime(player.playtimeTwoWeeksMinutes)} past 2 weeks`
+                        : 'No recent play'}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                      Achievements
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {formatNumber(player.unlockedAchievements)}/
+                      {formatNumber(player.totalAchievements)}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.12em] text-slate-500">
+                      Last played
+                    </p>
+                    <p className="mt-1 text-sm text-slate-300">
+                      {formatDateTime(player.lastPlayedAt)}
+                    </p>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div className="hidden overflow-x-auto lg:block">
+            <table className="min-w-full divide-y divide-white/10 text-left text-sm">
             <thead className="bg-white/5 text-xs uppercase text-slate-400">
               <tr>
                 <th className="px-4 py-3">Player</th>
@@ -228,8 +303,9 @@ export function GlobalGamePlayers({
                 </tr>
               ))}
             </tbody>
-          </table>
-        </div>
+            </table>
+          </div>
+        </>
       ) : null}
     </SectionCard>
   );

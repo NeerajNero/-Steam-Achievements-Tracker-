@@ -11,7 +11,10 @@ import {
   getErrorMessage,
 } from '@/lib/format';
 
-import { getLeaderboardProfileHref } from '../utils/leaderboard-types';
+import {
+  getLeaderboardProfileHref,
+  getLeaderboardRankClassName,
+} from '../utils/leaderboard-types';
 
 function formatLeaderboardScore(item: LeaderboardItemResponseDto): string {
   if (item.snapshot.averageCompletionPercentage === item.score) {
@@ -64,7 +67,9 @@ export function LeaderboardTable({
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex items-center gap-3">
-                <div className="grid h-12 w-12 place-items-center rounded-2xl border border-lime-300/20 bg-lime-400/10 font-semibold text-lime-100">
+                <div
+                  className={`grid h-12 w-12 place-items-center rounded-2xl border font-semibold ${getLeaderboardRankClassName(item.rank)}`}
+                >
                   #{item.rank}
                 </div>
                 <Link
@@ -138,8 +143,12 @@ export function LeaderboardTable({
           <tbody className="divide-y divide-white/10">
             {items.map((item) => (
               <tr key={`${item.rank}-${item.steamId}`}>
-                <td className="px-4 py-3 font-semibold text-white">
-                  #{item.rank}
+                <td className="px-4 py-3">
+                  <span
+                    className={`inline-grid h-10 min-w-10 place-items-center rounded-2xl border px-3 font-semibold ${getLeaderboardRankClassName(item.rank)}`}
+                  >
+                    #{item.rank}
+                  </span>
                 </td>
                 <td className="px-4 py-3">
                   <Link

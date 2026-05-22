@@ -29,7 +29,7 @@ export function SessionCommunitySection({
         <div className="border-b border-white/10 p-4">
           <h2 className="font-semibold text-white">Session comments</h2>
           <p className="mt-1 text-sm text-slate-400">
-            Use comments for planning details. Real-time chat is not implemented.
+            Use comments for planning details, late roster notes, or achievement callouts. Real-time chat is not implemented.
           </p>
         </div>
         <div className="border-b border-white/10 p-4">

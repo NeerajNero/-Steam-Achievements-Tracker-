@@ -47,6 +47,11 @@ export function SessionCard({
           <dd>{session.host.displayName ?? 'Steam user'}</dd>
         </div>
       </dl>
+      <div className="mt-4 flex flex-wrap gap-2 text-xs text-slate-500">
+        <span>{session.timezone ?? 'Timezone not set'}</span>
+        <span>·</span>
+        <span>{session.status === 'open' ? 'Joinable now' : 'Check roster state'}</span>
+      </div>
       <div className="mt-4">
         <Link
           className="inline-flex rounded-full border border-lime-300/25 px-3 py-2 text-sm font-semibold text-lime-100 hover:bg-lime-300/10"

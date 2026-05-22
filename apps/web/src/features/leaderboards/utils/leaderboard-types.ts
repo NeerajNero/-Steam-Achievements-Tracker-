@@ -62,3 +62,19 @@ export function normalizeLeaderboardPagination(searchParams: URLSearchParams): {
 
   return { limit, offset };
 }
+
+export function getLeaderboardRankClassName(rank: number): string {
+  if (rank === 1) {
+    return 'border-amber-300/30 bg-amber-300/10 text-amber-100';
+  }
+
+  if (rank === 2) {
+    return 'border-slate-300/30 bg-slate-300/10 text-slate-100';
+  }
+
+  if (rank === 3) {
+    return 'border-orange-300/30 bg-orange-300/10 text-orange-100';
+  }
+
+  return 'border-lime-300/20 bg-lime-400/10 text-lime-100';
+}

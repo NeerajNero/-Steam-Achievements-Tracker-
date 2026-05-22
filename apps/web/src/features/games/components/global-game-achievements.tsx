@@ -46,7 +46,7 @@ export function GlobalGameAchievements({
 
   return (
     <SectionCard
-      description="Canonical achievement metadata and global rarity from stored Steam data."
+      description="Canonical achievement metadata and global rarity from stored Steam data. Unknown player unlock state is never presented as locked here."
       title="Achievements"
     >
         <form
@@ -194,7 +194,9 @@ export function GlobalGameAchievements({
         </div>
       ) : null}
       {items && items.length === 0 ? (
-        <EmptyState message="No achievements match the current filters." />
+        <EmptyState
+          message="No achievements match the current filters. That can mean the search is too narrow or the game does not expose matching metadata yet."
+        />
       ) : null}
 
       {items && items.length > 0 ? (

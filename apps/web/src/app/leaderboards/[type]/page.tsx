@@ -6,6 +6,7 @@ import { Suspense, useMemo } from 'react';
 
 import { PageHero } from '@/components/layout/page-hero';
 import { PageShell } from '@/components/layout/page-shell';
+import { SectionCard } from '@/components/ui/section-card';
 import { ErrorState, LoadingState } from '@/components/ui/panel-state';
 import { useLeaderboard } from '@/features/leaderboards/api/use-leaderboard';
 import { useLeaderboards } from '@/features/leaderboards/api/use-leaderboards';
@@ -80,6 +81,16 @@ function LeaderboardPageContent() {
         </PageHero>
       </div>
 
+      <SectionCard
+        description="Ranks are based on the stored snapshot value for this leaderboard. Profiles with newer snapshots can move even without a live Steam request on page load."
+        title="Score Explanation"
+      >
+        <p className="text-sm leading-6 text-slate-300">
+          The score column shows the exact snapshot metric used by this leaderboard.
+          Snapshot timestamps show when the ranking input was last captured.
+        </p>
+      </SectionCard>
+
       <div className="mb-6">
         {leaderboards.isLoading ? (
           <LoadingState message="Loading leaderboard types..." />
@@ -101,15 +112,11 @@ function LeaderboardPageContent() {
         isLoading={leaderboard.isLoading}
         items={leaderboard.data?.items}
       />
-      <p className="text-sm text-slate-400">
-        Score explanation: this leaderboard ranks the stored snapshot value shown in
-        the score column. Snapshot timestamps show when that profile was last captured.
-      </p>
 
       {leaderboard.data && leaderboard.data.items.length > 0 ? (
         <nav
           aria-label="Leaderboard pagination"
-            className="mt-4 flex flex-wrap items-center justify-between gap-3"
+          className="mt-4 flex flex-wrap items-center justify-between gap-3"
         >
           <button
             className="rounded-xl border border-white/10 px-3 py-2 text-sm font-medium text-slate-200 hover:bg-white/10 disabled:cursor-not-allowed disabled:opacity-50"
